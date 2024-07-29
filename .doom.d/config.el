@@ -268,17 +268,21 @@
 
 (require 'exwm)
 (require 'exwm-config)
+(defun benson/disable-keymaps-for-exwm ()
+        (set (make-local-variable 'evil-motion-state-map) nil)
+        (set (make-local-variable 'evil-normal-state-map) nil)
+)
 (after! exwm
         (map! :map exwm-mode-map
                 "C-a" nil
-                "C-b" nil
-                "C-d" nil
-                "C-f" nil
-                "C-n" nil
-                "C-p" nil
-                "C-v" nil
-                "C-u" nil
-                "C-w" nil
+                "C-b" 'exwm-input-send-next-key
+                "C-d" 'exwm-input-send-next-key
+                "C-f" 'exwm-input-send-next-key
+                "C-n" 'exwm-input-send-next-key
+                "C-p" 'exwm-input-send-next-key
+                "C-v" 'exwm-input-send-next-key
+                "C-u" 'exwm-input-send-next-key
+                "C-w" 'exwm-input-send-next-key
                 "C-c C-l" #'exwm-layout-toggle-mode-line
                 "C-c C-f" #'exwm-floating-toggle-floating
                 "C-c C-c" #'exwm-input-send-next-key
@@ -291,6 +295,7 @@
         )
         (global-set-key (kbd "C-a") #'doom/leader)
         (global-set-key (kbd "C-SPC") #'doom/leader)
+        (add-hook 'exwm-mode-hook 'benson/disable-keymaps-for-exwm)
 )
 
 ;(exwm-input-set-key (kbd "s-r") #'exwm-reset)
