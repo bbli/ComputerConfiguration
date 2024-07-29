@@ -90,6 +90,8 @@
         )
 )
 
+(keyboard-translate ?\C-c ?\C-e)
+(keyboard-translate ?\C-e ?\C-c)
 (setq source-directory "~/Software/emacs")
 (map! :leader :prefix "h" "b" 'describe-keymap)
 
@@ -284,11 +286,9 @@
                 "C-g" #'doom/escape
                 ;; The following keymaps need to be duplicated for non-EXWM buffers
                 ;; TODO should I still keep the C-e key translation?
-                "C-e" 'doom/leader
                 "C-a" 'doom/leader
                 "C-SPC" 'doom/leader
         )
-        (global-set-key (kbd "C-e") #'doom/leader)
         (global-set-key (kbd "C-a") #'doom/leader)
         (global-set-key (kbd "C-SPC") #'doom/leader)
 )
