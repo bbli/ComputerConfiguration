@@ -1,0 +1,99 @@
+[user]
+	email = bensonbinbinli@gmail.com
+	name = Benson Li
+[core]
+	editor = vim
+#[color "status"]
+#	untracked = cyan normal bold
+#	changed = cyan normal bold
+#[color "diff"]
+#	old = red normal bold
+#	new = green normal bold
+	excludesfile = ~/.gitignore
+	;pager = nvim -R
+[diff]
+	tool = vimdiff
+[difftool]
+	prompt = false
+[alias]
+    c = clean -d -f -x -n
+    cc = clean -d -f -x
+    g = git
+	stat = status -sb
+    wt = worktree
+	d = difftool
+    t = tag -n
+	p = push origin master
+	com = commit -m 
+	cob = checkout -b
+	chk = checkout
+	mod = add -u
+	vim = config --global -e
+	tree2 = log --graph --pretty=oneline --abbrev-commit
+	tree = log --oneline --decorate --all --graph
+	lol = log --graph --oneline --decorate --pretty=format:\"%C(yellow)%h%Creset%C(red)%C(bold)%d%Creset %C(cyan)(%cr)%Creset %s\"
+	recover = log --diff-filter=D --summary
+	show = cat-file -p
+	type = cat-file -t
+	pr = "!f() { git fetch -fu ${2:-upstream} refs/pull/$1/head:pr/$1 && git checkout pr/$1; }; f"
+	pr-clean = "!git checkout master ; git for-each-ref refs/heads/pr/* --format=\"%(refname)\" | while read ref ; do branch=${ref#refs/heads/} ; git branch -D $branch ; done"
+[merge]
+	conflictstyle = merge
+[status]
+    showUntrackedFiles = all
+
+;[color]
+  ;pager = true
+  ;ui = auto
+  ;status = auto
+  ;diff = auto
+  ;branch = auto
+  ;showBranch = auto
+  ;interactive = auto
+  ;grep = auto
+;[color "status"]
+  ;header = black bold
+  ;branch = cyan
+  ;nobranch = red
+  ;unmerged = red
+  ;untracked = cyan
+  ;added = green
+  ;changed = red bold
+;[color "diff"]
+  ;meta = red bold
+  ;frag = black bold
+  ;func = blue
+  ;old = red strike
+  ;new = green
+  ;commit = blue
+  ;whitespace = red
+  ;context = normal
+;[color "branch"]
+  ;current = cyan
+  ;local = blue
+  ;remote = magenta
+  ;upstream = magenta
+  ;plain = normal
+;[color "decorate"]
+  ;branch = blue
+  ;remoteBranch = magenta
+  ;tag = magenta
+  ;stash = cyan
+  ;HEAD = blue
+;[color "interactive"]
+  ;prompt = red
+  ;header = red bold
+  ;error = red
+  ;help = black bold
+;[color "grep"]
+  ;context = normal
+  ;match = cyan
+  ;filename = blue
+  ;function = blue
+  ;selected = normal
+  ;separator = red bold
+  ;linenumber = normal
+;[color]
+	;pager = no
+[grep]
+	extendRegexp = true

@@ -1,0 +1,72 @@
+snippet tt
+	{my $t='${1}';
+
+		${2}
+	}
+
+snippet hh
+	${1:key} => ${2:value},
+snippet dd
+	p(${1}) if $DEBUG;
+
+snippet sd
+	### ************  ${1}  ************ %%%1
+
+snippet db
+	### ****Before entering Control Block. Control value ${2}
+
+snippet dc
+	### ****Entered ${1} case
+
+
+snippet pm
+	use strict;
+	use warnings;
+	use autodie;
+	use DDP;
+	use Carp;
+	use feature qw(signatures);
+	no warnings qw(experimental::signatures);
+	use Class::Struct;
+	#use Method::Delegation;
+
+	${1}
+
+
+
+snippet pt
+	use strict;
+	use warnings;
+	use autodie;
+	use DDP;
+	use Carp;
+	use feature qw(signatures);
+	no warnings qw(experimental::signatures);
+	use Test::More 'no_plan';
+	use Test::Exception;
+
+	${1}
+
+	done_testing();
+
+
+snippet ps
+	use strict;
+	use warnings;
+	use autodie;
+	use DDP;
+	use Carp;
+	use feature qw(signatures);
+	no warnings qw(experimental::signatures);
+	use Class::Struct;
+	#use Method::Delegation;
+
+	my $begin_script_seperator = q(************ Start Script   ************);
+	p($begin_script_seperator);
+
+	${1}
+	### ************  Configuration  ************ %%%1
+	### ************  Helper Functions  ************ %%%1
+	### ************  Main  ************ %%%1
+
+

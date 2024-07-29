@@ -1,0 +1,102 @@
+# GENERAL
+# -------
+snippet incc
+	#include <${1:iostream}>${0}
+
+# snippet tt
+# 	TEST_CASE("${1}",""){
+# 	}
+
+snippet th
+	// TODO: [BENSON_HACK] ${0}
+
+snippet tt
+	// TODO: [BENSON_${1}] ${0}
+
+snippet tn
+	// TODO: [BENSON_NOW] ${0}
+
+
+# snippet dd
+# 	std::cout << "BENSON_DEBUG:: " << __FILE__ << ":" << __LINE__ << "   " << "${1}" << std::endl;
+
+
+snippet test
+    std::cout << ${1:hi} << $2 << $2 << std::endl;
+
+
+
+snippet pc
+	std::copy(${1:container}.begin(),$1.end(),std::ostream_iterator<${2:type}>(std::cout,","));
+
+# DEBUG
+
+snippet db
+	std::cout << "Before entering ${1:while}. Control value ${2} at" << ${3:var} << std::endl;
+
+
+snippet dc
+	std::cout << "Entered ${1} case" << std::endl;
+
+
+snippet da
+	std::cout << "-------------Exit-------------" << std::endl;
+
+
+# Data Structures
+# ---------------
+snippet vec
+	vector<${1:type}> ${2:var}
+
+
+# ALGORITHMS
+# ----------
+snippet rle
+snippet for
+	for(auto i = 0; i<${1:size} ;++i){
+		if (${2}){
+		}else{
+		}
+	}
+
+snippet rit
+	for(auto it=${1:container}.rbegin(); it!=$1.rend(); ++it){
+		${2}
+	}
+
+
+snippet it
+	for(auto it=${1:container}.begin(); it!=$1.end(); ++it){
+		${2}
+	}
+
+
+snippet for
+	for(auto i = 0; i<${1:size} ;++i){
+		${2}
+	}
+
+
+snippet acc
+	std::accumulate(${1:container}.begin(),$1.end(),${2:value});
+
+snippet alg
+	#include <algorithm>
+	#include <vector>
+	#include <unordered_map>
+	#include <unordered_set>
+	#include <numeric>
+	#include <iostream>
+	#include <string>
+
+	using namespace std;
+	//**KMM**//
+
+	//**Break Down/Wishful Thinking**//
+
+	//**Brute Force**//
+
+
+snippet sd
+	// ************  ${1}  ************ %%%1
+
