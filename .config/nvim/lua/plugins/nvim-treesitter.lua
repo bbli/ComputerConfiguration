@@ -82,9 +82,9 @@ require'nvim-treesitter.configs'.setup{
         },
     },
 }
-vim.cmd[[
-autocmd BufEnter * TSBufEnable highlight
-]]
+-- vim.cmd[[
+-- autocmd BufEnter * TSBufEnable highlight
+-- ]]
 
 require'nvim-treesitter.configs'.setup{
     matchup = {

@@ -1,20 +1,3 @@
-(if (eq system-type 'darwin)
-  ; Mac specific things
-  (progn
-      (setq code-directory "~/Documents/Code")
-      (setq org-directory "~/Documents/Org")
-      (setq dotfiles-directory "~/Dropbox/Code/dotfiles")
-      ; (add-to-list process-environment "LD_LIBRARY_PATH=/usr/local/lib")
-    )
-  ; Linux specific things
-  (progn
-    (setq code-directory "~/Dropbox/Code/")
-    (setq org-directory "~/Dropbox/Org")
-      (setq dotfiles-directory "~/Dropbox/Code/dotfiles")
-    )
-)
-(setq source-directory "~/Software/emacs")
-
 ;; Place your private configuration here! Remember, you do not need to run 'doom
 ;; sync' after modifying this file!
 
@@ -55,7 +38,6 @@
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/Documents/Org/")
 
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
@@ -90,6 +72,29 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 
+(if (eq system-type 'darwin)
+        ; Mac specific things
+        (progn
+                (setq code-directory "~/Documents/Code")
+                (setq org-directory "~/Documents/Org")
+                (setq dotfiles-directory "~/Dropbox/Code/dotfiles")
+                (setq launcher-name "spotlight")
+                ; (add-to-list process-environment "LD_LIBRARY_PATH=/usr/local/lib")
+        )
+        ; Linux specific things
+        (progn
+                (setq code-directory "~/Dropbox/Code/")
+                (setq org-directory "~/Dropbox/Org")
+                (setq dotfiles-directory "~/Dropbox/Code/dotfiles")
+                (setq launcher-name "krunner")
+        )
+)
+
+(keyboard-translate ?\C-c ?\C-e)
+(keyboard-translate ?\C-e ?\C-c)
+(setq source-directory "~/Software/emacs")
+(map! :leader :prefix "h" "b" 'describe-keymap)
+
 (after! org
         (setq org-todo-keywords
         '((sequence "TODO" "|" "FUTURE" "DEAD_END" "DONE")))
@@ -97,15 +102,12 @@
         (add-to-list 'org-emphasis-alist '("=" (:inherit org-verbatim :height 0.85 :box nil)))
         (push '(tags-tree . local) org-show-context-detail)
         (add-hook 'org-agenda-after-show-hook 'org-tree-to-indirect-buffer)
-        (map! :map org-mode-map "C-h" nil "C-a" nil "o" nil "O" nil)
         (custom-set-faces! '(org-tag :height 0.6))
         (custom-set-faces! '(org-block :height 0.7))
-        (custom-set-faces! '(org-meta-line :height 1.1))
+        (custom-set-faces! '(org-meta-line :height 0.7))
         (custom-set-faces! '(org-block-begin-line :height 0.7))
         (custom-set-faces! '(org-block-end-line :height 0.7))
         (custom-set-faces! '(org-code :height 0.9))
-        (setq org-clock-sound "~/Downloads/alarm.wav")
-        (add-hook 'org-src-mode-hook #'rainbow-delimiters-mode)
 )
 
 (defun add-pretty-symbols-org ()
@@ -124,18 +126,55 @@
             )
         )
 )
-(add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
-(add-hook 'prog-mode-hook 'prettify-symbols-mode)
+;(add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
+;(add-hook 'prog-mode-hook 'prettify-symbols-mode)
 ;; (add-hook 'prog-mode-hook (lambda () (doom-modeline-mode 1)))
 ;; NOTE: mode call needs to be added to list first -> so it can be "later" in the list
 (add-hook 'org-mode-hook 'prettify-symbols-mode)
 (add-hook 'org-mode-hook 'org-toggle-pretty-entities)
 (add-hook 'org-mode-hook 'add-pretty-symbols-org)
 
-(keyboard-translate ?\C-c ?\C-e)
-(keyboard-translate ?\C-e ?\C-c)
+(map! :map org-mode-map
+      "C-h" nil "C-a" nil "o" nil "O" nil
+      ;; :desc "open branches below subtree" "C-c o" (lambda () (interactive) (outline-show-children 10))
+      :n "o" 'end-of-line-and-indented-new-line
+      :n "O" 'end-of-line-and-indented-new-line-above
+      ;; :desc "open branches below subtree" "C-c o" #'org-show-subtree
+      ;; :desc "open ALL branches up to level two" "C-c O" #'(lambda () (interactive) (org-content 2))
+      ;; :desc "close current branch" "C-c c" #'outline-hide-body
+
+      :desc "next visible heading" "C-c C-n" #'outline-next-visible-heading
+      :desc "previous visible heading" "C-c C-p" #'outline-previous-visible-heading
+      :desc "go up a heading" "C-c C-u" #'outline-up-heading
+      :desc "toggle narrow of subtree" "C-c n" #'org-toggle-narrow-to-subtree
+      :desc "end org timer" "C-c c" 'org-toggle-comment
+      ;; :desc "hide source blocks of current subtree" "C-c h" #'benson/org-hide-block-subtree
+      ;; :desc "hide source blocks of current subtree" "C-c c"
+      ;; #'flyspell-correct-at-point
+
+      ;; :desc "find tag" "C-c C-u" #'outline-up-heading
+      :desc "refile headline" "C-c r" #'org-refile
+      ;; :desc "ediff two regions" "C-c e" #'ediff-regions-linewise
+      )
 
 (setq projectile-project-search-path `(code-directory org-directory))
+
+(defun benson/switch-window ()
+  (interactive)
+  (when-let ((mru-window (get-mru-window nil nil 'non-nil)))
+    (select-window mru-window)
+    )
+)
+(after! ace-window
+        (setq aw-keys '(?1 ?2 ?3 ?4 ?5))
+)
+(map! :map evil-window-map
+        "o" 'delete-other-windows
+        "s" 'ace-window
+        "w" 'evil-window-next
+        "C-w" 'evil-window-next
+        ";" 'benson/switch-window
+)
 
 (defun benson/insert-semicolon ()
   (interactive)
@@ -158,35 +197,61 @@
 (map! :niv "; n" 'projectile-next-project-buffer)
 (map! :niv "; N" 'projectile-previous-project-buffer)
 
-(map! :leader :prefix "b" :desc "consult open buffer in a vertical split" "v" #'consult-buffer-other-window)
-(map! :leader :prefix "b" :desc "switch to previous buffer" "B" #'consult-buffer)
 (defun benson/switch-to-previous-buffer ()
         "Switch to the last open buffer of the current window."
         (interactive)
         :repeat nil
         (let ((previous-place (car (window-prev-buffers))))
                 (when previous-place (switch-to-buffer (car previous-place)))))
-(map! :leader :prefix "b" :desc "switch to previous buffer" "s" 'benson/switch-to-previous-buffer)
+(map! :leader
+      "b" nil
+      (:prefix "b"
+        :desc "switch to alternate file"           "s" #'benson/switch-to-previous-buffer
+        :desc "zen toggle"           "z" #'+zen/toggle
+        :desc "open all buffer" "b" #'consult-buffer
+        :desc "select buffer to open in vertical split" "v" #'consult-buffer-other-window
+        :desc "kill current buffer" "k" #'kill-this-buffer
+        ;; :desc "choose a buffer to delete" "d" #'ido-kill-buffer
+        ;; :desc "cycle outshine mode" "c" #'outshine-cycle-buffer
+        )
+)
 (map! "M-TAB" 'benson/switch-to-previous-buffer)
 
+(defun benson/open-current-buffer-in-new-workspace ()
+        (interactive)
+        (let ((buf (current-buffer)))
+                (+workspace/new)
+                (switch-to-buffer buf)
+        )
+)
 (define-prefix-command 'benson/workspace-map)
 (map! :map benson/workspace-map
       "n" nil
       :desc "new workspace" "c" #'+workspace/new
+      :desc "tear off current window into new workspace" "o" 'benson/open-current-buffer-in-new-workspace
       :desc "fuzzy search workspace" "s" #'+workspace/switch-to
       :desc "delete workspace" "k" #'+workspace/delete
       :desc "rename workspaces" "r" #'+workspace/rename
       :desc "next workspace" "n" #'+workspace/switch-right
       :desc "previous workspace" "p" #'+workspace/switch-left
       :desc "switch to last workspace" "m" #'+workspace/other
+      :desc "switch to last workspace" ";" #'+workspace/other
       :desc "display workspaces" "w" #'+workspace/display
       )
 (map! :leader
       "w" nil
       :desc "workspace" "w" 'benson/workspace-map
 )
-(map! :map evil-window-map
-        "o" 'delete-other-windows
+
+(map! :leader
+      :prefix "g"
+      :desc "next hunk" "n" #'git-gutter:next-hunk
+      :desc "next hunk" "p" #'git-gutter:previous-hunk
+)
+
+(map! :leader
+      :prefix "j"
+      :desc "evil-goto-last-change" "c" #'evil-goto-last-change
 )
 
 (defun benson/insert-current-date ()
@@ -198,47 +263,6 @@
 
 (map! :map emacs-lisp-mode-map
       "C-c C-c" 'eval-last-sexp)
-
-(defun benson-clock-start ()
-    (interactive)
-    (org-clock-in)
-    (org-timer-set-timer 30)
-    ;(org-timer-start)
-)
-
-(defun benson-clock-stop ()
-    (interactive)
-    (org-clock-out)
-    (org-timer-stop)
-    ;(org-timer-stop)
-)
-(map! :map org-mode-map
-      ;; :desc "open branches below subtree" "C-c o" (lambda () (interactive) (outline-show-children 10))
-      :n "o" 'end-of-line-and-indented-new-line
-      :n "O" 'end-of-line-and-indented-new-line-above
-      ;; :desc "open branches below subtree" "C-c o" #'org-show-subtree
-      ;; :desc "open ALL branches up to level two" "C-c O" #'(lambda () (interactive) (org-content 2))
-      ;; :desc "close current branch" "C-c c" #'outline-hide-body
-
-      :desc "next visible heading" "C-c C-n" #'outline-next-visible-heading
-      :desc "previous visible heading" "C-c C-p" #'outline-previous-visible-heading
-      :desc "go up a heading" "C-c C-u" #'outline-up-heading
-      :desc "toggle narrow of subtree" "C-c n" #'org-toggle-narrow-to-subtree
-      :desc "start org timer" "C-c s" 'benson-clock-start
-      :desc "end org timer" "C-c d" 'benson-clock-stop
-      :desc "end org timer" "C-c c" 'org-toggle-comment
-      ;; :desc "hide source blocks of current subtree" "C-c h" #'benson/org-hide-block-subtree
-      ;; :desc "hide source blocks of current subtree" "C-c c"
-      ;; #'flyspell-correct-at-point
-
-      ;; :desc "find tag" "C-c C-u" #'outline-up-heading
-      :desc "refile headline" "C-c r" #'org-refile
-      ;; :desc "ediff two regions" "C-c e" #'ediff-regions-linewise
-      )
-
-;; I want a hotkey to switch between emacs mode and evil-normal-mode
-
-(map! :leader :prefix "h" "b" 'describe-keymap)
 
 (require 'exwm)
 (require 'exwm-config)
@@ -279,15 +303,15 @@
 )
 
 (add-to-list 'exwm-manage-configurations
-             '((string-match-p "krunner" exwm-class-name) floating t
+             '((string-match-p launcher-name exwm-class-name) floating t
                )
 )
-(defun benson/krunner ()
+(defun benson/launcher ()
   (interactive)
-  (start-process-shell-command "launcher" nil "krunner"))
+  (start-process-shell-command "launcher" nil launcher-name))
 
-(map! :map doom-leader-map "SPC" 'benson/krunner)
-(global-set-key (kbd "M-SPC") #'benson/krunner)
+(map! :map doom-leader-map "SPC" 'benson/launcher)
+(global-set-key (kbd "M-SPC") #'benson/launcher)
 
 (defun benson/jumpapp-kitty ()
   (interactive)
@@ -309,3 +333,31 @@
 )
 
 (exwm-config-example)
+
+(defun ssh-and-copy-file ()
+        (interactive)
+        (let ((file-content (shell-command-to-string "ssh irdv-beli -X -l ir 'cat ~/copy.txt'")))
+                (with-current-buffer (current-buffer) (insert file-content))
+        )
+)
+(map! :n "P" 'ssh-and-copy-file)
+
+(add-hook 'org-src-mode-hook #'rainbow-delimiters-mode)
+
+(defun benson-clock-start ()
+    (interactive)
+    (org-timer-set-timer 30)
+    ;(org-timer-start)
+    (org-clock-in)
+)
+
+(defun benson-clock-stop ()
+    (interactive)
+    (org-timer-stop)
+    ;(org-timer-stop)
+    (org-clock-out)
+)
+(map! :map org-mode-map
+      :desc "start org timer" "C-c s" 'benson-clock-start
+      :desc "end org timer" "C-c d" 'benson-clock-stop
+)
