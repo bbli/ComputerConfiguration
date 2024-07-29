@@ -90,8 +90,6 @@
         )
 )
 
-(keyboard-translate ?\C-c ?\C-e)
-(keyboard-translate ?\C-e ?\C-c)
 (setq source-directory "~/Software/emacs")
 (map! :leader :prefix "h" "b" 'describe-keymap)
 
@@ -134,28 +132,30 @@
 (add-hook 'org-mode-hook 'org-toggle-pretty-entities)
 (add-hook 'org-mode-hook 'add-pretty-symbols-org)
 
-(map! :map org-mode-map
-      "C-h" nil "C-a" nil "o" nil "O" nil
-      ;; :desc "open branches below subtree" "C-c o" (lambda () (interactive) (outline-show-children 10))
-      :n "o" 'end-of-line-and-indented-new-line
-      :n "O" 'end-of-line-and-indented-new-line-above
-      ;; :desc "open branches below subtree" "C-c o" #'org-show-subtree
-      ;; :desc "open ALL branches up to level two" "C-c O" #'(lambda () (interactive) (org-content 2))
-      ;; :desc "close current branch" "C-c c" #'outline-hide-body
+(after! org
+        (map! :map org-mode-map
+                "C-h" nil "C-a" nil "o" nil "O" nil
+                ;; :desc "open branches below subtree" "C-c o" (lambda () (interactive) (outline-show-children 10))
+                :n "o" 'end-of-line-and-indented-new-line
+                :n "O" 'end-of-line-and-indented-new-line-above
+                ;; :desc "open branches below subtree" "C-c o" #'org-show-subtree
+                ;; :desc "open ALL branches up to level two" "C-c O" #'(lambda () (interactive) (org-content 2))
+                ;; :desc "close current branch" "C-c c" #'outline-hide-body
 
-      :desc "next visible heading" "C-c C-n" #'outline-next-visible-heading
-      :desc "previous visible heading" "C-c C-p" #'outline-previous-visible-heading
-      :desc "go up a heading" "C-c C-u" #'outline-up-heading
-      :desc "toggle narrow of subtree" "C-c n" #'org-toggle-narrow-to-subtree
-      :desc "end org timer" "C-c c" 'org-toggle-comment
-      ;; :desc "hide source blocks of current subtree" "C-c h" #'benson/org-hide-block-subtree
-      ;; :desc "hide source blocks of current subtree" "C-c c"
-      ;; #'flyspell-correct-at-point
+                :desc "next visible heading" "C-c C-n" #'outline-next-visible-heading
+                :desc "previous visible heading" "C-c C-p" #'outline-previous-visible-heading
+                :desc "go up a heading" "C-c C-u" #'outline-up-heading
+                :desc "toggle narrow of subtree" "C-c n" #'org-toggle-narrow-to-subtree
+                :desc "end org timer" "C-c c" 'org-toggle-comment
+                ;; :desc "hide source blocks of current subtree" "C-c h" #'benson/org-hide-block-subtree
+                ;; :desc "hide source blocks of current subtree" "C-c c"
+                ;; #'flyspell-correct-at-point
 
-      ;; :desc "find tag" "C-c C-u" #'outline-up-heading
-      :desc "refile headline" "C-c r" #'org-refile
-      ;; :desc "ediff two regions" "C-c e" #'ediff-regions-linewise
-      )
+                ;; :desc "find tag" "C-c C-u" #'outline-up-heading
+                :desc "refile headline" "C-c r" #'org-refile
+                ;; :desc "ediff two regions" "C-c e" #'ediff-regions-linewise
+        )
+)
 
 (setq projectile-project-search-path `(code-directory org-directory))
 
@@ -268,15 +268,29 @@
 (require 'exwm-config)
 (after! exwm
         (map! :map exwm-mode-map
+                "C-a" nil
+                "C-b" nil
+                "C-d" nil
+                "C-f" nil
+                "C-n" nil
+                "C-p" nil
+                "C-v" nil
+                "C-u" nil
+                "C-w" nil
                 "C-c C-l" #'exwm-layout-toggle-mode-line
                 "C-c C-f" #'exwm-floating-toggle-floating
                 "C-c C-c" #'exwm-input-send-next-key
                 "C-c C-q" #'exwm-input-send-next-key
                 "C-g" #'doom/escape
+                ;; The following keymaps need to be duplicated for non-EXWM buffers
+                ;; TODO should I still keep the C-e key translation?
+                "C-e" 'doom/leader
                 "C-a" 'doom/leader
                 "C-SPC" 'doom/leader
         )
+        (global-set-key (kbd "C-e") #'doom/leader)
         (global-set-key (kbd "C-a") #'doom/leader)
+        (global-set-key (kbd "C-SPC") #'doom/leader)
 )
 
 ;(exwm-input-set-key (kbd "s-r") #'exwm-reset)
