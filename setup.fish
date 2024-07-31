@@ -3,6 +3,7 @@
 ## neovim
 ## emacs
 ## fish
+## tmux
 ## Nerd Font-link from starship(wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/SourceCodePro.zip)
 ## 1. Stow all symlinks
 stow -t ~/ --adopt .
