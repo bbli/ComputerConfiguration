@@ -316,7 +316,10 @@
 #+end_src
 * Configuring ExWM :System:
 ** Exwm-mode-map
-Will need to map most keys to =exwm-input-send-next-key= to override global map hotkeys(i.e C-t is transpose-chars)
+- Will need to map most keys to =exwm-input-send-next-key= to override global map hotkeys(i.e C-t is transpose-chars)
+- =<C-SPC>= usually works b/c no minor mode overrides this
+- =benson/apply-exwm-mapping= runs =map!= after a exwm buffer is loaded. This is b/c even with =(after! exwm)= -> my keymaps were still being overwritten
+  - TODO: add variable to only load it once
 #+begin_src emacs-lisp
 (require 'exwm)
 (require 'exwm-config)
@@ -324,30 +327,38 @@ Will need to map most keys to =exwm-input-send-next-key= to override global map 
         (set (make-local-variable 'evil-motion-state-map) nil)
         (set (make-local-variable 'evil-normal-state-map) nil)
 )
-(map! :map exwm-mode-map
-        "C-a" nil
-        "C-b" 'exwm-input-send-next-key
-        "C-d" 'exwm-input-send-next-key
-        "C-t" 'exwm-input-send-next-key
-        "C-f" 'exwm-input-send-next-key
-        "C-n" 'exwm-input-send-next-key
-        "C-p" 'exwm-input-send-next-key
-        "C-v" 'exwm-input-send-next-key
-        "C-u" 'exwm-input-send-next-key
-        "C-w" 'exwm-input-send-next-key
-        "C-c C-l" #'exwm-layout-toggle-mode-line
-        "C-c C-f" #'exwm-floating-toggle-floating
-        "C-c C-c" #'exwm-input-send-next-key
-        "C-c C-q" #'exwm-input-send-next-key
-        "C-g" #'doom/escape
-        ;; The following keymaps need to be duplicated for non-EXWM buffers
-        ;; TODO should I still keep the C-e key translation?
-        "C-a" 'doom/leader
-        "C-SPC" 'doom/leader
+(defun benson/send-C-f ()
+        (interactive)
+        (exwm-input-send-simulation-key "C-f")
 )
+(defun benson/apply-exwm-mapping ()
+        (map! :map exwm-mode-map
+                "C-q" nil
+                "C-b" 'exwm-input-send-next-key
+                "C-d" 'exwm-input-send-next-key
+                "C-t" 'exwm-input-send-next-key
+                "C-f" 'exwm-input-send-next-key
+                "C-n" 'exwm-input-send-next-key
+                "C-p" 'exwm-input-send-next-key
+                "C-v" 'exwm-input-send-next-ke
+                "C-u" 'exwm-input-send-next-key
+                "C-w" 'exwm-input-send-next-key
+                ;"C-c C-l" #'exwm-layout-toggle-mode-line
+                ;"C-c C-f" #'exwm-floating-toggle-floating
+                ;"C-c C-c" #'exwm-input-send-next-key
+                ;"C-c C-q" #'exwm-input-send-next-key
+                "C-g" #'doom/escape
+                ;; The following keymaps need to be duplicated for non-EXWM buffers
+                ;; TODO should I still keep the C-e key translation?
+                "C-a" 'doom/leader
+                "C-SPC" 'doom/leader
+        )
+)
+
 (global-set-key (kbd "C-a") #'doom/leader)
 (global-set-key (kbd "C-SPC") #'doom/leader)
 (add-hook 'exwm-mode-hook 'benson/disable-keymaps-for-exwm)
+(add-hook 'exwm-mode-hook 'benson/apply-exwm-mapping);Need to do this as late as possible. (after! exwm ....) still didn't work
 
 ;(exwm-input-set-key (kbd "s-r") #'exwm-reset)
 ;(exwm-input-set-key (kbd "s-s") #'exwm-workspace-switch)
