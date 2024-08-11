@@ -353,12 +353,21 @@
 (map! :map doom-leader-map "SPC" 'benson/launcher)
 (global-set-key (kbd "M-SPC") #'benson/launcher)
 
+; BREAK DOWN: see if buffer name exists
 (defun benson/jumpapp-kitty ()
   (interactive)
-  (start-process-shell-command "kitty" nil "jumpapp kitty"))
+  (if (get-buffer "kitty")
+        (switch-to-buffer (get-buffer "kitty"))
+        (start-process-shell-command "kitty" nil "kitty")
+  )
+)
 (defun benson/jumpapp-chrome ()
   (interactive)
-  (start-process-shell-command "chrome" nil "jumpapp chrome"))
+  (if (get-buffer "Google-chrome")
+        (switch-to-buffer (get-buffer "Google-chrome"))
+        (start-process-shell-command "Google-chrome" nil "chrome")
+  )
+)
 (defun benson/jumpapp-obsidian ()
   (interactive)
   (start-process-shell-command "obsidian" nil "jumpapp Obsidian"))
@@ -367,10 +376,11 @@
   (switch-to-buffer "Write_Ahead_Logging.org"))
 (after! exwm
         (global-set-key (kbd "C-M-k") #'benson/jumpapp-kitty)
+        (global-set-key (kbd "C-M-j") #'benson/jumpapp-kitty)
         (global-set-key (kbd "C-M-c") #'benson/jumpapp-chrome)
         (global-set-key (kbd "C-M-o") #'benson/jumpapp-obsidian)
-        (global-set-key (kbd "C-M-w") #'benson/jumpapp-write-ahead)
 )
+(map! :leader "o w" #'benson/jumpapp-write-ahead)
 
 (exwm-config-example)
 
