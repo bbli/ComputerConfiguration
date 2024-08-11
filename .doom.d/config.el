@@ -279,16 +279,18 @@
 )
 (defun benson/apply-exwm-mapping ()
         (map! :map exwm-mode-map
-                "C-q" nil
-                "C-b" 'exwm-input-send-next-key
-                "C-d" 'exwm-input-send-next-key
-                "C-t" 'exwm-input-send-next-key
-                "C-f" 'exwm-input-send-next-key
-                "C-n" 'exwm-input-send-next-key
-                "C-p" 'exwm-input-send-next-key
-                "C-v" 'exwm-input-send-next-ke
+                ;"C-q" nil
+                ;"C-b" 'exwm-input-send-next-key
+                ;"C-d" 'exwm-input-send-next-key
+                ;"C-t" 'exwm-input-send-next-key
+                ;"C-f" 'exwm-input-send-next-key
+                ;"C-n" 'exwm-input-send-next-key
+                ;"C-p" 'exwm-input-send-next-key
+                ;"C-v" 'exwm-input-send-next-key
+                ; Simulation key version of this didn't work
                 "C-u" 'exwm-input-send-next-key
-                "C-w" 'exwm-input-send-next-key
+                ;"C-w" 'exwm-input-send-next-key
+
                 ;"C-c C-l" #'exwm-layout-toggle-mode-line
                 ;"C-c C-f" #'exwm-floating-toggle-floating
                 ;"C-c C-c" #'exwm-input-send-next-key
@@ -302,6 +304,7 @@
 )
 
 (global-set-key (kbd "C-a") #'doom/leader)
+(exwm-input-set-key [?\C-a] #'doom/leader)
 (global-set-key (kbd "C-SPC") #'doom/leader)
 (add-hook 'exwm-mode-hook 'benson/disable-keymaps-for-exwm)
 (add-hook 'exwm-mode-hook 'benson/apply-exwm-mapping);Need to do this as late as possible. (after! exwm ....) still didn't work
@@ -313,9 +316,6 @@
 ;(exwm-input-set-key (kbd "s-k") #'windmove-up)
 ;(exwm-input-set-key (kbd "s-l") #'windmove-right)
 
-;(setq exwm-input-simulation-keys
-;      '(((kbd "C-SPC o c") . [?\C-p])
-;))
 ;(require 'exwm-randr)
 ;(setq exwm-randr-workspace-output-plist '(0 "HDMI-1"))
 ;(add-hook 'exwm-randr-screen-change-hook (lambda () (start-process-shell-cmd "xrandr" nil "xrandr --output HDMI-1 --mode 1920x1080")))
@@ -328,6 +328,19 @@
       "C-w" 'evil-window-map
       "x" 'execute-extended-command
 )
+
+(exwm-input-set-simulation-key [?\C-f] [?\C-f])
+(exwm-input-set-simulation-key [?\C-b] [?\C-b])
+(exwm-input-set-simulation-key [?\C-d] [?\C-d])
+(exwm-input-set-simulation-key [?\C-t] [?\C-t])
+(exwm-input-set-simulation-key [?\C-n] [?\C-n])
+(exwm-input-set-simulation-key [?\C-p] [?\C-p])
+(exwm-input-set-simulation-key [?\C-v] [?\C-v])
+(exwm-input-set-simulation-key [?\C-e] [?\C-c])
+(exwm-input-set-simulation-key [?\C-u] [?\C-u])
+(exwm-input-set-simulation-key [?\C-w] [?\C-w])
+; Emacs doesn't bind to this, so should be safe
+;(exwm-input-set-simulation-key [?\C-q] [?\C-q])
 
 (add-to-list 'exwm-manage-configurations
              '((string-match-p launcher-name exwm-class-name) floating t
