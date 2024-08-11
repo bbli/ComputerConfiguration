@@ -390,10 +390,12 @@
 #+end_src
 
 #+RESULTS:
-** Adding simulation keys
+** Adding simulation keys(to override Emacs default editing keymaps)
 #+begin_src emacs-lisp
 (exwm-input-set-simulation-key [?\C-f] [?\C-f])
 (exwm-input-set-simulation-key [?\C-b] [?\C-b])
+(exwm-input-set-simulation-key [?\C-j] [?\C-j])
+(exwm-input-set-simulation-key [?\C-k] [?\C-k])
 (exwm-input-set-simulation-key [?\C-d] [?\C-d])
 (exwm-input-set-simulation-key [?\C-t] [?\C-t])
 (exwm-input-set-simulation-key [?\C-n] [?\C-n])
@@ -425,15 +427,15 @@
 #+RESULTS:
 : benson/krunner
 
-** TODO Configuring JumpApp Hotkeys
+** Configuring JumpApp Hotkeys
 #+begin_src emacs-lisp
 ; BREAK DOWN: see if buffer name exists
 (defun benson/jumpapp-kitty ()
-  (interactive)
-  (if (get-buffer "kitty")
+    (interactive)
+    (if (get-buffer "kitty")
         (switch-to-buffer (get-buffer "kitty"))
         (start-process-shell-command "kitty" nil "kitty")
-  )
+    )
 )
 (defun benson/jumpapp-chrome ()
   (interactive)
@@ -444,16 +446,22 @@
 )
 (defun benson/jumpapp-obsidian ()
   (interactive)
-  (start-process-shell-command "obsidian" nil "jumpapp Obsidian"))
+  (if (get-buffer "obsidian")
+        (switch-to-buffer (get-buffer "obsidian"))
+        (start-process-shell-command "obsidian" nil "Obsidian")
+  )
+)
 (defun benson/jumpapp-write-ahead ()
   (interactive)
   (switch-to-buffer "Write_Ahead_Logging.org"))
-(after! exwm
-        (global-set-key (kbd "C-M-k") #'benson/jumpapp-kitty)
-        (global-set-key (kbd "C-M-j") #'benson/jumpapp-kitty)
-        (global-set-key (kbd "C-M-c") #'benson/jumpapp-chrome)
-        (global-set-key (kbd "C-M-o") #'benson/jumpapp-obsidian)
-)
+;(after! exwm
+;        (global-set-key (kbd "C-M-k") #'benson/jumpapp-kitty)
+;        (global-set-key (kbd "C-M-c") #'benson/jumpapp-chrome)
+;        (global-set-key (kbd "C-M-o") #'benson/jumpapp-obsidian)
+;)
+(exwm-input-set-key (kbd "C-M-j") #'benson/jumpapp-kitty)
+(exwm-input-set-key (kbd "C-M-c") #'benson/jumpapp-chrome)
+(exwm-input-set-key (kbd "C-M-o") #'benson/jumpapp-obsidian)
 (map! :leader "o w" #'benson/jumpapp-write-ahead)
 #+end_src
 
