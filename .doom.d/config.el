@@ -419,3 +419,7 @@
       :desc "start org timer" "C-c s" 'benson-clock-start
       :desc "end org timer" "C-c d" 'benson-clock-stop
 )
+
+(map! :leader :prefix "o" "h" :desc "open recent files" 'consult-recent-file)
+
+(add-hook 'after-init-hook (lambda () (find-file (concat org-directory "/Write_Ahead_Logging.org"))))

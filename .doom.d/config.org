@@ -514,3 +514,17 @@
 )
 
 #+end_src
+* TODO Open Keymaps
+#+begin_src emacs-lisp
+(map! :leader :prefix "o" "h" :desc "open recent files" 'consult-recent-file)
+#+end_src
+
+#+RESULTS:
+: consult-recent-file
+* TODO Open Write Ahead Log on Startup
+#+begin_src emacs-lisp
+(add-hook 'after-init-hook (lambda () (find-file (concat org-directory "/Write_Ahead_Logging.org"))))
+#+end_src
+
+#+RESULTS:
+| doom-init-fonts-h | doom-init-theme-h | (lambda nil (find-file (concat org-directory /Write_Ahead_Logging.org))) | org-persist-load-all | x-wm-set-size-hint | doom-init-local-var-hooks-h | doom--reset-inhibited-vars-h | tramp-register-archive-autoload-file-name-handler | magit-maybe-define-global-key-bindings |
