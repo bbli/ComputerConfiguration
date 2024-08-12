@@ -1,4 +1,12 @@
 # ************** FUNCTIONS ************** %%%1
+function explain
+    gh copilot explain $argv[1]
+end
+
+function tr
+    triage build $argv[1] artifacts --fetch
+end
+
 function chk -d "Checkout local git branch, sorted by recent"
   git branch -vv | read -z branches; 
   set branch (echo "$branches" | fzf +m) ;
@@ -131,7 +139,7 @@ function org
 end
 
 function proj
-    cd (git rev-parse --git-dir)/..
+    cd (git rev-parse --show-top-level)
 end
 
 function snip

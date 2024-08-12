@@ -521,7 +521,7 @@
 
 #+RESULTS:
 : consult-recent-file
-* TODO Open Write Ahead Log on Startup
+* Open Write Ahead Log on Startup
 #+begin_src emacs-lisp
 (add-hook 'after-init-hook (lambda () (find-file (concat org-directory "/Write_Ahead_Logging.org"))))
 #+end_src
