@@ -1,2 +1,4 @@
 setup.sh
+setup.fish
+stow_ignore
 .git
