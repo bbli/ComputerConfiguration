@@ -516,7 +516,7 @@
 #+end_src
 * TODO Open Keymaps
 #+begin_src emacs-lisp
-(map! :leader :prefix "o" "h" :desc "open recent files" 'consult-recent-file)
+(map! :leader :prefix "o" "h" 'consult-recent-file)
 #+end_src
 
 #+RESULTS:
