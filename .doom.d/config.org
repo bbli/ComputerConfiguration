@@ -528,3 +528,17 @@
 
 #+RESULTS:
 | doom-init-fonts-h | doom-init-theme-h | (lambda nil (find-file (concat org-directory /Write_Ahead_Logging.org))) | org-persist-load-all | x-wm-set-size-hint | doom-init-local-var-hooks-h | doom--reset-inhibited-vars-h | tramp-register-archive-autoload-file-name-handler | magit-maybe-define-global-key-bindings |
+* COMMENT Org Babel Other Config Files
+- Auto tangle to other files not working atm
+- also LazyVim is split into modules anyways
+  #+begin_src emacs-lisp
+;; Automatically tangle our Emacs.org config file when we save it
+(defun efs/org-babel-tangle-config ()
+  (when (string-equal (buffer-file-name)
+                      (expand-file-name "~/Documents/Tangle.org"))
+    ;; Dynamic scoping to the rescue
+    (let ((org-confirm-babel-evaluate nil))
+      (org-babel-tangle))))
+
+(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
+  #+end_src
