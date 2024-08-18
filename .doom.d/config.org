@@ -352,13 +352,13 @@
                 "C-g" #'doom/escape
                 ;; The following keymaps need to be duplicated for non-EXWM buffers
                 ;; TODO should I still keep the C-e key translation?
-                "C-a" 'doom/leader
+                "C-a" 'evil-window-map
                 "C-SPC" 'doom/leader
         )
 )
 
-(global-set-key (kbd "C-a") #'doom/leader)
-(exwm-input-set-key [?\C-a] #'doom/leader)
+(global-set-key (kbd "C-a") 'evil-window-map)
+(exwm-input-set-key [?\C-a] 'evil-window-map)
 (global-set-key (kbd "C-SPC") #'doom/leader)
 (add-hook 'exwm-mode-hook 'benson/disable-keymaps-for-exwm)
 (add-hook 'exwm-mode-hook 'benson/apply-exwm-mapping);Need to do this as late as possible. (after! exwm ....) still didn't work
