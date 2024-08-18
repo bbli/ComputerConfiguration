@@ -29,3 +29,11 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ## 5. Install fzf
 git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
 ~/.fzf/install
+
+## 6. Install LazyVim
+rm -rf ~/.config/nvim/.git
+rm -rf ~/.local/share/nvim # seems to be where plugins are installed
+rm -rf ~/.local/state/nvim
+rm -rf ~/.cache/nvim
+git clone https://github.com/LazyVim/starter ~/.config/nvim
+rm -rf ~/.config/nvim/.git
