@@ -1,14 +1,14 @@
 require'nvim-treesitter.configs'.setup{
-    auto_install = true,
+    auto_install = false,
 
-    --highlight = {
-    --    enable = true,
-    --    --custom_captures = {
-    --        -- Highlight the @foo.bar capture group with the "Identifier" highlight group.
-    --        -- ["keyword"] = "TSString", -- for testing if tresitter works
-    --        --},
-    --    additional_vim_regex_highlighting = true,
-    --},
+    highlight = {
+        enable = true,
+        --custom_captures = {
+            -- Highlight the @foo.bar capture group with the "Identifier" highlight group.
+            -- ["keyword"] = "TSString", -- for testing if tresitter works
+            --},
+        additional_vim_regex_highlighting = true,
+    },
     --incremental_selection = {
     --enable = true,
     --keymaps = {
@@ -81,13 +81,10 @@ require'nvim-treesitter.configs'.setup{
             enable = true
         },
     },
-}
--- vim.cmd[[
--- autocmd BufEnter * TSBufEnable highlight
--- ]]
-
-require'nvim-treesitter.configs'.setup{
     matchup = {
         enable = true,
     },
 }
+vim.cmd[[
+autocmd BufEnter * TSBufEnable highlight
+]]

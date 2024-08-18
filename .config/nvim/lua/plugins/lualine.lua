@@ -39,6 +39,14 @@ local function eventIgnore()
     end
 end
 
+local function showGitBase()
+    if base then
+        return "index"
+    else
+        return "foundation"
+    end
+end
+
 require('lualine').setup {
     options = {
         theme = 'modus-vivendi',
@@ -50,8 +58,8 @@ require('lualine').setup {
             { 'mode', separator = { left = '' }, right_padding = 2 },
         },
         lualine_b = { eventIgnore, 'branch'},
-        -- lualine_c = { {require('grapple').key, cond=require("grapple").exists}},
-        lualine_x = {},
+        lualine_c = { { require("grapple").statusline, cond = require("grapple").exists } },
+        lualine_x = {showGitBase},
         lualine_y = { 'filetype', 'progress' },
         lualine_z = {
             { 'location', separator = { right = '' }, left_padding = 2 },

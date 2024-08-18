@@ -23,18 +23,18 @@ luasnip.config.set_config{
 
 
 vim.cmd[[
-inoremap <silent> <C-n> <cmd>lua require'luasnip'.jump(1)<Cr>
+inoremap <silent> <C-l> <cmd>lua require'luasnip'.jump(1)<Cr>
 ]]
 vim.cmd[[
-inoremap <silent> <C-p> <cmd>lua require'luasnip'.jump(-1)<Cr>
+inoremap <silent> <C-h> <cmd>lua require'luasnip'.jump(-1)<Cr>
 ]]
 
 
 vim.cmd[[
-snoremap <silent> <C-n> <cmd>lua require('luasnip').jump(1)<Cr>
+snoremap <silent> <C-l> <cmd>lua require('luasnip').jump(1)<Cr>
 ]]
 vim.cmd[[
-snoremap <silent> <C-p> <cmd>lua require('luasnip').jump(-1)<Cr>
+snoremap <silent> <C-h> <cmd>lua require('luasnip').jump(-1)<Cr>
 ]]
 
 
@@ -101,14 +101,39 @@ ls.add_snippets(nil, {
     },
     raku = {
     },
+    -- python = {
+    --     -- Choice node for debugging
+    --     snip("dd",
+    --         -- NOTE: [[]] so we can print actual quoted string in snippet
+    --         fmt([[testbed.cluster.logger.info("BENSON_DEBUG: {})]],
+    --             -- {i(1),i(2),i(0)},
+    --             {c(1,{fmt([[{}]],{i(1,"%%")}),fmt([[{}=%%".format({})]],{i(1,"var"),i(2,"default")})})
+    --             }
+    --         )
+    --     ),
+    -- },
     cpp = {
         -- Choice node for debugging
         snip("dd",
-            fmt([[std::cout << "BENSON_DEBUG:: " << __FILE__ << ":" << __LINE__ << "   " << {} << std::endl;]]
-                ,{c(1,
-                    {fmt([["{}"]],{i(1,"log string")}) -- NOTE: [[]] so we can print actual quoted string in snippet
-                    ,fmt([["{}=" << {} ]],{i(1,"var"),rep(1)})}
-                )}
+            -- NOTE: [[]] so we can print actual quoted string in snippet
+            -- {} are nodes
+            fmt([[PS_DIAG_INFO(d_,"BENSON_DEBUG:: %%:%%   {}",__FILE__, __LINE__, {});{}]],
+                -- {i(1),i(2),i(0)},
+                {c(1,{fmt([[{}]],{i(1,"")}),fmt([[{}=%%]],{i(1,"var")})})
+                ,i(2,"default")
+                ,i(0)
+                }
+            )
+        ),
+
+        snip("dp",
+            -- NOTE: [[]] so we can print actual quoted string in snippet
+            fmt([[PS_DIAG_INFO(d_,"BENSON_DEBUG_PATH:: %%:%%   {}",__FILE__, __LINE__, {});{}]],
+                -- {i(1),i(2),i(0)},
+                {c(1,{fmt([[{}]],{i(1,"%%")}),fmt([[{}=%%]],{i(1,"var")})})
+                ,i(2,"default")
+                ,i(0)
+                }
             )
         ),
     }

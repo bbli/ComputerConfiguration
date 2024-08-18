@@ -1,5 +1,5 @@
-set runtimepath^=~/.vim runtimepath+=~/.vim/after
 let &packpath = &runtimepath
+set runtimepath^=~/.vim runtimepath+=~/.vim/after
 source ~/.vimrc
 " Only available in neovim
 set inccommand=nosplit
@@ -25,11 +25,13 @@ use 'nvim-lua/plenary.nvim'
 -- ************  Workflows  ************ %%%2
 use { 'michaelb/sniprun', run = 'bash ./install.sh'}
 use 'metakirby5/codi.vim'
-use {'ldelossa/litee.nvim'}
-use {'ldelossa/litee-calltree.nvim',
-    config = function() require("plugins.litee") end,
-    requires = {{'ldelossa/litee.nvim'}}
-    }
+-- These plugins don't really work as intended
+--use {'ldelossa/litee.nvim'}
+---- use {'ldelossa/litee-symboltree.nvim'}
+--use {'ldelossa/litee-calltree.nvim',
+--    config = function() require("plugins.litee") end,
+--    requires = {{'ldelossa/litee.nvim'}}
+--    }
 use {'simrat39/symbols-outline.nvim',
     config = function() require("plugins.symbols-outline") end,
 }
@@ -41,10 +43,10 @@ use {'nvim-telescope/telescope.nvim',
     requires = {{'nvim-lua/popup.nvim'}, {'nvim-lua/plenary.nvim'}}
   }
 -- need nvim 0.8
--- use {
-    -- "cbochs/grapple.nvim",
-    -- config = function() require("plugins.grapple") end
--- }
+use {
+    "cbochs/grapple.nvim",
+    config = function() require("plugins.grapple") end
+}
 --use {
 --  "princejoogie/dir-telescope.nvim",
 --  -- telescope.nvim is a required dependency
@@ -84,6 +86,7 @@ use {'lewis6991/gitsigns.nvim',
     tag = "v0.5",
     config = function() require('plugins.gitsigns') end,
 }
+use 'f-person/git-blame.nvim'
 -- ************  Text Manipulation/Movement  ************ %%%2
 --use {"ggandor/lightspeed.nvim", 
 --    config = function() require("plugins.lightspeed") end,
@@ -100,22 +103,26 @@ use {"L3MON4D3/LuaSnip",
 -- ************  LSP STUFF  ************ %%%2
 -- TODO: check that mason-lspconfig works on mac, where language servers made not be installed?
 use {"williamboman/mason.nvim",
-    config = function() require("plugins.mason") end,
 }
 use {"williamboman/mason-lspconfig.nvim",
-    config = function() require("plugins.mason-lspconfig") end,
-    after = 'mason.nvim',
+    requires = {"williamboman/mason.nvim"},
 }
 use {'neovim/nvim-lspconfig',
-    config = function() require("plugins.nvim-lspconfig") end,
+    requires = {"williamboman/mason.nvim"},
 }
+use {'jose-elias-alvarez/null-ls.nvim',
+    config = function () require("plugins.null-ls") end,
+    requires = { "nvim-lua/plenary.nvim" },
+}
+-- use {'github/copilot.vim'}
 
-use({
-  "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
-  config = function()
-    require("lsp_lines").setup()
-  end,
-})
+
+--use({
+--  "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
+--  config = function()
+--    require("lsp_lines").setup()
+--  end,
+--})
 -- use 'ldelossa/calltree.nvim'
 use 'andersevenrud/cmp-tmux'
 use'hrsh7th/cmp-nvim-lsp'
@@ -131,6 +138,21 @@ use {'hrsh7th/nvim-cmp',
 }
 use {'quangnguyen30192/cmp-nvim-tags', requires = 'hrsh7th/nvim-cmp' }
   --use {'tzachar/cmp-fuzzy-buffer', requires = {'hrsh7th/nvim-cmp', 'tzachar/fuzzy.nvim'}}
+-- copilot LSP interferes with regular LSP
+use {
+    "zbirenbaum/copilot.lua" ,
+    config = function()
+        require("copilot").setup()
+    end
+}
+use {
+    "CopilotC-Nvim/CopilotChat.nvim",
+    branch = "canary",
+    requires = { "zbirenbaum/copilot.lua", "nvim-lua/plenary.nvim" },
+    config = function()
+         require("plugins.copilot_chat")
+    end
+}
 
 use {'onsails/lspkind-nvim'}
 --use 'glepnir/lspsaga.nvim'
@@ -146,21 +168,26 @@ use {'bbli/nvim-code-action-menu',
 --} --I prefer snippet solution better as it doesn't clutter the above line -> but snippet doesn't always work
 -- tagbar/vista is better b/c it shows the current hovered function
 --use 'simrat39/symbols-outline.nvim'
--- ************  TREE SITTER  ************ %%%2
-use {
-    'nvim-treesitter/nvim-treesitter',
-    config = function() require('plugins.nvim-treesitter') end,
-    run = ':TSUpdate'
-    }
-use 'nvim-treesitter/nvim-treesitter-textobjects'
---use 'haringsrob/nvim_context_vt'
--- use 'RRethy/nvim-treesitter-textsubjects'
---use 'mizlan/iswap.nvim'
---use 'JoosepAlviste/nvim-ts-context-commentstring'
+---- ************  TREE SITTER  ************ %%%2
+use { 'nvim-treesitter/nvim-treesitter',
+  config = function() require('plugins.nvim-treesitter') end,
+  run = ':TSUpdate'
+}
+
+use {'nvim-treesitter/nvim-treesitter-textobjects',
+  requires = {'nvim-treesitter/nvim-treesitter'},
+}
+----use 'haringsrob/nvim_context_vt'
+---- use 'RRethy/nvim-treesitter-textsubjects'
+----use 'mizlan/iswap.nvim'
+----use 'JoosepAlviste/nvim-ts-context-commentstring'
 use {'romgrk/nvim-treesitter-context',
+    requires = {'nvim-treesitter/nvim-treesitter'},
     config = function() require('plugins.nvim-treesitter-context') end,
 }
-require("benson-lsp")
+use {'andymass/vim-matchup',
+    requires = {'nvim-treesitter/nvim-treesitter'},
+}
   -- ************  DEBUGGER  ************ %%%2
   --use 'mfussenegger/nvim-dap'
   --use 'mfussenegger/nvim-dap-python' --Actualy, supposedly vim-ultest will cover this?
@@ -190,7 +217,12 @@ use {'windwp/nvim-autopairs',
 }
 use {
   "folke/zen-mode.nvim",
-  config = function() require("zen-mode").setup { } end
+  config = function() require("zen-mode").setup {
+      kitty = {
+          enabled = false,
+          font = "+4", -- font size increment
+        },
+    } end
 }
 use {"lukas-reineke/indent-blankline.nvim",
     config = function() require("plugins.blankline") end
@@ -230,6 +262,7 @@ use {'j-hui/fidget.nvim',
 --} 
   end
 )
+require("benson-lsp")
 EOF
 " ************  Vimscript Functions  ************%%%1
 " No point since this is default behavior anyways
@@ -245,7 +278,12 @@ EOF
 "   endif
 "   call insert(v:oldfiles, a:file, 0)
 " endfunction
-" autocmd BufEnter *  lua require("benson").autoZenMode()
+function! AutoZenMode()
+    if getcmdwintype() == ''
+        lua require("benson").autoZenMode()
+    endif
+endfunction
+" autocmd BufEnter *  call AutoZenMode()
 nnoremap <leader>tz :ZenMode<CR>
 " ************  Misc Neovim Specific Things  ************%%%1
 
@@ -314,16 +352,17 @@ nnoremap <leader>js <cmd>lua require("benson").smartJumpSplit()<CR>
 nnoremap <leader>jD <cmd>lua vim.lsp.buf.declaration()<CR>
 nnoremap <leader>jr <cmd>lua vim.lsp.buf.references()<CR>
 " nnoremap <leader>jr <cmd>lua vim.lsp.buf.incoming_calls()<CR>
-" nnoremap <leader>ji <cmd>lua vim.lsp.buf.implementation()<CR>
-nnoremap <leader>je <cmd>lua vim.diagnostic.goto_next({float=false})<CR>
-nnoremap <leader>jE <cmd>lua vim.diagnostic.goto_prev({float=false})<CR>
-nnoremap <leader>ca <cmd>lua vim.lsp.buf.code_action()<CR>
+nnoremap <leader>ji <cmd>lua vim.lsp.buf.implementation()<CR>
+nnoremap <leader>je <cmd>lua vim.diagnostic.goto_next({float=true})<CR>
+nnoremap <leader>jE <cmd>lua vim.diagnostic.goto_prev({float=true})<CR>
 
 " nnoremap <leader>fr <cmd>lua vim.lsp.buf.rename()<CR>
 
 nnoremap K <cmd>lua vim.lsp.buf.hover()<CR>
 nnoremap <leader>jo <cmd>lua vim.lsp.buf.outgoing_calls()<CR>
-nnoremap <leader>ji <cmd>lua vim.lsp.buf.incoming_calls()<CR> "though references is better -> will also show from test files too
+"though references is better -> will also show from test files too
+nnoremap <leader>ji <cmd>lua vim.lsp.buf.incoming_calls()<CR>
+nnoremap <leader>jh <cmd>CclsDerivedHierarchy<CR>
 " nnoremap K <cmd>lua require('lspsaga.hover').render_hover_doc()<CR>
 " nnoremap <leader>k <cmd>lua vim.lsp.buf.signature_help()<CR> "Don't really understand this
 " nnoremap <silent> ls <cmd>lua require('lspsaga.signaturehelp').signature_help()<CR>
@@ -392,4 +431,9 @@ nnoremap <leader>ok <cmd>Telescope keymaps<cr>
 "Use after ripgrep for faster narrowing!
 " nnoremap <leader>vv <cmd>Telescope quickfix<cr>
 " nnoremap <leader>vl <cmd>Telescope loclist<cr>
+
+nnoremap <leader>jd <cmd>Telescope lsp_definitions<cr>
+nnoremap <leader>ji <cmd>Telescope lsp_implementations<cr>
+nnoremap <leader>CA <cmd>lua vim.lsp.buf.code_action()<CR>
+
 " imap <silent> zz <cmd>lua require'luasnip'expand()<Cr>

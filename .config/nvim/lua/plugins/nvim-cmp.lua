@@ -24,6 +24,7 @@ cmp.setup({
         ['<C-k>'] = cmp.mapping(cmp.mapping.select_prev_item(),{'i','c','s'}),
     },
     sources = cmp.config.sources({
+        { name = "copilot", group_index = 2 },
         { name = 'luasnip', keyword_length = 2},
         { name = 'nvim_lsp_signature_help'},
         { name = 'nvim_lsp', keyword_length = 2, max_item_count = 5 },
@@ -48,6 +49,7 @@ cmp.setup({
                 tags = "[Tags]",
                 tmux = "[Tmux]",
                 luasnip = "[LuaSnip]",
+                copilot = "[CoPilot]",
                 --nvim_lua = "[Lua]",
                 --latex_symbols = "[Latex]",
             })

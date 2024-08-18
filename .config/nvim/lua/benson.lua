@@ -17,12 +17,12 @@ end
 
 function M.smartJumpSplit()
     if (GetWindowCountOfCurrentTab() > 1) then
-        print "make a horizontal split"
+        -- print "make a horizontal split"
         api.nvim_command("split")
         vim.cmd [[wincmd p]]
         lsp.buf.definition()
     else
-        print "make a vertical split"
+        -- print "make a vertical split"
         api.nvim_command("vs")
         lsp.buf.definition()
     end

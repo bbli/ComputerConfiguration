@@ -7,6 +7,7 @@ require('gitsigns').setup {
         changedelete = { hl = 'GitSignsChange', text = '│', numhl='GitSignsChangeNr', linehl='GitSignsChangeLn' },
         untracked    = { hl = 'GitSignsAdd'   , text = '+', numhl='GitSignsAddNr'   , linehl='GitSignsAddLn'    },
     },
+    -- base = "area/foundation",
     signcolumn = true,  -- Toggle with `:Gitsigns toggle_signs`
     numhl      = true, -- Toggle with `:Gitsigns toggle_numhl`
     linehl     = false, -- Toggle with `:Gitsigns toggle_linehl`
@@ -57,4 +58,17 @@ vim.keymap.set('n','<leader>gs',
 )
 vim.keymap.set('n','<leader>gu',
     "<cmd>Gitsigns reset_hunk<CR>"
+)
+base = true
+local function toggleGitBase()
+    if base then
+        base = false
+        require('gitsigns').change_base('area/foundation')
+    else
+        base = true
+        require('gitsigns').change_base()
+    end
+end
+vim.keymap.set('n','<leader>tb',
+    toggleGitBase    
 )
