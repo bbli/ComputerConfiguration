@@ -1,6 +1,7 @@
 #!/usr/bin/env fish
 ## 0. Manually install these first
 ## neovim
+## kitty
 ## emacs
 ## fish
 ## tmux
