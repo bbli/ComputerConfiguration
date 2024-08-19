@@ -75,17 +75,13 @@
 (if (eq system-type 'darwin)
         ; Mac specific things
         (progn
-                (setq code-directory "~/Documents/Code")
                 (setq org-directory "~/Documents/Org")
-                (setq dotfiles-directory "~/Dropbox/Code/dotfiles")
                 (setq launcher-name "spotlight")
                 ; (add-to-list process-environment "LD_LIBRARY_PATH=/usr/local/lib")
         )
         ; Linux specific things
         (progn
-                (setq code-directory "~/Dropbox/Code/")
                 (setq org-directory "~/Dropbox/Org")
-                (setq dotfiles-directory "~/Dropbox/Code/dotfiles")
                 (setq launcher-name "krunner")
         )
 )
@@ -159,7 +155,7 @@
         )
 )
 
-(setq projectile-project-search-path `(code-directory org-directory))
+(setq projectile-project-search-path `(org-directory))
 
 (defun benson/switch-window ()
   (interactive)
