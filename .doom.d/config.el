@@ -157,20 +157,70 @@
 
 (setq projectile-project-search-path `(org-directory))
 
+(defun benson/switch-to-previous-buffer ()
+        "Switch to the last open buffer of the current window."
+        (interactive)
+        :repeat nil
+        (let ((previous-place (car (window-prev-buffers))))
+                (when previous-place (switch-to-buffer (car previous-place)))))
+(define-prefix-command 'benson/buffer-keymap)
+(map! :map benson/buffer-keymap
+        :desc "switch to alternate file"           "s" #'benson/switch-to-previous-buffer
+        :desc "zen toggle"           "z" #'+zen/toggle
+        :desc "open all buffer" "b" #'consult-buffer
+        :desc "select buffer to open in vertical split" "v" #'consult-buffer-other-window
+        :desc "kill current buffer" "k" #'kill-this-buffer
+        ;; :desc "choose a buffer to delete" "d" #'ido-kill-buffer
+        ;; :desc "cycle outshine mode" "c" #'outshine-cycle-buffer
+)
+(map! :leader
+      "b" nil
+      :desc "buffer keymap" "w" 'benson/buffer-keymap
+)
+
+(map! "M-TAB" 'benson/switch-to-previous-buffer)
+(defun benson/open-current-buffer-in-new-workspace ()
+        (interactive)
+        (let ((buf (current-buffer)))
+                (+workspace/new)
+                (switch-to-buffer buf)
+        )
+)
 (defun benson/switch-window ()
   (interactive)
   (when-let ((mru-window (get-mru-window nil nil 'non-nil)))
     (select-window mru-window)
     )
 )
+(define-prefix-command 'benson/workspace-map)
+(map! :map benson/workspace-map
+      "n" nil
+      :desc "new workspace" "c" #'+workspace/new
+      :desc "tear off current window into new workspace" "o" 'benson/open-current-buffer-in-new-workspace
+      :desc "fuzzy search workspace" "s" #'+workspace/switch-to
+      :desc "delete workspace" "k" #'+workspace/delete
+      :desc "rename workspaces" "r" #'+workspace/rename
+      :desc "next workspace" "n" #'+workspace/switch-right
+      :desc "previous workspace" "p" #'+workspace/switch-left
+      :desc "switch to last workspace" "m" #'+workspace/other
+      :desc "switch to last workspace" ";" #'+workspace/other
+      :desc "display workspaces" "w" #'+workspace/display
+      )
+(map! :leader
+      "w" nil
+      :desc "workspace keymap" "w" 'benson/workspace-map
+)
+(map! :map evil-normal-state-map "C-t" nil)
 (after! ace-window
         (setq aw-keys '(?1 ?2 ?3 ?4 ?5))
 )
 (map! :map evil-window-map
         "o" 'delete-other-windows
+        "b" 'benson/buffer-keymap
         "s" 'ace-window
-        "w" 'evil-window-next
+        "w" 'benson/workspace-map
         "C-w" 'evil-window-next
+        "C-a" 'evil-window-next
         ";" 'benson/switch-window
 )
 
@@ -194,53 +244,6 @@
 (map! :niv "; d" 'kill-this-buffer)
 (map! :niv "; n" 'projectile-next-project-buffer)
 (map! :niv "; N" 'projectile-previous-project-buffer)
-
-(defun benson/switch-to-previous-buffer ()
-        "Switch to the last open buffer of the current window."
-        (interactive)
-        :repeat nil
-        (let ((previous-place (car (window-prev-buffers))))
-                (when previous-place (switch-to-buffer (car previous-place)))))
-(map! :leader
-      "b" nil
-      (:prefix "b"
-        :desc "switch to alternate file"           "s" #'benson/switch-to-previous-buffer
-        :desc "zen toggle"           "z" #'+zen/toggle
-        :desc "open all buffer" "b" #'consult-buffer
-        :desc "select buffer to open in vertical split" "v" #'consult-buffer-other-window
-        :desc "kill current buffer" "k" #'kill-this-buffer
-        ;; :desc "choose a buffer to delete" "d" #'ido-kill-buffer
-        ;; :desc "cycle outshine mode" "c" #'outshine-cycle-buffer
-        )
-)
-(map! "M-TAB" 'benson/switch-to-previous-buffer)
-
-(defun benson/open-current-buffer-in-new-workspace ()
-        (interactive)
-        (let ((buf (current-buffer)))
-                (+workspace/new)
-                (switch-to-buffer buf)
-        )
-)
-(define-prefix-command 'benson/workspace-map)
-(map! :map benson/workspace-map
-      "n" nil
-      :desc "new workspace" "c" #'+workspace/new
-      :desc "tear off current window into new workspace" "o" 'benson/open-current-buffer-in-new-workspace
-      :desc "fuzzy search workspace" "s" #'+workspace/switch-to
-      :desc "delete workspace" "k" #'+workspace/delete
-      :desc "rename workspaces" "r" #'+workspace/rename
-      :desc "next workspace" "n" #'+workspace/switch-right
-      :desc "previous workspace" "p" #'+workspace/switch-left
-      :desc "switch to last workspace" "m" #'+workspace/other
-      :desc "switch to last workspace" ";" #'+workspace/other
-      :desc "display workspaces" "w" #'+workspace/display
-      )
-(map! :leader
-      "w" nil
-      :desc "workspace" "w" 'benson/workspace-map
-)
-(map! :map evil-normal-state-map "C-t" nil)
 
 (map! :leader
       :prefix "g"
