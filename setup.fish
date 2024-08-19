@@ -30,10 +30,13 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
 ~/.fzf/install
 
-## 6. Install LazyVim
+## 6. Clean up for LazyVim
 rm -rf ~/.config/nvim/.git
 rm -rf ~/.local/share/nvim # seems to be where plugins are installed
 rm -rf ~/.local/state/nvim
 rm -rf ~/.cache/nvim
-git clone https://github.com/LazyVim/starter ~/.config/nvim
-rm -rf ~/.config/nvim/.git
+
+## 7. Install Doom Emacs
+rm -rf ~/.emacs.d
+git clone https://github.com/hlissner/doom-emacs ~/.emacs.d
+~/.emacs.d/bin/doom install
