@@ -1,4 +1,7 @@
 # ************** FUNCTIONS ************** %%%1
+function par
+    cd ~/.cache/LogParser
+end
 function explain
     gh copilot explain $argv[1]
 end
@@ -8,9 +11,9 @@ function tr
 end
 
 function chk -d "Checkout local git branch, sorted by recent"
-  git branch -vv | read -z branches; 
-  set branch (echo "$branches" | fzf +m) ;
-  git checkout (echo "$branch" | awk '{print $1}' | sed "s/.* //")
+    git branch -vv | read -z branches
+    set branch (echo "$branches" | fzf +m)
+    git checkout (echo "$branch" | awk '{print $1}' | sed "s/.* //")
 end
 # Assumes you have already created a new tmux window which opens in the same directory as the previous pane
 # Also if no number given -> just chekout as regular worktree [DONE]
@@ -161,7 +164,7 @@ set -U fish_user_paths /opt/homebrew/bin ~/.cargo/bin ~/.fzf/bin ~/.config/emacs
 # ************** SOURCE ************** %%%1
 switch (uname)
     case Linux
-        if [ -f '/opt/miniconda3/etc/fish/conf.d/conda.fish' ];
+        if [ -f '/opt/miniconda3/etc/fish/conf.d/conda.fish' ]
             source /opt/miniconda3/etc/fish/conf.d/conda.fish
         end
     case Darwin
@@ -169,15 +172,17 @@ switch (uname)
 end
 
 # The next line updates PATH for the Google Cloud SDK.
-if [ -f '~/Software/cloud-sdk-stuff/google-cloud-sdk/path.fish.inc' ]; . '~/Software/cloud-sdk-stuff/google-cloud-sdk/path.fish.inc'; end
+if [ -f '~/Software/cloud-sdk-stuff/google-cloud-sdk/path.fish.inc' ]
+    . '~/Software/cloud-sdk-stuff/google-cloud-sdk/path.fish.inc'
+end
 # Make Ctrl-T see hidden files too(since my dotfiles repo will have a lot of hidden files)
 set -gx FZF_CTRL_T_COMMAND "rg --hidden --glob '!.git' -l ''"
 
 # ************** PERL STUFF ************** %%%1
-set -x PERL5LIB ~/perl5/lib/perl5;
-set -x PERL_LOCAL_LIB_ROOT ~/perl5;
-set -x PERL_MB_OPT --install_base\ \"~/perl5\";
-set -x PERL_MM_OPT INSTALL_BASE=~/perl5;
+set -x PERL5LIB ~/perl5/lib/perl5
+set -x PERL_LOCAL_LIB_ROOT ~/perl5
+set -x PERL_MB_OPT --install_base\ \"~/perl5\"
+set -x PERL_MM_OPT INSTALL_BASE=~/perl5
 
 # ************** PLUGIN CONFIGURATION ************** %%%1
 # FOr some reason git_status is being ignored
