@@ -1,4 +1,7 @@
 # ************** FUNCTIONS ************** %%%1
+function cop
+    nvim ~/copy.txt
+end
 function par
     cd ~/.cache/LogParser
 end

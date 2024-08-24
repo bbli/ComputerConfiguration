@@ -189,19 +189,31 @@
         :repeat nil
         (let ((previous-place (car (window-prev-buffers))))
                 (when previous-place (switch-to-buffer (car previous-place)))))
+(defun benson/rename-buffer (new-name)
+        (interactive "sNew buffer name: ")
+        (rename-buffer new-name)
+)
+(defun benson/consult-buffer-horizontal-window ()
+        (interactive)
+        (split-window-below)
+        (evil-window-down 1)
+        (consult-buffer)
+)
 (define-prefix-command 'benson/buffer-keymap)
 (map! :map benson/buffer-keymap
         :desc "switch to alternate file"           "s" #'benson/switch-to-previous-buffer
         :desc "zen toggle"           "z" #'+zen/toggle
         :desc "open all buffer" "b" #'consult-buffer
-        :desc "select buffer to open in vertical split" "v" #'consult-buffer-other-window
+        :desc "fuzzy select buffer + open in vertical split" "v" #'consult-buffer-other-window
+        :desc "horizontal split + fuzzy select buffer" "h" 'benson/consult-buffer-horizontal-window
         :desc "kill current buffer" "k" #'kill-this-buffer
+        :desc "kill current buffer" "r" 'benson/rename-buffer
         ;; :desc "choose a buffer to delete" "d" #'ido-kill-buffer
         ;; :desc "cycle outshine mode" "c" #'outshine-cycle-buffer
 )
 (map! :leader
       "b" nil
-      :desc "buffer keymap" "w" 'benson/buffer-keymap
+      :desc "buffer keymap" "b" 'benson/buffer-keymap
 )
 
 (map! "M-TAB" 'benson/switch-to-previous-buffer)
@@ -353,6 +365,7 @@
 )
 
 (global-set-key (kbd "C-a") 'evil-window-map)
+(define-key exwm-mode-map (kbd "C-a") 'evil-window-map)
 (exwm-input-set-key [?\C-a] 'evil-window-map)
 (global-set-key (kbd "C-SPC") #'doom/leader)
 (add-hook 'exwm-mode-hook 'benson/disable-keymaps-for-exwm)
@@ -443,8 +456,8 @@
 )
 (defun benson/jumpapp-obsidian ()
   (interactive)
-  (if (get-buffer "obsidian")
-        (switch-to-buffer (get-buffer "obsidian"))
+  (if (get-buffer "Life")
+        (switch-to-buffer (get-buffer "Life"))
         (start-process-shell-command "obsidian" nil "Obsidian")
   )
 )
