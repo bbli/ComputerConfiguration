@@ -144,7 +144,6 @@
                 :desc "previous visible heading" "C-c C-p" #'outline-previous-visible-heading
                 :desc "go up a heading" "C-c C-u" #'outline-up-heading
                 :desc "toggle narrow of subtree" "C-c n" #'org-toggle-narrow-to-subtree
-                :desc "end org timer" "C-c c" 'org-toggle-comment
                 ;; :desc "hide source blocks of current subtree" "C-c h" #'benson/org-hide-block-subtree
                 ;; :desc "hide source blocks of current subtree" "C-c c"
                 ;; #'flyspell-correct-at-point
@@ -417,6 +416,17 @@
 (map! :n "P" 'ssh-and-copy-file)
 
 (add-hook 'org-src-mode-hook #'rainbow-delimiters-mode)
+
+(defun benson-clock-start ()
+    (interactive)
+    (org-timer-set-timer 30)
+    (org-timer-start)
+    (org-clock-in)
+)
+(map! :map org-mode-map
+      :desc "start org timer" "C-c s" 'org-clock-in
+      :desc "start org timer" "C-c d" 'org-clock-out
+)
 
 (map! :leader :prefix "o" "h" 'consult-recent-file)
 

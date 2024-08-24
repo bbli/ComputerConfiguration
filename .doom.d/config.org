@@ -165,7 +165,6 @@
                 :desc "previous visible heading" "C-c C-p" #'outline-previous-visible-heading
                 :desc "go up a heading" "C-c C-u" #'outline-up-heading
                 :desc "toggle narrow of subtree" "C-c n" #'org-toggle-narrow-to-subtree
-                :desc "end org timer" "C-c c" 'org-toggle-comment
                 ;; :desc "hide source blocks of current subtree" "C-c h" #'benson/org-hide-block-subtree
                 ;; :desc "hide source blocks of current subtree" "C-c c"
                 ;; #'flyspell-correct-at-point
@@ -176,6 +175,8 @@
         )
 )
 #+end_src
+
+#+RESULTS:
 
 * Projectile Configuration
 #+begin_src emacs-lisp
@@ -502,28 +503,24 @@
 (add-hook 'org-src-mode-hook #'rainbow-delimiters-mode)
 #+end_src
 
-* COMMENT Adding Clock to Org Mode Headers :Org:
+* Adding Clock to Org Mode Headers :Org:
 - [ ] Still need to make it automatic
 #+begin_src emacs-lisp
 (defun benson-clock-start ()
     (interactive)
     (org-timer-set-timer 30)
-    ;(org-timer-start)
+    (org-timer-start)
     (org-clock-in)
 )
-
-(defun benson-clock-stop ()
-    (interactive)
-    (org-timer-stop)
-    ;(org-timer-stop)
-    (org-clock-out)
-)
 (map! :map org-mode-map
-      :desc "start org timer" "C-c s" 'benson-clock-start
-      :desc "end org timer" "C-c d" 'benson-clock-stop
+      :desc "start org timer" "C-c s" 'org-clock-in
+      :desc "start org timer" "C-c d" 'org-clock-out
 )
 
 #+end_src
+
+#+RESULTS:
+
 * TODO Open Keymaps
 #+begin_src emacs-lisp
 (map! :leader :prefix "o" "h" 'consult-recent-file)
