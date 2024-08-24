@@ -489,7 +489,7 @@
 (add-hook 'org-src-mode-hook #'rainbow-delimiters-mode)
 #+end_src
 
-* TODO Adding Clock to Org Mode Headers :Org:
+* COMMENT Adding Clock to Org Mode Headers :Org:
 - [ ] Still need to make it automatic
 #+begin_src emacs-lisp
 (defun benson-clock-start ()
@@ -520,7 +520,9 @@
 : consult-recent-file
 * Open Write Ahead Log on Startup
 #+begin_src emacs-lisp
-(add-hook 'after-init-hook (lambda () (find-file (concat org-directory "/Write_Ahead_Logging.org"))))
+(if (display-graphic-p)
+        (add-hook 'after-init-hook (lambda () (find-file (concat org-directory "/Write_Ahead_Logging.org"))))
+)
 #+end_src
 
 #+RESULTS:
