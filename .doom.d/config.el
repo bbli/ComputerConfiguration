@@ -278,6 +278,8 @@
 )
 (defun benson/apply-exwm-mapping ()
         (map! :map exwm-mode-map
+                "C-a" nil
+                "C-c" nil
                 ;"C-q" nil
                 ;"C-b" 'exwm-input-send-next-key
                 ;"C-d" 'exwm-input-send-next-key
@@ -340,6 +342,8 @@
 (exwm-input-set-simulation-key [?\C-e] [?\C-c])
 (exwm-input-set-simulation-key [?\C-u] [?\C-u])
 (exwm-input-set-simulation-key [?\C-w] [?\C-w])
+(exwm-input-set-simulation-key [?\C-l] [?\C-l])
+(exwm-input-set-simulation-key [?\C-c] [?\C-e])
 ; Emacs doesn't bind to this, so should be safe
 ;(exwm-input-set-simulation-key [?\C-q] [?\C-q])
 
