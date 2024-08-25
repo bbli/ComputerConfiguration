@@ -396,7 +396,7 @@
         (start-process-shell-command "obsidian" nil "Obsidian")
   )
 )
-(defun benson/jumpapp-write-ahead ()
+(defun benson/jumpapp-write-ahead-log ()
   (interactive)
   (switch-to-buffer "Write_Ahead_Logging.org"))
 ;(after! exwm
@@ -408,7 +408,8 @@
 (exwm-input-set-key (kbd "C-M-c") #'benson/jumpapp-chrome)
 (exwm-input-set-key (kbd "C-M-o") #'benson/jumpapp-obsidian)
 (exwm-input-set-key (kbd "C-M-n") #'benson/jumpapp-neovim)
-(map! :leader "o w" #'benson/jumpapp-write-ahead)
+(exwm-input-set-key (kbd "C-M-l") #'benson/jumpapp-write-ahead-log)
+(map! :leader "o w" #'benson/jumpapp-write-ahead-log)
 
 (exwm-config-example)
 
