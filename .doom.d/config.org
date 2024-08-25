@@ -440,7 +440,7 @@
 #+RESULTS:
 : benson/krunner
 
-** Configuring JumpApp Hotkeys
+** Configuring New Application Window Hotkeys
 #+begin_src emacs-lisp
 ; BREAK DOWN: see if buffer name exists
 (defun benson/jumpapp-kitty ()
@@ -451,16 +451,12 @@
     )
 )
 (defun benson/jumpapp-chrome ()
-  (interactive)
-  (if (get-buffer "Google-chrome")
-        (switch-to-buffer (get-buffer "Google-chrome"))
         (start-process-shell-command "Google-chrome" nil "chrome")
-  )
 )
 (defun benson/jumpapp-obsidian ()
   (interactive)
-  (if (get-buffer "Life")
-        (switch-to-buffer (get-buffer "Life"))
+  (if (get-buffer "obsidian")
+        (switch-to-buffer (get-buffer "obsidian"))
         (start-process-shell-command "obsidian" nil "Obsidian")
   )
 )
@@ -592,7 +588,6 @@
 * Org Capture
 - Finish Capture: =C-c C-c=
 - Abort Process: =C-c C-k=
-** BD: How to open a floating window in Emacs
 #+begin_src emacs-lisp
 (setq org-default-notes-file (concat org-directory "/Write_Ahead_Logging.org"))
 (setq org-capture-templates
