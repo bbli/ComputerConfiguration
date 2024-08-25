@@ -374,10 +374,13 @@
 
 ; BREAK DOWN: see if buffer name exists
 (defun benson/jumpapp-kitty ()
-    (interactive)
-    (if (get-buffer "kitty")
-        (switch-to-buffer (get-buffer "kitty"))
         (start-process-shell-command "kitty" nil "kitty")
+)
+(defun benson/jumpapp-neovim ()
+    (interactive)
+    (if (get-buffer "neovim")
+        (switch-to-buffer (get-buffer "neovim"))
+        (start-process-shell-command "neovim" nil "kitty")
     )
 )
 (defun benson/jumpapp-chrome ()
@@ -398,9 +401,10 @@
 ;        (global-set-key (kbd "C-M-c") #'benson/jumpapp-chrome)
 ;        (global-set-key (kbd "C-M-o") #'benson/jumpapp-obsidian)
 ;)
-(exwm-input-set-key (kbd "C-M-j") #'benson/jumpapp-kitty)
+(exwm-input-set-key (kbd "C-M-k") #'benson/jumpapp-kitty)
 (exwm-input-set-key (kbd "C-M-c") #'benson/jumpapp-chrome)
 (exwm-input-set-key (kbd "C-M-o") #'benson/jumpapp-obsidian)
+(exwm-input-set-key (kbd "C-M-n") #'benson/jumpapp-neovim)
 (map! :leader "o w" #'benson/jumpapp-write-ahead)
 
 (exwm-config-example)
