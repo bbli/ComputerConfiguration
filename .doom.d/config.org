@@ -566,11 +566,11 @@
 (setq window-delta 30)
 (defun benson/increase-height ()
   (interactive)
-  (evil-window-increase-height (/ window-delta 2))
+  (evil-window-increase-height (/ window-delta 3))
 )
 (defun benson/decrease-height ()
   (interactive)
-  (evil-window-decrease-height (/ window-delta 2))
+  (evil-window-decrease-height (/ window-delta 3))
 )
 (defun benson/increase-width ()
   (interactive)
@@ -593,6 +593,9 @@
 )
 
 #+end_src
+
+#+RESULTS:
+
 * Org Capture
 - Finish Capture: =C-c C-c=
 - Abort Process: =C-c C-k=
