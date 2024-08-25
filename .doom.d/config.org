@@ -262,6 +262,7 @@
         "C-w" 'evil-window-next
         "C-a" 'evil-window-next
         ";" 'benson/switch-window
+        ":" 'evil-ex
 )
 #+end_src
 
@@ -502,7 +503,11 @@
 * TODO Making Org-Babel Better :Org:
 #+begin_src emacs-lisp
 (add-hook 'org-src-mode-hook #'rainbow-delimiters-mode)
+(add-to-list 'org-structure-template-alist '("ssh" . "src bash :exports both :dir /sshx:beli@fuse"))
 #+end_src
+
+#+RESULTS:
+: ((ssh . src bash :exports both :dir /sshx:beli@fuse) (a . export ascii) (c . center) (C . comment) (e . example) (E . export) (h . export html) (l . export latex) (q . quote) (s . src) (v . verse))
 
 * Adding Clock to Org Mode Headers :Org:
 - [ ] Still need to make it automatic

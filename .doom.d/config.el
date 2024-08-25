@@ -226,23 +226,6 @@
         (setq aw-keys '(?1 ?2 ?3 ?4 ?5))
 )
 
-(setq window-delta 30)
-(defun benson/increase-height ()
-  (interactive)
-  (evil-window-increase-height window-delta)
-)
-(defun benson/decrease-height ()
-  (interactive)
-  (evil-window-decrease-height window-delta)
-)
-(defun benson/increase-width ()
-  (interactive)
-  (evil-window-increase-width window-delta)
-)
-(defun benson/decrease-width ()
-  (interactive)
-  (evil-window-decrease-width window-delta)
-)
 (map! :map evil-window-map
         "o" 'delete-other-windows
         "b" 'benson/buffer-keymap
@@ -251,14 +234,7 @@
         "C-w" 'evil-window-next
         "C-a" 'evil-window-next
         ";" 'benson/switch-window
-        "<up>" 'benson/increase-height
-        "<down>" 'benson/decrease-height
-        "<right>" 'benson/increase-width
-        "<left>" 'benson/decrease-width
-        "C-<up>" 'benson/increase-height
-        "C-<down>" 'benson/decrease-height
-        "C-<right>" 'benson/increase-width
-        "C-<left>" 'benson/decrease-width
+        ":" 'evil-ex
 )
 
 (defun benson/insert-semicolon ()
@@ -442,6 +418,7 @@
 (map! :n "P" 'ssh-and-copy-file)
 
 (add-hook 'org-src-mode-hook #'rainbow-delimiters-mode)
+(add-to-list 'org-structure-template-alist '("ssh" . "src bash :exports both :dir /sshx:beli@fuse"))
 
 (defun benson-clock-start ()
     (interactive)
@@ -458,4 +435,33 @@
 
 (if (display-graphic-p)
         (add-hook 'after-init-hook (lambda () (find-file (concat org-directory "/Write_Ahead_Logging.org"))))
+)
+
+(setq window-delta 30)
+(defun benson/increase-height ()
+  (interactive)
+  (evil-window-increase-height window-delta)
+)
+(defun benson/decrease-height ()
+  (interactive)
+  (evil-window-decrease-height window-delta)
+)
+(defun benson/increase-width ()
+  (interactive)
+  (evil-window-increase-width window-delta)
+)
+(defun benson/decrease-width ()
+  (interactive)
+  (evil-window-decrease-width window-delta)
+)
+
+(map! :map evil-window-map
+        "<up>" 'benson/increase-height
+        "<down>" 'benson/decrease-height
+        "<right>" 'benson/increase-width
+        "<left>" 'benson/decrease-width
+        "C-<up>" 'benson/increase-height
+        "C-<down>" 'benson/decrease-height
+        "C-<right>" 'benson/increase-width
+        "C-<left>" 'benson/decrease-width
 )
