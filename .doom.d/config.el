@@ -417,9 +417,6 @@
 )
 (map! :n "P" 'ssh-and-copy-file)
 
-(add-hook 'org-src-mode-hook #'rainbow-delimiters-mode)
-(add-to-list 'org-structure-template-alist '("ssh" . "src bash :exports both :dir /sshx:beli@fuse"))
-
 (defun benson-clock-start ()
     (interactive)
     (org-timer-set-timer 30)
@@ -465,3 +462,28 @@
         "C-<right>" 'benson/increase-width
         "C-<left>" 'benson/decrease-width
 )
+
+(setq org-default-notes-file (concat org-directory "/Write_Ahead_Logging.org"))
+(setq org-capture-templates
+      '(("t" "Todo" entry (file+headline org-default-notes-file "Refile Targets")
+         "* TODO %?\n  %i\n ")
+        )
+)
+(setq +org-capture-frame-parameters '((name . "doom-capture")
+                                      (width . 170)
+                                      (height . 110)
+                                      (transient . t)
+                                      (menu-bar-lines . 1)))
+;         "* TODO %?\n  %i\n ")
+
+
+;(defun benson/org-capture-in-new-frame ()
+;        (interactive)
+;        (let (frame (make-frame '((name . "org-capture") (width . 120) (height . 50))))
+;                ;(raise-frame frame)
+;                (make-frame-visible frame )
+;        )
+;        ;(org-capture)
+;)
+(map! :leader :prefix "o" "c" (lambda () (interactive) (org-capture nil "t")))
+;(map! :leader :prefix "o" "c" 'benson/org-capture-in-new-frame)

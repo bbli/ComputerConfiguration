@@ -500,7 +500,7 @@
 (map! :n "P" 'ssh-and-copy-file)
 
 #+end_src
-* TODO Making Org-Babel Better :Org:
+* COMMENT Making Org-Babel Better :Org:
 #+begin_src emacs-lisp
 (add-hook 'org-src-mode-hook #'rainbow-delimiters-mode)
 (add-to-list 'org-structure-template-alist '("ssh" . "src bash :exports both :dir /sshx:beli@fuse"))
@@ -589,3 +589,37 @@
 )
 
 #+end_src
+* Org Capture
+- Finish Capture: =C-c C-c=
+- Abort Process: =C-c C-k=
+** BD: How to open a floating window in Emacs
+#+begin_src emacs-lisp
+(setq org-default-notes-file (concat org-directory "/Write_Ahead_Logging.org"))
+(setq org-capture-templates
+      '(("t" "Todo" entry (file+headline org-default-notes-file "Refile Targets")
+         "* TODO %?\n  %i\n ")
+        )
+)
+(setq +org-capture-frame-parameters '((name . "doom-capture")
+                                      (width . 170)
+                                      (height . 110)
+                                      (transient . t)
+                                      (menu-bar-lines . 1)))
+;         "* TODO %?\n  %i\n ")
+
+
+;(defun benson/org-capture-in-new-frame ()
+;        (interactive)
+;        (let (frame (make-frame '((name . "org-capture") (width . 120) (height . 50))))
+;                ;(raise-frame frame)
+;                (make-frame-visible frame )
+;        )
+;        ;(org-capture)
+;)
+(map! :leader :prefix "o" "c" (lambda () (interactive) (org-capture nil "t")))
+;(map! :leader :prefix "o" "c" 'benson/org-capture-in-new-frame)
+#+end_src
+
+#+RESULTS:
+| lambda | nil | (interactive) | (org-capture nil t) |
+** Source Code: Search up frame in M-x
