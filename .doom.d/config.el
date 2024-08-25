@@ -229,7 +229,8 @@
 (map! :map evil-window-map
         "o" 'delete-other-windows
         "b" 'benson/buffer-keymap
-        "s" 'ace-window
+        ;"s" 'ace-window
+        "f" 'doom-leader-file-amp
         "w" 'benson/workspace-map
         "C-w" 'evil-window-next
         "C-a" 'evil-window-next
@@ -374,6 +375,7 @@
 
 ; BREAK DOWN: see if buffer name exists
 (defun benson/jumpapp-kitty ()
+        (interactive)
         (start-process-shell-command "kitty" nil "kitty")
 )
 (defun benson/jumpapp-neovim ()
@@ -384,6 +386,7 @@
     )
 )
 (defun benson/jumpapp-chrome ()
+        (interactive)
         (start-process-shell-command "Google-chrome" nil "chrome")
 )
 (defun benson/jumpapp-obsidian ()
@@ -437,11 +440,11 @@
 (setq window-delta 30)
 (defun benson/increase-height ()
   (interactive)
-  (evil-window-increase-height window-delta)
+  (evil-window-increase-height (/ window-delta 2))
 )
 (defun benson/decrease-height ()
   (interactive)
-  (evil-window-decrease-height window-delta)
+  (evil-window-decrease-height (/ window-delta 2))
 )
 (defun benson/increase-width ()
   (interactive)
@@ -463,21 +466,23 @@
         "C-<left>" 'benson/decrease-width
 )
 
-(setq org-default-notes-file (concat org-directory "/Write_Ahead_Logging.org"))
-(setq org-capture-templates
-      '(("t" "Todo" entry (file+headline org-default-notes-file "Refile Targets")
-         "* TODO %?\n  %i\n ")
+(after! org
+        (setq org-default-notes-file (concat org-directory "/Write_Ahead_Logging.org"))
+        (setq org-capture-templates
+        '(("t" "Todo" entry (file+headline org-default-notes-file "Refile Targets")
+                "* TODO %?\n  %i\n ")
+                )
         )
 )
-(setq +org-capture-frame-parameters '((name . "doom-capture")
-                                      (width . 170)
-                                      (height . 110)
-                                      (transient . t)
-                                      (menu-bar-lines . 1)))
+;(setq +org-capture-frame-parameters '((name . "doom-capture")
+;                                      (width . 170)
+;                                      (height . 110)
+;                                      (transient . t)
+;                                      (menu-bar-lines . 1)))
 ;         "* TODO %?\n  %i\n ")
 
 
-;(defun benson/org-capture-in-new-frame ()
+;(defun benson/org-capture-in-new-frame
 ;        (interactive)
 ;        (let (frame (make-frame '((name . "org-capture") (width . 120) (height . 50))))
 ;                ;(raise-frame frame)
@@ -485,5 +490,5 @@
 ;        )
 ;        ;(org-capture)
 ;)
-(map! :leader :prefix "o" "c" (lambda () (interactive) (org-capture nil "t")))
+(map! :map evil-window-map "c" (lambda () (interactive) (org-capture nil "t")))
 ;(map! :leader :prefix "o" "c" 'benson/org-capture-in-new-frame)
