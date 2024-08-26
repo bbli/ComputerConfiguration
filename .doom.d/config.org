@@ -633,3 +633,14 @@
 
 #+RESULTS:
 ** Source Code: Search up frame in M-x
+* Splits should move to the new window
+#+begin_src emacs-lisp
+(defun benson/split-window-advice ()
+        (interactive)
+        (other-window 1)
+)
+(advice-add 'evil-window-vsplit :after 'benson/split-window-advice)
+(advice-add 'evil-window-split :after 'benson/split-window-advice)
+#+end_src
+
+#+RESULTS:

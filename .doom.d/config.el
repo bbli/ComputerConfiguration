@@ -493,3 +493,10 @@
 ;)
 (map! :map evil-window-map "c" (lambda () (interactive) (org-capture nil "t")))
 ;(map! :leader :prefix "o" "c" 'benson/org-capture-in-new-frame)
+
+(defun benson/split-window-advice ()
+        (interactive)
+        (other-window 1)
+)
+(advice-add 'evil-window-vsplit :after 'benson/split-window-advice)
+(advice-add 'evil-window-split :after 'benson/split-window-advice)
