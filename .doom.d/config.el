@@ -409,7 +409,6 @@
 (exwm-input-set-key (kbd "C-M-o") #'benson/jumpapp-obsidian)
 (exwm-input-set-key (kbd "C-M-n") #'benson/jumpapp-neovim)
 (exwm-input-set-key (kbd "C-M-l") #'benson/jumpapp-write-ahead-log)
-(map! :leader "o w" #'benson/jumpapp-write-ahead-log)
 
 (exwm-config-example)
 
@@ -431,8 +430,6 @@
       :desc "start org timer" "C-c s" 'org-clock-in
       :desc "start org timer" "C-c d" 'org-clock-out
 )
-
-(map! :leader :prefix "o" "h" 'consult-recent-file)
 
 (if (display-graphic-p)
         (add-hook 'after-init-hook (lambda () (find-file (concat org-directory "/Write_Ahead_Logging.org"))))
@@ -467,6 +464,21 @@
         "C-<left>" 'benson/decrease-width
 )
 
+(defun benson/open-write-ahead-log ()
+        (interactive)
+        (switch-to-buffer "Write_Ahead_Logging.org")
+)
+(define-prefix-command 'benson/open-keymap)
+(map! :map benson/open-keymap
+        :desc "switch to alternate file"           "h" 'consult-recent-file
+        :desc "open write ahead log"           "w" 'benson/open-write-ahead-log
+        :desc "toggle terminal" "t" #'+vterm/toggle
+)
+(map! :leader
+      "o" nil
+      :desc "open keymap" "o" 'benson/open-keymap
+)
+
 (after! org
         (setq org-default-notes-file (concat org-directory "/Write_Ahead_Logging.org"))
         (setq org-capture-templates
@@ -483,16 +495,11 @@
 ;         "* TODO %?\n  %i\n ")
 
 
-;(defun benson/org-capture-in-new-frame
-;        (interactive)
-;        (let (frame (make-frame '((name . "org-capture") (width . 120) (height . 50))))
-;                ;(raise-frame frame)
-;                (make-frame-visible frame )
-;        )
-;        ;(org-capture)
-;)
-(map! :map evil-window-map "c" (lambda () (interactive) (org-capture nil "t")))
-;(map! :leader :prefix "o" "c" 'benson/org-capture-in-new-frame)
+(defun benson/org-capture ()
+        (interactive)
+        (org-capture nil "t")
+)
+(map! :map benson/open-keymap "c" 'benson/org-capture)
 
 (defun benson/split-window-advice ()
         (interactive)
