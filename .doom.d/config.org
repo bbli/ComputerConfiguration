@@ -602,11 +602,16 @@ or they provide fuzzy search:
         (interactive)
         (switch-to-buffer "Write_Ahead_Logging.org")
 )
+(defun benson/open-scratch-buffer ()
+        (interactive)
+        (find-file "~/Downloads/scratch")
+)
 (define-prefix-command 'benson/open-keymap)
 (map! :map benson/open-keymap
         :desc "switch to alternate file"           "h" 'consult-recent-file
         :desc "open write ahead log"           "w" 'benson/open-write-ahead-log
         :desc "toggle terminal" "t" #'+vterm/toggle
+        :desc "open scratch buffer" "s" #'benson/open-scratch-buffer
 )
 (map! :leader
       "o" nil
