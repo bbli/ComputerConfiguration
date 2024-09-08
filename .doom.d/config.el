@@ -512,3 +512,17 @@
 )
 (advice-add 'evil-window-vsplit :after 'benson/split-window-advice)
 (advice-add 'evil-window-split :after 'benson/split-window-advice)
+
+(defun benson/zen-toggle ()
+        (interactive)
+        (delete-other-windows)
+        (evil-window-vsplit)
+        (other-window 1)
+        (switch-to-buffer "Write_Ahead_Logging.org")
+        (benson/decrease-width)
+        (benson/decrease-width)
+        (benson/decrease-width)
+)
+(map! :map evil-window-map
+      "m" 'benson/zen-toggle
+)

@@ -662,3 +662,22 @@ or they provide fuzzy search:
 #+end_src
 
 #+RESULTS:
+* My own focus mode with write_ahead log on the side
+- NOTE: dependent on [[*Keybindings to Increase/Decrease Window Width]]
+#+begin_src emacs-lisp
+(defun benson/zen-toggle ()
+        (interactive)
+        (delete-other-windows)
+        (evil-window-vsplit)
+        (other-window 1)
+        (switch-to-buffer "Write_Ahead_Logging.org")
+        (benson/decrease-width)
+        (benson/decrease-width)
+        (benson/decrease-width)
+)
+(map! :map evil-window-map
+      "m" 'benson/zen-toggle
+)
+#+end_src
+
+#+RESULTS:
