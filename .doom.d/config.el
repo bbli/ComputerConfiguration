@@ -97,13 +97,16 @@
         (add-to-list 'org-emphasis-alist '("_" (:inherit org-code :height 1.3)))
         (add-to-list 'org-emphasis-alist '("=" (:inherit org-verbatim :height 0.85 :box nil)))
         (push '(tags-tree . local) org-show-context-detail)
-        (add-hook 'org-agenda-after-show-hook 'org-tree-to-indirect-buffer)
         (custom-set-faces! '(org-tag :height 0.6))
         (custom-set-faces! '(org-block :height 0.7))
         (custom-set-faces! '(org-meta-line :height 0.7))
         (custom-set-faces! '(org-block-begin-line :height 0.7))
         (custom-set-faces! '(org-block-end-line :height 0.7))
         (custom-set-faces! '(org-code :height 0.9))
+        (set-face-attribute 'org-level-1 nil :height 1.0)
+        (set-face-attribute 'org-level-2 nil :height 1.4)
+        (set-face-attribute 'org-level-3 nil :height 1.0)
+        (setq org-ident-mode nil)
 )
 
 (defun add-pretty-symbols-org ()
@@ -129,6 +132,7 @@
 (add-hook 'org-mode-hook 'prettify-symbols-mode)
 (add-hook 'org-mode-hook 'org-toggle-pretty-entities)
 (add-hook 'org-mode-hook 'add-pretty-symbols-org)
+(add-hook 'org-mode-hook 'variable-pitch-mode)
 
 (after! org
         (map! :map org-mode-map

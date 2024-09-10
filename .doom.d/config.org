@@ -84,6 +84,10 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 #+end_src
+
+#+RESULTS:
+: t
+
 * CrossPlatform Settings
 #+begin_src emacs-lisp
 (if (eq system-type 'darwin)
@@ -101,6 +105,9 @@
 )
 #+end_src
 
+#+RESULTS:
+: krunner
+
 * Emacs Settings
 #+begin_src emacs-lisp
 (keyboard-translate ?\C-c ?\C-e)
@@ -108,7 +115,11 @@
 (setq source-directory "~/Software/emacs")
 (map! :leader :prefix "h" "b" 'describe-keymap)
 #+end_src
-* Making Org Mode Look Pretty :Org:
+
+#+RESULTS:
+: describe-keymap
+
+* TODO Making Org Mode Look Pretty :Org:
 #+begin_src emacs-lisp
 (after! org
         (setq org-todo-keywords
@@ -116,13 +127,16 @@
         (add-to-list 'org-emphasis-alist '("_" (:inherit org-code :height 1.3)))
         (add-to-list 'org-emphasis-alist '("=" (:inherit org-verbatim :height 0.85 :box nil)))
         (push '(tags-tree . local) org-show-context-detail)
-        (add-hook 'org-agenda-after-show-hook 'org-tree-to-indirect-buffer)
         (custom-set-faces! '(org-tag :height 0.6))
         (custom-set-faces! '(org-block :height 0.7))
         (custom-set-faces! '(org-meta-line :height 0.7))
         (custom-set-faces! '(org-block-begin-line :height 0.7))
         (custom-set-faces! '(org-block-end-line :height 0.7))
         (custom-set-faces! '(org-code :height 0.9))
+        (set-face-attribute 'org-level-1 nil :height 1.0)
+        (set-face-attribute 'org-level-2 nil :height 1.4)
+        (set-face-attribute 'org-level-3 nil :height 1.0)
+        (setq org-ident-mode nil)
 )
 
 (defun add-pretty-symbols-org ()
@@ -148,7 +162,12 @@
 (add-hook 'org-mode-hook 'prettify-symbols-mode)
 (add-hook 'org-mode-hook 'org-toggle-pretty-entities)
 (add-hook 'org-mode-hook 'add-pretty-symbols-org)
+(add-hook 'org-mode-hook 'variable-pitch-mode)
 #+end_src
+
+#+RESULTS:
+| (lambda nil (add-hook 'after-save-hook #'efs/org-babel-tangle-config)) | (closure (t) (&rest _) (progn (let ((tail '(after-change-major-mode-hook))) (while tail (let ((hook (car tail))) (let ((tail (list #'(lambda (&rest _) (if (derived-mode-p 'org-mode) (progn (setq tab-width 8))))))) (while tail (let ((func (car tail))) (add-hook hook func nil t) (setq tail (cdr tail))))) (setq tail (cdr tail)))))) (add-hook 'save-place-after-find-file-hook #'+org-make-last-point-visible-h nil t)) | #[0 \301\211\207 [imenu-create-index-function org-imenu-get-tree] 2] | er/add-org-mode-expansions | (closure ((hook . org-mode-hook)) (&rest _) (progn (let ((tail '(after-change-major-mode-hook))) (while tail (let ((hook (car tail))) (let ((tail (list #'(lambda (&rest _) (if (derived-mode-p 'org-mode) (progn (setq tab-width 8))))))) (while tail (let ((func (car tail))) (add-hook hook func nil t) (setq tail (cdr tail))))) (setq tail (cdr tail)))))) (add-hook 'save-place-after-find-file-hook #'+org-make-last-point-visible-h nil t)) | +lookup--init-org-mode-handlers-h | (closure (t) (&rest _) (add-hook 'before-save-hook 'org-encrypt-entries nil t)) | (closure (org--rds reftex-docstruct-symbol org--single-lines-list-is-paragraph org-element-greater-elements org-agenda-restrict-end org-agenda-restrict-begin org-agenda-restrict visual-fill-column-width org-clock-history org-agenda-current-date org-with-time org-defdecode org-def org-read-date-inactive org-ans2 org-ans1 org-columns-current-fmt-compiled org-clock-current-task org-clock-effort org-agenda-skip-function org-agenda-skip-comment-trees org-agenda-archives-mode org-end-time-was-given org-time-was-given org-log-note-extra org-log-note-purpose org-log-post-message org-last-inserted-timestamp org-last-changed-timestamp org-entry-property-inherited-from org-state org-agenda-headline-snapshot-before-repeat org-agenda-buffer-name org-agenda-start-on-weekday org-agenda-buffer-tmp-name org-priority-regexp org-mode-abbrev-table org-mode-syntax-table org-element-cache-persistent org-tbl-menu org-org-menu org-struct-menu org-entities org-last-state org-id-track-globally org-clock-start-time texmathp-why remember-data-file org-agenda-tags-todo-honor-ignore-options calc-embedded-open-mode calc-embedded-open-formula calc-embedded-close-formula align-mode-rules-list org-emphasis-alist org-emphasis-regexp-components org-export-registered-backends crm-separator org-babel-load-languages org-id-overriding-file-name org-indent-indentation-per-level org-element--timestamp-regexp org-element-cache-map-continue-from org-element-paragraph-separate org-agenda-buffer-name org-inlinetask-min-level t) nil (add-hook 'change-major-mode-hook 'org-fold-show-all 'append 'local)) | add-pretty-symbols-org | org-toggle-pretty-entities | prettify-symbols-mode | doom-disable-show-paren-mode-h | doom-disable-show-trailing-whitespace-h | evil-org-mode | org-eldoc-load | toc-org-enable | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-babel-show-result-all append local] 5] | org-babel-result-hide-spec | org-babel-hide-all-hashes | embrace-org-mode-hook | +literate-enable-recompile-h |
+
 * Org Mode Keymaps :Org:
 #+begin_src emacs-lisp
 (after! org
@@ -182,6 +201,10 @@
 #+begin_src emacs-lisp
 (setq projectile-project-search-path `(org-directory))
 #+end_src
+
+#+RESULTS:
+| org-directory |
+
 * Buffer, Window, and Workspace Configuration
 #+begin_src emacs-lisp
 (defun benson/switch-to-previous-buffer ()
@@ -292,6 +315,9 @@
 (map! :niv "; n" 'projectile-next-project-buffer)
 (map! :niv "; N" 'projectile-previous-project-buffer)
 #+end_src
+
+#+RESULTS:
+
 * Git Keymaps
 #+begin_src emacs-lisp
 
@@ -301,6 +327,10 @@
       :desc "next hunk" "p" #'git-gutter:previous-hunk
 )
 #+end_src
+
+#+RESULTS:
+: git-gutter:previous-hunk
+
 * Jump Keymaps
 #+begin_src emacs-lisp
 
@@ -309,6 +339,10 @@
       :desc "evil-goto-last-change" "c" #'evil-goto-last-change
 )
 #+end_src
+
+#+RESULTS:
+: evil-goto-last-change
+
 * Insert Mode Keymaps
 #+begin_src emacs-lisp
 (defun benson/insert-current-date ()
@@ -318,11 +352,17 @@
 (map! :map evil-insert-state-map
       "C-i d" 'benson/insert-current-date)
 #+end_src
+
+#+RESULTS:
+
 * Emacs-Lisp Keymaps
 #+begin_src emacs-lisp
 (map! :map emacs-lisp-mode-map
       "C-c C-c" 'eval-last-sexp)
 #+end_src
+
+#+RESULTS:
+
 * Configuring ExWM :System:
 ** Exwm-mode-map
 - Will need to map most keys to =exwm-input-send-next-key= to override global map hotkeys(i.e C-t is transpose-chars)
@@ -504,6 +544,9 @@
 (map! :n "P" 'ssh-and-copy-file)
 
 #+end_src
+
+#+RESULTS:
+
 * COMMENT Making Org-Babel Better :Org:
 #+begin_src emacs-lisp
 (add-hook 'org-src-mode-hook #'rainbow-delimiters-mode)
@@ -554,6 +597,13 @@
 
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
   #+end_src
+
+#+RESULTS:
+| (lambda nil (add-hook 'after-save-hook #'efs/org-babel-tangle-config)) | (closure (t) (&rest _) (progn (let ((tail '(after-change-major-mode-hook))) (while tail (let ((hook (car tail))) (let ((tail (list #'(lambda (&rest _) (if (derived-mode-p 'org-mode) (progn (setq tab-width 8))))))) (while tail (let ((func (car tail))) (add-hook hook func nil t) (setq tail (cdr tail))))) (setq tail (cdr tail)))))) (add-hook 'save-place-after-find-file-hook #'+org-make-last-point-visible-h nil t)) | #[0 \301\211\207 [imenu-create-index-function org-imenu-get-tree] 2] | er/add-org-mode-expansions | (closure ((hook . org-mode-hook)) (&rest _) (progn (let ((tail '(after-change-major-mode-hook))) (while tail (let ((hook (car tail))) (let ((tail (list #'(lambda (&rest _) (if (derived-mode-p 'org-mode) (progn (setq tab-width 8))))))) (while tail (let ((func (car tail))) (add-hook hook func nil t) (setq tail (cdr tail))))) (setq tail (cdr tail)))))) (add-hook 'save-place-after-find-file-hook #'+org-make-last-point-visible-h nil t)) | +lookup--init-org-mode-handlers-h | (closure (t) (&rest _) (add-hook 'before-save-hook 'org-encrypt-entries nil t)) | (closure (org--rds reftex-docstruct-symbol org--single-lines-list-is-paragraph org-element-greater-elements org-agenda-restrict-end org-agenda-restrict-begin org-agenda-restrict visual-fill-column-width org-clock-history org-agenda-current-date org-with-time org-defdecode org-def org-read-date-inactive org-ans2 org-ans1 org-columns-current-fmt-compiled org-clock-current-task org-clock-effort org-agenda-skip-function org-agenda-skip-comment-trees org-agenda-archives-mode org-end-time-was-given org-time-was-given org-log-note-extra org-log-note-purpose org-log-post-message org-last-inserted-timestamp org-last-changed-timestamp org-entry-property-inherited-from org-state org-agenda-headline-snapshot-before-repeat org-agenda-buffer-name org-agenda-start-on-weekday org-agenda-buffer-tmp-name org-priority-regexp org-mode-abbrev-table org-mode-syntax-table org-element-cache-persistent org-tbl-menu org-org-menu org-struct-menu org-entities org-last-state org-id-track-globally org-clock-start-time texmathp-why remember-data-file org-agenda-tags-todo-honor-ignore-options calc-embedded-open-mode calc-embedded-open-formula calc-embedded-close-formula align-mode-rules-list org-emphasis-alist org-emphasis-regexp-components org-export-registered-backends crm-separator org-babel-load-languages org-id-overriding-file-name org-indent-indentation-per-level org-element--timestamp-regexp org-element-cache-map-continue-from org-element-paragraph-separate org-agenda-buffer-name org-inlinetask-min-level t) nil (add-hook 'change-major-mode-hook 'org-fold-show-all 'append 'local)) | add-pretty-symbols-org | org-toggle-pretty-entities | prettify-symbols-mode | doom-disable-show-paren-mode-h | doom-disable-show-trailing-whitespace-h | evil-org-mode | org-eldoc-load | toc-org-enable | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-babel-show-result-all append local] 5] | org-babel-result-hide-spec | org-babel-hide-all-hashes | embrace-org-mode-hook | +literate-enable-recompile-h |
+
+#+RESULTS:
+| (lambda nil (add-hook 'after-save-hook #'efs/org-babel-tangle-config)) | (closure (t) (&rest _) (progn (let ((tail '(after-change-major-mode-hook))) (while tail (let ((hook (car tail))) (let ((tail (list #'(lambda (&rest _) (if (derived-mode-p 'org-mode) (progn (setq tab-width 8))))))) (while tail (let ((func (car tail))) (add-hook hook func nil t) (setq tail (cdr tail))))) (setq tail (cdr tail)))))) (add-hook 'save-place-after-find-file-hook #'+org-make-last-point-visible-h nil t)) | #[0 \301\211\207 [imenu-create-index-function org-imenu-get-tree] 2] | er/add-org-mode-expansions | (closure ((hook . org-mode-hook)) (&rest _) (progn (let ((tail '(after-change-major-mode-hook))) (while tail (let ((hook (car tail))) (let ((tail (list #'(lambda (&rest _) (if (derived-mode-p 'org-mode) (progn (setq tab-width 8))))))) (while tail (let ((func (car tail))) (add-hook hook func nil t) (setq tail (cdr tail))))) (setq tail (cdr tail)))))) (add-hook 'save-place-after-find-file-hook #'+org-make-last-point-visible-h nil t)) | +lookup--init-org-mode-handlers-h | (closure (t) (&rest _) (add-hook 'before-save-hook 'org-encrypt-entries nil t)) | (closure (org--rds reftex-docstruct-symbol org--single-lines-list-is-paragraph org-element-greater-elements org-agenda-restrict-end org-agenda-restrict-begin org-agenda-restrict visual-fill-column-width org-clock-history org-agenda-current-date org-with-time org-defdecode org-def org-read-date-inactive org-ans2 org-ans1 org-columns-current-fmt-compiled org-clock-current-task org-clock-effort org-agenda-skip-function org-agenda-skip-comment-trees org-agenda-archives-mode org-end-time-was-given org-time-was-given org-log-note-extra org-log-note-purpose org-log-post-message org-last-inserted-timestamp org-last-changed-timestamp org-entry-property-inherited-from org-state org-agenda-headline-snapshot-before-repeat org-agenda-buffer-name org-agenda-start-on-weekday org-agenda-buffer-tmp-name org-priority-regexp org-mode-abbrev-table org-mode-syntax-table org-element-cache-persistent org-tbl-menu org-org-menu org-struct-menu org-entities org-last-state org-id-track-globally org-clock-start-time texmathp-why remember-data-file org-agenda-tags-todo-honor-ignore-options calc-embedded-open-mode calc-embedded-open-formula calc-embedded-close-formula align-mode-rules-list org-emphasis-alist org-emphasis-regexp-components org-export-registered-backends crm-separator org-babel-load-languages org-id-overriding-file-name org-indent-indentation-per-level org-element--timestamp-regexp org-element-cache-map-continue-from org-element-paragraph-separate org-agenda-buffer-name org-inlinetask-min-level t) nil (add-hook 'change-major-mode-hook 'org-fold-show-all 'append 'local)) | add-pretty-symbols-org | org-toggle-pretty-entities | prettify-symbols-mode | doom-disable-show-paren-mode-h | doom-disable-show-trailing-whitespace-h | evil-org-mode | org-eldoc-load | toc-org-enable | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-babel-show-result-all append local] 5] | org-babel-result-hide-spec | org-babel-hide-all-hashes | embrace-org-mode-hook | +literate-enable-recompile-h |
+
 * Keybindings to Increase/Decrease Window Width
 #+begin_src emacs-lisp
 (setq window-delta 30)
