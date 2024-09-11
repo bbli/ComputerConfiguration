@@ -48,6 +48,6 @@
 ;; (unpin! pinned-package another-pinned-package)
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;; (unpin! t)
-(package! gptel)
 (package! all-the-icons)
+(package! org-bullets)
 (package! exwm :pin "88fe86f3523d34e5229281b48f3cdf58e1b784f7")

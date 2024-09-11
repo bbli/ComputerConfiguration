@@ -31,8 +31,8 @@
 ;; See 'C-h v doom-font' for documentation and more examples of what they
 ;; accept. For example:
 ;;
-;;(setq doom-font (font-spec :family "Fira Code" :size 12 :weight 'semi-light)
-;;      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 13))
+(setq doom-font (font-spec :family "Source Code Pro" :size 19 :weight 'medium)
+      doom-variable-pitch-font (font-spec :family "ETBembo" :size 19 :weight 'medium))
 ;;
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
@@ -42,7 +42,7 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-font (font-spec :family "Source Code Pro" :size 18 :weight 'medium))
+;(setq doom-font (font-spec :family "Source Code Pro" :size 18 :weight 'medium))
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -163,6 +163,8 @@
 (add-hook 'org-mode-hook 'org-toggle-pretty-entities)
 (add-hook 'org-mode-hook 'add-pretty-symbols-org)
 (add-hook 'org-mode-hook 'variable-pitch-mode)
+(require 'org-bullets)
+(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 #+end_src
 
 #+RESULTS:
@@ -170,6 +172,19 @@
 
 * Org Mode Keymaps :Org:
 #+begin_src emacs-lisp
+(defun benson/toggle-narrow-to-subtree ()
+        (interactive)
+        (if (buffer-narrowed-p)
+                (progn
+                        (org-toggle-narrow-to-subtree)
+                        (text-scale-decrease 1)
+                )
+                (progn
+                        (org-toggle-narrow-to-subtree)
+                        (text-scale-increase 1)
+                )
+        )
+)
 (after! org
         (map! :map org-mode-map
                 "C-h" nil "C-a" nil "o" nil "O" nil
@@ -183,7 +198,7 @@
                 :desc "next visible heading" "C-c C-n" #'outline-next-visible-heading
                 :desc "previous visible heading" "C-c C-p" #'outline-previous-visible-heading
                 :desc "go up a heading" "C-c C-u" #'outline-up-heading
-                :desc "toggle narrow of subtree" "C-c n" #'org-toggle-narrow-to-subtree
+                :desc "toggle narrow of subtree" "C-c n" 'benson/toggle-narrow-to-subtree
                 ;; :desc "hide source blocks of current subtree" "C-c h" #'benson/org-hide-block-subtree
                 ;; :desc "hide source blocks of current subtree" "C-c c"
                 ;; #'flyspell-correct-at-point
