@@ -18,6 +18,7 @@ local function showGitBase()
 end
 
 return {
+  -------------- 1. Gitsigns -----------------
   {
 
     "lewis6991/gitsigns.nvim",
@@ -76,6 +77,7 @@ return {
     }
   },
 
+  -------------- 2. Integrate Base of Gitsigns with Lualine -----------------
   {
     "nvim-lualine/lualine.nvim",
     dependencies = {
@@ -89,5 +91,17 @@ return {
     -- opts = function(_, opts)
     --   table.insert(opts.sections.lualine_x, { showGitBase })
     -- end,
+  },
+
+  -------------- 3. Neogit -----------------
+  {
+    "NeogitOrg/neogit",
+    dependencies = {
+      "nvim-lua/plenary.nvim",       -- required
+      "sindrets/diffview.nvim",      -- optional - Diff integration
+
+      "nvim-telescope/telescope.nvim", -- optional
+    },
+    config = true
   }
 }
