@@ -1,13 +1,32 @@
 return {
-  -- add gruvbox test
+  -- add my colorscheme to LazyVim
   { "sainnhe/edge" },
-
-  -- Configure LazyVim to load edge
   {
 
     "LazyVim/LazyVim",
     opts = {
       colorscheme = "edge",
     },
+  },
+
+  -- undotree
+  {
+    "mbbill/undotree",
+    keys = {
+      {
+        "<leader>tu",
+        function()
+          vim.cmd("UndotreeToggle")
+        end,
+        desc = "Toggle Undotree"
+      }
+    }
+  },
+
+
+  -- diable flash.nvim
+  {
+    "folke/flash.nvim",
+    enabled = false
   }
 }
