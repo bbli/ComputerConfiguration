@@ -105,7 +105,7 @@
         (custom-set-faces! '(org-code :height 0.9))
         (set-face-attribute 'org-level-1 nil :height 1.0)
         (set-face-attribute 'org-level-2 nil :height 1.4)
-        (set-face-attribute 'org-level-3 nil :height 1.0)
+        (set-face-attribute 'org-level-3 nil :height 1.2)
         (setq org-ident-mode nil)
 )
 

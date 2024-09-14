@@ -2,7 +2,7 @@ return {
   -- add gruvbox test
   { "sainnhe/edge" },
 
-  -- Configure LazyVim to load gruvbox
+  -- Configure LazyVim to load edge
   {
 
     "LazyVim/LazyVim",
