@@ -28,5 +28,16 @@ return {
   {
     "folke/flash.nvim",
     enabled = false
-  }
+  },
+
+  -- Neotree
+  {
+    "nvim-neo-tree/neo-tree.nvim",
+    opts = {
+      toggle = true,
+    },
+    keys = {
+      { "<leader>tn", ":Neotree toggle<CR>", desc = "Toggle Neotree" }
+    }
+  },
 }

@@ -62,9 +62,6 @@ return {
         row = 0,
         col = 1
       },
-      yadm                         = {
-        enable = false
-      },
     },
     keys = {
       { "<leader>gp", "<cmd>Gitsigns preview_hunk<CR>", desc = "Preview Git hunk" },
