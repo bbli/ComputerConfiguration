@@ -15,9 +15,7 @@ return {
     keys = {
       {
         "<leader>tu",
-        function()
-          vim.cmd("UndotreeToggle")
-        end,
+        "<cmd>UndotreeToggle<CR>",
         desc = "Toggle Undotree"
       }
     }
@@ -40,4 +38,9 @@ return {
       { "<leader>tn", ":Neotree toggle<CR>", desc = "Toggle Neotree" }
     }
   },
+
+  -- visual star search
+  {
+    'bronson/vim-visual-star-search'
+  }
 }
