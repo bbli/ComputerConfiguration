@@ -31,10 +31,36 @@ vim.api.nvim_set_keymap(
 )
 vim.api.nvim_set_keymap("n", "<leader>wn", ":tabnext<CR>", { noremap = true, silent = true, desc = "Next workspace" })
 
--------------- 2. Toggle Keymaps -----------------
+-------------- 3. Buffer Keymaps -----------------
+vim.api.nvim_set_keymap("n", "<leader>bs", "<C-^>", { noremap = true, silent = true, desc = "Next workspace" })
+vim.api.nvim_set_keymap("n", "<leader>bk", ":bwipeout<CR>", { noremap = true, silent = true, desc = "Next workspace" })
+vim.api.nvim_set_keymap(
+  "n",
+  "<leader>bb",
+  "<cmd>Telescope buffers<CR>",
+  { noremap = true, silent = true, desc = "Next workspace" }
+)
+-------------- 4. Toggle Keymaps -----------------
 vim.api.nvim_set_keymap(
   "n",
   "<leader>tt",
   "<cmd>AerialToggle<CR>",
   { noremap = true, silent = true, desc = "Next workspace" }
+)
+
+vim.g.toggle_qf = 0
+function ToggleQuickFixList()
+  if vim.g.toggle_qf == 0 then
+    vim.g.toggle_qf = 1
+    vim.cmd("copen")
+  else
+    vim.g.toggle_qf = 0
+    vim.cmd("cclose")
+  end
+end
+vim.api.nvim_set_keymap(
+  "n",
+  "<leader>tq",
+  ":lua ToggleQuickFixList()<CR>",
+  { noremap = true, silent = true, desc = "Toggle QuickFix List" }
 )
