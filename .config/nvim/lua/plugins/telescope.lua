@@ -1,4 +1,4 @@
-local actions = require('telescope.actions')
+local actions = require("telescope.actions")
 return {
   "nvim-telescope/telescope.nvim",
   opts = {
@@ -22,18 +22,20 @@ return {
           ["<C-d>"] = false,
           ["<C-b>"] = actions.preview_scrolling_up,
           ["<C-f>"] = actions.preview_scrolling_down,
-
         },
       },
       wrap_results = true,
       layout_config = {
-        preview_width = 75
-      }
+        preview_width = 75,
+      },
     },
   },
   keys = {
     { "<leader>oo", "<cmd>Telescope git_files<CR>" },
-    { "<leader>oa", "<cmd>lua require'telescope.builtin'.find_files({ find_command = {'rg', '--no-ignore-vcs', '--files', '--hidden', '-g', '!.git' , '-g', '!node_modules'}})<cr>" },
+    {
+      "<leader>oa",
+      "<cmd>lua require'telescope.builtin'.find_files({ find_command = {'rg', '--no-ignore-vcs', '--files', '--hidden', '-g', '!.git' , '-g', '!node_modules'}})<cr>",
+    },
     { "<leader>ob", "<cmd>Telescope buffers<CR>" },
     { "<leader>oh", "<cmd>Telescope oldfiles<CR>" },
     { "<leader>om", "<cmd>Telescope help_tags<CR>" },
@@ -41,7 +43,7 @@ return {
     { "<leader>or", "<cmd>Telescope neoclip<CR>" },
     { "<leader>or", "<cmd>Telescope keymaps<CR>" },
     { "<leader>ov", "<cmd>Telescope vim_options<CR>" },
-  }
+    { "<leader>oq", "<cmd>Telescope quickfixhistory<CR>" },
+  },
 }
-
--- TODO: check how lazyvim integrates Telescope in lua/lazyvim/plugins/extras/editor/telescope.lua
+-- TODO: add Teelscop current buffer -> so you can send results to quickfix for saving your progress
