@@ -2,12 +2,12 @@ return {
   {
     "AckslD/nvim-neoclip.lua",
     dependencies = {
-      { 'kkharji/sqlite.lua',           module = 'sqlite' },
-      { 'nvim-telescope/telescope.nvim' },
+      { "kkharji/sqlite.lua", module = "sqlite" },
+      { "nvim-telescope/telescope.nvim" },
     },
     config = function()
-      require('telescope').load_extension('neoclip')
-      require('neoclip').setup({
+      require("telescope").load_extension("neoclip")
+      require("neoclip").setup({
         enable_persistent_history = true,
         preview = true,
         default_register = '"',
@@ -19,26 +19,22 @@ return {
         keys = {
           telescope = {
             i = {
-              select = '<c-y>',
-              paste = '<cr>',
+              select = "<c-y>",
+              paste = "<cr>",
             },
             n = {
-              select = 'y',
-              paste = '<cr>',
+              select = "y",
+              paste = "<cr>",
               --- It is possible to map to more than one key.
               -- paste = { 'p', '<c-p>' },
-              delete = 'd',
+              delete = "d",
             },
           },
         },
       })
     end,
     keys = {
-      { "<leader>or",
-        function()
-          vim.cmd('Telescope neoclip')
-        end
-      }
-    }
-  }
+      { "<leader>or", "<cmd>Telescope nepclip" },
+    },
+  },
 }
