@@ -105,8 +105,9 @@ return {
     keys = {
       { "<leader>os", toggleShellTerminal, desc = "Open Shell Terminal" },
       { "<leader>ot", toggleTestTerminal, desc = "Open Test Terminal" },
-      { "<leader>sn", "<cmn>FloatermNext", desc = "Next Terminal" },
-      { "<leader>sN", "<cmn>FloatermPrev", desc = "Previous Terminal" },
+      { "<leader>sn", "<cmd>FloatermNext", desc = "Next Terminal" },
+      { "<leader>sN", "<cmd>FloatermPrev", desc = "Previous Terminal" },
+      { "<leader>sl", ":ShellSend ", desc = "Send a String to ShellSend" },
       { "<leader>ss", SendLastStringToTestTerm, desc = "Send Shell Command to Test Term" },
       { "<leader>sh", SendStringFromHistory, desc = "Fuzzy Search Shell Command History" },
     },
