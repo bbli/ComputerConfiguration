@@ -1,3 +1,28 @@
+vim.cmd([[
+function! JumpToFile()
+    let cword = expand("<cWORD>")
+    echom cword
+    let fileline = trim(cword,":")
+    let array = split(fileline,':')
+    if len(array) > 1
+        " echom "file and line"
+        let filename = array[0]
+        let linenumber=array[1]
+        FloatermHide
+        let s = "edit +" . linenumber . " " . filename
+        " echom s
+        execute s
+    else
+        " echom "just file"
+        let filename = array[0]
+        FloatermHide
+        let s = "edit " .. filename
+        " echom s
+        execute s
+    endif
+endfunction
+nnoremap gl :call JumpToFile()<CR>
+]])
 local pickers = require("telescope.pickers")
 local finders = require("telescope.finders")
 local conf = require("telescope.config").values

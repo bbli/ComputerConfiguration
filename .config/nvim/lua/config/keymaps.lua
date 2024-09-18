@@ -8,6 +8,7 @@ vim.keymap.del("n", "<leader>gB")
 vim.keymap.del("n", "<leader>ge")
 vim.keymap.del("n", "<leader>gG")
 vim.keymap.del("n", "<leader>gL")
+vim.keymap.del("n", "<leader><leader>")
 
 -------------- 2. Workspace Keymaps -----------------
 vim.api.nvim_set_keymap("n", "<leader>wk", ":tabc<CR>", { noremap = true, silent = true, desc = "Kill Workspace" })
@@ -179,4 +180,34 @@ vnoremap > >gv
 vnoremap < <gv
 cnoremap sE %s
 ]])
--- -- benson_lsp_status
+
+-------------- 7. Utility Keymaps -----------------
+vim.cmd([[
+nnoremap <leader>pp :echo expand('%:p')<CR>
+nnoremap <leader><leader>p :echo expand('%:p')<CR>
+nmap <leader><leader>c gcc
+vmap <leader><leader>c gc
+
+nnoremap <leader><leader>m @m
+]])
+
+-------------- 7. Jump/LSP Keymaps -----------------
+vim.cmd([[
+nnoremap <leader>jd <cmd>Telescope lsp_definitions<CR>
+nnoremap <leader>jD <cmd>lua vim.lsp.buf.declaration()<CR>
+nnoremap <leader>jr <cmd>lua vim.lsp.buf.references()<CR>
+nnoremap <leader>je <cmd>lua vim.diagnostic.goto_next({float=true})<CR>
+nnoremap <leader>jE <cmd>lua vim.diagnostic.goto_prev({float=true})<CR>
+
+
+nnoremap K <cmd>lua vim.lsp.buf.hover()<CR>
+nnoremap <leader>jo <cmd>lua vim.lsp.buf.outgoing_calls()<CR>
+"though references is better -> will also show from test files too
+nnoremap <leader>ji <cmd>lua vim.lsp.buf.incoming_calls()<CR>
+nnoremap <leader>jh <cmd>CclsDerivedHierarchy<CR>
+
+" nnoremap <leader>fr <cmd>lua vim.lsp.buf.rename()<CR>
+" nnoremap <leader>js :vs<CR>:lua vim.lsp.buf.definition()<CR>
+" nnoremap <leader>jr <cmd>lua vim.lsp.buf.incoming_calls()<CR>
+" nnoremap <leader>ji <cmd>lua vim.lsp.buf.implementation()<CR>
+]])

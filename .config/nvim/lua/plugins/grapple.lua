@@ -45,7 +45,7 @@ return {
         function()
           require("grapple").select({ name = "main" })
         end,
-        desc = "Jump to Test Tag",
+        desc = "Jump to Main Tag",
       },
       {
         "<leader>rm",
@@ -96,17 +96,6 @@ return {
         function()
           require("grapple").untag({ name = "file" })
         end,
-      },
-    },
-  },
-  {
-    "nvim-lualine/lualine.nvim",
-    dependencies = {
-      { "cbochs/grapple.nvim" },
-    },
-    opts = {
-      sections = {
-        lualine_x = { require("grapple").statusline },
       },
     },
   },

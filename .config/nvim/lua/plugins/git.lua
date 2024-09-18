@@ -1,22 +1,3 @@
-vim.g.toggleGitBase = true
-function toggleGitBase()
-  if vim.g.toggleGitBase then
-    vim.g.toggleGitBase = false
-    require("gitsigns").change_base("area/foundation")
-  else
-    vim.g.toggleGitBase = true
-    require("gitsigns").change_base()
-  end
-end
-
-local function showGitBase()
-  if vim.g.toggleGitBase then
-    return "index"
-  else
-    return "foundation"
-  end
-end
-
 return {
   -------------- 1. Gitsigns -----------------
   {
@@ -74,23 +55,7 @@ return {
     },
   },
 
-  -------------- 2. Integrate Base of Gitsigns with Lualine -----------------
-  {
-    "nvim-lualine/lualine.nvim",
-    dependencies = {
-      { "cbochs/grapple.nvim" },
-    },
-    opts = {
-      sections = {
-        lualine_z = { showGitBase },
-      },
-    },
-    -- opts = function(_, opts)
-    --   table.insert(opts.sections.lualine_x, { showGitBase })
-    -- end,
-  },
-
-  -------------- 3. Neogit -----------------
+  -------------- 2. Neogit -----------------
   {
     "NeogitOrg/neogit",
     dependencies = {

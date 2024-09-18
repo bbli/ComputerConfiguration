@@ -348,7 +348,7 @@ let g:vimsyn_embed = 'l'
 
 nnoremap <leader>jd <cmd>Telescope lsp_definitions<CR>
 " nnoremap <leader>js :vs<CR>:lua vim.lsp.buf.definition()<CR>
-nnoremap <leader>js <cmd>lua require("benson").smartJumpSplit()<CR>
+" nnoremap <leader>js <cmd>lua require("benson").smartJumpSplit()<CR>
 nnoremap <leader>jD <cmd>lua vim.lsp.buf.declaration()<CR>
 nnoremap <leader>jr <cmd>lua vim.lsp.buf.references()<CR>
 " nnoremap <leader>jr <cmd>lua vim.lsp.buf.incoming_calls()<CR>
