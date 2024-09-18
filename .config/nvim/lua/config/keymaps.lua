@@ -64,3 +64,54 @@ vim.api.nvim_set_keymap(
   ":lua ToggleQuickFixList()<CR>",
   { noremap = true, silent = true, desc = "Toggle QuickFix List" }
 )
+
+-------------- 4. LocalLeader Keymaps -----------------
+vim.g.maplocalleader = "-"
+vim.api.nvim_set_keymap(
+  "n",
+  "<localleader>v",
+  ":e ~/.vimrc<CR>",
+  { noremap = true, silent = true, desc = "Open vimrc" }
+)
+vim.api.nvim_set_keymap(
+  "n",
+  "<localleader>b",
+  ":e ~/.bash_aliases<CR>",
+  { noremap = true, silent = true, desc = "Open bash aliases" }
+)
+vim.api.nvim_set_keymap(
+  "n",
+  "<localleader>t",
+  ":e ~/.tmux.conf<CR>",
+  { noremap = true, silent = true, desc = "Open bash aliases" }
+)
+vim.api.nvim_set_keymap(
+  "n",
+  "<localleader>g",
+  ":e ~/.gitconfig<CR>",
+  { noremap = true, silent = true, desc = "Open git config" }
+)
+vim.api.nvim_set_keymap(
+  "n",
+  "<localleader>g",
+  ":e ~/.gitconfig<CR>",
+  { noremap = true, silent = true, desc = "Open git config" }
+)
+vim.api.nvim_set_keymap(
+  "n",
+  "<localleader>n",
+  ":e ~/.config/nvim/init.vim<CR>",
+  { noremap = true, silent = true, desc = "Open init.vim" }
+)
+vim.api.nvim_set_keymap(
+  "n",
+  "<localleader>k",
+  ":e ~/.config/kitty/kitty.conf<CR>",
+  { noremap = true, silent = true, desc = "Open kitty conf" }
+)
+vim.api.nvim_set_keymap(
+  "n",
+  "<localleader>f",
+  ":e ~/.config/fish/config.fish<CR>",
+  { noremap = true, silent = true, desc = "Open kitty conf" }
+)

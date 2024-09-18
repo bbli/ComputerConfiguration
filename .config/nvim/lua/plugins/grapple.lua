@@ -104,8 +104,10 @@ return {
     dependencies = {
       { "cbochs/grapple.nvim" },
     },
-    opts = function(_, opts)
-      table.insert(opts.sections.lualine_b, { require("grapple").statusline })
-    end,
+    opts = {
+      sections = {
+        lualine_x = { require("grapple").statusline },
+      },
+    },
   },
 }
