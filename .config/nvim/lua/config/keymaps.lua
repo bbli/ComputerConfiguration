@@ -66,7 +66,6 @@ vim.api.nvim_set_keymap(
 )
 
 -------------- 4. LocalLeader Keymaps -----------------
-vim.g.maplocalleader = "-"
 vim.api.nvim_set_keymap(
   "n",
   "<localleader>v",
@@ -115,3 +114,69 @@ vim.api.nvim_set_keymap(
   ":e ~/.config/fish/config.fish<CR>",
   { noremap = true, silent = true, desc = "Open kitty conf" }
 )
+-------------- 5. Modifier Keys Keymaps -----------------
+vim.cmd([[
+nnoremap <M-k> :m .-2<CR>==
+nnoremap <M-j> :m .+1<CR>==
+vnoremap <M-j> :m '>+1<CR>gv=gv
+vnoremap <M-k> :m '<-2<CR>gv=gv
+
+nnoremap <C-w><Space> <C-w>=
+nnoremap <C-w>; <C-w>p
+]])
+
+-------------- 5. Semicolon Keymaps -----------------
+vim.cmd([[
+inoremap ;c <C-c>
+vnoremap ;c <C-c>
+inoremap ;; ;
+vnoremap ;w <C-c>:w<CR>
+inoremap ;w <C-c>:w<CR>
+" nnoremap ;q <C-z>
+nnoremap ;q :q<CR>
+nnoremap ;z :q!<CR>
+nnoremap ;w <C-c>:w<CR>
+nnoremap ;n :bn<CR>
+nnoremap ;N :bp<CR>
+nnoremap <silent> ;d :bwipeout<CR>
+nnoremap ;D :bwipeout!<CR>
+"inoremap <C-m> <C-C>la
+inoremap <C-l> <C-c>la
+]])
+
+-------------- 6. Normal Mode Keymaps -----------------
+vim.cmd([[
+" nnoremap <unique> k gk
+" nnoremap <unique> j gj
+nnoremap <unique> gk k
+nnoremap <unique> gj j
+"nnoremap EE @
+
+nnoremap <unique> C c$
+nnoremap <unique> D d$
+nnoremap Y y$
+nnoremap <unique> E $
+nnoremap <unique> gE g$
+"nnoremap <unique> W 0w
+" to jump between brackets/parantheses
+nnoremap S %
+nnoremap w W
+nnoremap W w
+nnoremap b B
+nnoremap B b
+nnoremap n nzz
+nnoremap N Nzz
+
+nnoremap <unique> gb gi
+
+" "Training vim skip
+" nnoremap <unique> h <Nop>
+" nnoremap <unique> l <Nop>
+" nnoremap <unique> <C-g> <cmd>close<CR>
+" vnoremap <unique> <C-g> <ESC>
+"
+vnoremap > >gv
+vnoremap < <gv
+cnoremap sE %s
+]])
+-- -- benson_lsp_status
