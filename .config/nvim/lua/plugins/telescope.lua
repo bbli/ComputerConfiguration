@@ -30,6 +30,9 @@ return {
       },
     },
   },
+  config = function()
+    vim.keymap.del("n", "<leader>fr")
+  end,
   keys = {
     { "<leader>oo", "<cmd>Telescope git_files<CR>" },
     {

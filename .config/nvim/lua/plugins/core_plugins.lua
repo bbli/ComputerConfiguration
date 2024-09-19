@@ -1,8 +1,9 @@
 return {
+  -- Noice UI
+  { "folke/noice.nvim", keys = { "<leader>vl", "<cmd>NoiceHistory<CR>", desc = "Open Vim Message Log" } },
   -- add my colorscheme to LazyVim
   { "sainnhe/edge" },
   {
-
     "LazyVim/LazyVim",
     opts = {
       colorscheme = "edge",

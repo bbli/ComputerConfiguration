@@ -32,7 +32,6 @@ vim.cmd([[
 command! -nargs=1 RipGrepProject lua RipGrepProjectHelper(<q-args>,FindGitRoot())
 command! -nargs=1 RipGrepCurrentDirectory lua RipGrepProjectHelper(<q-args>,GetPathOfCurrentFile())
 command! -nargs=1 RipGrepCurrentFile lua RipGrepCurrentFile(<q-args>)
-nnoremap <leader>fr :RipGrepCurrentFile 
 nnoremap <leader>fp :RipGrepProject 
 nnoremap <leader>fa :RipGrepCurrentDirectory 
 nnoremap <leader>fw :RipGrepProject "\b<C-r><C-w>\b"<CR>
@@ -43,6 +42,7 @@ return {
   keys = {
     { "<leader>fb", "<cmd>Telescope current_buffer_fuzzy_find<CR>", desc = "Search Current Buffer" },
     { "<leader>fs", "<cmd>Telescope lsp_dynamic_workspace_symbols<CR>", desc = "Search LSP Symbols" },
+    { "<leader>fl", ":RipGrepCurrentFile " },
   },
 }
 -- TODO: get autocomplete on command line
