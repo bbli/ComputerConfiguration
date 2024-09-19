@@ -13,6 +13,12 @@ function RipGrepProjectHelper(pattern, path)
   vim.cmd("copen")
 end
 
+function RipGrepCurrentFile(pattern)
+  local file = vim.fn.expand("%:p")
+  vim.cmd("grep " .. rg_options .. " " .. pattern .. " " .. file)
+  vim.cmd("copen")
+end
+
 function FindGitRoot()
   local handle = io.popen("git rev-parse --show-toplevel")
   local git_root = handle:read("*a"):gsub("\n", "")
@@ -25,6 +31,8 @@ end
 vim.cmd([[
 command! -nargs=1 RipGrepProject lua RipGrepProjectHelper(<q-args>,FindGitRoot())
 command! -nargs=1 RipGrepCurrentDirectory lua RipGrepProjectHelper(<q-args>,GetPathOfCurrentFile())
+command! -nargs=1 RipGrepCurrentFile lua RipGrepCurrentFile(<q-args>)
+nnoremap <leader>fr :RipGrepCurrentFile 
 nnoremap <leader>fp :RipGrepProject 
 nnoremap <leader>fa :RipGrepCurrentDirectory 
 nnoremap <leader>fw :RipGrepProject "\b<C-r><C-w>\b"<CR>
