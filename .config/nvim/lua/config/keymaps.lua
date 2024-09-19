@@ -53,6 +53,13 @@ vim.api.nvim_set_keymap(
   { noremap = true, silent = true, desc = "Toggle Tagbar" }
 )
 
+vim.api.nvim_set_keymap(
+  "n",
+  "<leader>vl",
+  "<cmd>NoiceHistory<CR>",
+  { noremap = true, silent = true, desc = "Open Vim Message Log" }
+)
+
 function ToggleQuickFixList()
   local is_quickfix_open = false
   for _, win in pairs(vim.fn.getwininfo()) do

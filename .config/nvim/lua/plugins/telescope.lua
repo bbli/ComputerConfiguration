@@ -48,6 +48,7 @@ return {
     { "<leader>or", "<cmd>Telescope neoclip<CR>" },
     { "<leader>ok", "<cmd>Telescope keymaps<CR>" },
     { "<leader>ov", "<cmd>Telescope vim_options<CR>" },
+    { "<leader>vv", "<cmd>Telescope vim_options<CR>" },
     { "<leader>oq", "<cmd>Telescope quickfixhistory<CR>" },
   },
 }
