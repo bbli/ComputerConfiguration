@@ -8,9 +8,6 @@ vim.keymap.del("n", "<leader>gB")
 vim.keymap.del("n", "<leader>ge")
 vim.keymap.del("n", "<leader>gG")
 vim.keymap.del("n", "<leader>gL")
-vim.keymap.del("n", "<leader>fr")
-vim.keymap.del("n", "<leader>ff")
-vim.keymap.del("n", "<leader><leader>")
 
 -------------- 2. Workspace Keymaps -----------------
 vim.api.nvim_set_keymap("n", "<leader>wk", ":tabc<CR>", { noremap = true, silent = true, desc = "Kill Workspace" })

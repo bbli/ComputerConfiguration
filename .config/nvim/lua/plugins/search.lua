@@ -28,10 +28,34 @@ end
 function GetPathOfCurrentFile()
   return vim.fn.expand("%p:h")
 end
+
+function KeepOnlyNFS()
+  local is_quickfix_open = false
+  for _, win in pairs(vim.fn.getwininfo()) do
+    if win.quickfix == 1 then
+      is_quickfix_open = true
+      break
+    end
+  end
+
+  vim.cmd("Reject system/")
+  vim.cmd("Reject ir_test/")
+  vim.cmd("Reject ui/")
+  vim.cmd("Reject tpc/")
+  vim.cmd("Reject ir_test/")
+  vim.cmd("Reject http/")
+  vim.cmd("Reject environment/")
+  vim.cmd("Reject infra/")
+  vim.cmd("Reject hardware/")
+  vim.cmd("Reject platform/")
+  vim.cmd("Reject tools/")
+  vim.cmd("Reject patches/")
+end
 vim.cmd([[
 command! -nargs=1 RipGrepProject lua RipGrepProjectHelper(<q-args>,FindGitRoot())
 command! -nargs=1 RipGrepCurrentDirectory lua RipGrepProjectHelper(<q-args>,GetPathOfCurrentFile())
 command! -nargs=1 RipGrepCurrentFile lua RipGrepCurrentFile(<q-args>)
+command! -nargs=0 NFS lua KeepOnlyNFS()
 nnoremap <leader>fp :RipGrepProject 
 nnoremap <leader>fa :RipGrepCurrentDirectory 
 nnoremap <leader>fw :RipGrepProject "\b<C-r><C-w>\b"<CR>

@@ -32,6 +32,8 @@ return {
   },
   config = function()
     vim.keymap.del("n", "<leader>fr")
+    vim.keymap.del("n", "<leader>ff")
+    vim.keymap.del("n", "<leader><leader>")
   end,
   keys = {
     { "<leader>oo", "<cmd>Telescope git_files<CR>" },
@@ -49,4 +51,3 @@ return {
     { "<leader>oq", "<cmd>Telescope quickfixhistory<CR>" },
   },
 }
--- TODO: add Teelscop current buffer -> so you can send results to quickfix for saving your progress
