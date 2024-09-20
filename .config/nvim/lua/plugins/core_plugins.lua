@@ -78,4 +78,14 @@ return {
       vim.diagnostic.config({ virtual_text = false })
     end,
   },
+
+  -- Trouble
+  {
+    "folke/trouble.nvim",
+    keys = {
+      { "<leader>od", "<cmd>Trouble diagnostics toggle filter.buf=0<CR>", desc = "Open Buffer Diagnostic" },
+      { "<leader>oD", "<cmd>Trouble diagnostics toggle<CR>", desc = "Open Project Diagnostic" },
+      { "<leader>tt", "<cmd>Trouble symbols toggle=false<CR>", desc = "Toggle Trouble TagBar" },
+    },
+  },
 }

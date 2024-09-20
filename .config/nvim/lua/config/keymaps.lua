@@ -48,13 +48,6 @@ vim.api.nvim_set_keymap(
 -------------- 4. Toggle Keymaps -----------------
 vim.api.nvim_set_keymap(
   "n",
-  "<leader>tt",
-  "<cmd>AerialToggle<CR>",
-  { noremap = true, silent = true, desc = "Toggle Tagbar" }
-)
-
-vim.api.nvim_set_keymap(
-  "n",
   "<leader>vl",
   "<cmd>NoiceHistory<CR>",
   { noremap = true, silent = true, desc = "Open Vim Message Log" }
