@@ -83,6 +83,7 @@ vim.api.nvim_set_keymap(
 )
 
 vim.api.nvim_set_keymap("n", "<leader>tf", "<leader>uf", { desc = "Toggle AutoFormat" })
+vim.api.nvim_set_keymap("n", "<leader>td", "<leader>ud", { desc = "Toggle LSP Diagnostics" })
 
 -------------- 4. LocalLeader Keymaps -----------------
 vim.cmd([[

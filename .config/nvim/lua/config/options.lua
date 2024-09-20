@@ -6,3 +6,4 @@ vim.opt.linebreak = true
 vim.opt.wrap = true
 --vim.g.autoformat = false
 vim.g.maplocalleader = "-"
+vim.diagnostic.config({ virtual_text = false })
