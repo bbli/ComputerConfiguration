@@ -6,6 +6,7 @@ endif
 ]])
 
 local rg_options = '--vimgrep --hidden -g "!.git" -g "!output.log" -g "!Triage/" -g "!.ccls-cache/"'
+local only_nfs_options = '-g "!system/" -g "!ir_test/" -g "!ui/" -g "!tpc/" -g "!ir_test/"'
 function RipGrepProjectHelper(pattern, path)
   -- we cannot use shell escape b/c it will SINGLE QUOTE the pattern ->
   -- which prevents passing ADDITIONAL ARGUMENTS

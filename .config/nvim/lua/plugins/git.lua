@@ -65,9 +65,22 @@ return {
       "nvim-telescope/telescope.nvim", -- optional
     },
     config = true,
+    opts = {
+      mappings = {
+        status = {
+          ["E"] = "GoToFile",
+        },
+      },
+    },
     keys = {
-      { "<leader>gm", "<cmd>Neogit<CR>", desc = "Open Magit" },
-      { "<leader>gg", "<cmd>Neogit<CR>", desc = "Open Magit" },
+      {
+        "<leader>gm",
+        function()
+          require("neogit").open({ kind = "vsplit" })
+        end,
+        desc = "Open Magit",
+      },
+      { "<leader>gg", "<cmd>Neogit<CR>", desc = "Open Neogit" },
     },
   },
 
