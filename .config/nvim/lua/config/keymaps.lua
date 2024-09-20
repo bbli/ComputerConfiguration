@@ -161,6 +161,7 @@ nnoremap <unique> gb gi
 vnoremap > >gv
 vnoremap < <gv
 cnoremap sE %s
+tmap ;c <Esc><Esc>
 ]])
 
 -------------- 7. Utility Keymaps -----------------
