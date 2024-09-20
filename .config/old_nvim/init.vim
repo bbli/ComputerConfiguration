@@ -130,13 +130,13 @@ use'hrsh7th/cmp-buffer'
 use'hrsh7th/cmp-path' -- kinda useless
 use'hrsh7th/cmp-cmdline' -- also kinda useless
 use 'hrsh7th/cmp-nvim-lsp-signature-help'
+use {'quangnguyen30192/cmp-nvim-tags', requires = 'hrsh7th/nvim-cmp' }
 --  use 'hrsh7th/cmp-vsnip' -- make lsp status not show warnings
 --  use 'hrsh7th/vim-vsnip'
 use 'saadparwaiz1/cmp_luasnip'
 use {'hrsh7th/nvim-cmp',
     config = function() require("plugins.nvim-cmp") end,
 }
-use {'quangnguyen30192/cmp-nvim-tags', requires = 'hrsh7th/nvim-cmp' }
   --use {'tzachar/cmp-fuzzy-buffer', requires = {'hrsh7th/nvim-cmp', 'tzachar/fuzzy.nvim'}}
 -- copilot LSP interferes with regular LSP
 use {

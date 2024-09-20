@@ -145,7 +145,7 @@ function org
 end
 
 function proj
-    cd (git rev-parse --show-top-level)
+    cd (git rev-parse --show-toplevel)
 end
 
 function snip

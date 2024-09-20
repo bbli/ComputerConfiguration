@@ -82,6 +82,8 @@ vim.api.nvim_set_keymap(
   { noremap = true, silent = true, desc = "Toggle QuickFix List" }
 )
 
+vim.api.nvim_set_keymap("n", "<leader>tf", "<leader>uf", { desc = "Toggle AutoFormat" })
+
 -------------- 4. LocalLeader Keymaps -----------------
 vim.cmd([[
 nnoremap <localleader>v :e ~/.vimrc<CR>

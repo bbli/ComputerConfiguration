@@ -52,4 +52,14 @@ return {
   {
     "bronson/vim-visual-star-search",
   },
+
+  -- vim-qf
+  { "romainl/vim-qf" },
+  -- bufferline
+  {
+    "akinsho/bufferline.nvim",
+    keys = {
+      { "<leader>wr", ":BufferLineTabRename ", desc = "Rename Workspace" },
+    },
+  },
 }

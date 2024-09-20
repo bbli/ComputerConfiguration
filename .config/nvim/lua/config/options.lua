@@ -4,3 +4,5 @@
 vim.opt.hidden = true
 vim.opt.linebreak = true
 vim.opt.wrap = true
+--vim.g.autoformat = false
+vim.g.maplocalleader = "-"

@@ -24,6 +24,9 @@ return {
       { "lewis6991/gitsigns.nvim" },
     },
     opts = {
+      options = {
+        globalstatus = false,
+      },
       sections = {
         lualine_x = {
           { require("grapple").statusline },
