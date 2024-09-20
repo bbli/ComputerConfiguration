@@ -55,6 +55,14 @@ return {
 
   -- vim-qf
   { "romainl/vim-qf" },
+
+  -- tmuxline
+  {
+    "edkolev/tmuxline.vim",
+    config = function()
+      vim.cmd("Tmuxline vim_statusline_3")
+    end,
+  },
   -- bufferline
   {
     "akinsho/bufferline.nvim",
