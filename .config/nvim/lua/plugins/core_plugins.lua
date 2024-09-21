@@ -60,10 +60,10 @@ return {
   {
     "edkolev/tmuxline.vim",
     config = function()
-      -- local in_tmux = os.execute("echo $TMUX")
-      -- if in_tmux ~= "" then
-      --   vim.cmd("Tmuxline vim_statusline_3")
-      -- end
+      local in_tmux = os.getenv("TMUX")
+      if in_tmux ~= nil then
+         vim.cmd("Tmuxline vim_statusline_3")
+       end
     end,
   },
   -- bufferline

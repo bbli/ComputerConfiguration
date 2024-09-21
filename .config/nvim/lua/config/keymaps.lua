@@ -73,10 +73,8 @@ end
 
 function ToggleNoiceHistory()
   if check_filetype("noice") then
-    print("noice is open")
     close_window_with_filetype("noice")
   else
-    print("noice is closed")
     vim.cmd("NoiceHistory")
   end 
 end
