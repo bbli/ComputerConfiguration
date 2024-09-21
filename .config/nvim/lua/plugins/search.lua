@@ -6,17 +6,25 @@ endif
 ]])
 
 local rg_options = '--vimgrep --hidden -g "!.git" -g "!output.log" -g "!Triage/" -g "!.ccls-cache/"'
-local only_nfs_options = '-g "!system/" -g "!ir_test/" -g "!ui/" -g "!tpc/" -g "!ir_test/"'
+local only_nfs_options =
+  '-g "!system/" -g "!ir_test/" -g "!ui/" -g "!tpc/" -g "!ir_test/" -g "!http/" -g "!environment/" -g "!infra/" -g "!hardware/" -g "!platform/" -g "!tools/" -g "!patches/" -g "pb/"'
 function RipGrepProjectHelper(pattern, path)
   -- we cannot use shell escape b/c it will SINGLE QUOTE the pattern ->
   -- which prevents passing ADDITIONAL ARGUMENTS
-  vim.cmd("grep " .. rg_options .. " " .. pattern .. " " .. path)
+  vim.cmd("silent grep " .. rg_options .. " " .. pattern .. " " .. path)
+  vim.cmd("copen")
+end
+
+function RipGrepHelperOnlyNFS(pattern, path)
+  -- we cannot use shell escape b/c it will SINGLE QUOTE the pattern ->
+  -- which prevents passing ADDITIONAL ARGUMENTS
+  vim.cmd("silent grep " .. rg_options .. " " .. only_nfs_options .. " " .. pattern .. " " .. path)
   vim.cmd("copen")
 end
 
 function RipGrepCurrentFile(pattern)
   local file = vim.fn.expand("%:p")
-  vim.cmd("grep " .. rg_options .. " " .. pattern .. " " .. file)
+  vim.cmd("silent grep " .. rg_options .. " " .. pattern .. " " .. file)
   vim.cmd("copen")
 end
 
@@ -31,14 +39,6 @@ function GetPathOfCurrentFile()
 end
 
 function KeepOnlyNFS()
-  local is_quickfix_open = false
-  for _, win in pairs(vim.fn.getwininfo()) do
-    if win.quickfix == 1 then
-      is_quickfix_open = true
-      break
-    end
-  end
-
   vim.cmd("Reject system/")
   vim.cmd("Reject ir_test/")
   vim.cmd("Reject ui/")
@@ -51,12 +51,14 @@ function KeepOnlyNFS()
   vim.cmd("Reject platform/")
   vim.cmd("Reject tools/")
   vim.cmd("Reject patches/")
+  vim.cmd("Reject pb/")
 end
 vim.cmd([[
 command! -nargs=1 RipGrepProject lua RipGrepProjectHelper(<q-args>,FindGitRoot())
 command! -nargs=1 RipGrepCurrentDirectory lua RipGrepProjectHelper(<q-args>,GetPathOfCurrentFile())
 command! -nargs=1 RipGrepCurrentFile lua RipGrepCurrentFile(<q-args>)
-command! -nargs=0 NFS lua KeepOnlyNFS()
+autocmd FileType qf command! -nargs=0 OnlyNFS lua KeepOnlyNFS()
+command! -nargs=1 RipGrepNFS lua RipGrepHelperOnlyNFS(<q-args>,FindGitRoot())
 nnoremap <leader>fp :RipGrepProject 
 nnoremap <leader>fa :RipGrepCurrentDirectory 
 nnoremap <leader>fw :RipGrepProject "\b<C-r><C-w>\b"<CR>
@@ -68,6 +70,7 @@ return {
     { "<leader>fb", "<cmd>Telescope current_buffer_fuzzy_find<CR>", desc = "Search Current Buffer" },
     { "<leader>fs", "<cmd>Telescope lsp_dynamic_workspace_symbols<CR>", desc = "Search LSP Symbols" },
     { "<leader>fl", ":RipGrepCurrentFile " },
+    { "<leader>fn", ":RipGrepNFS " },
   },
 }
 -- TODO: get autocomplete on command line

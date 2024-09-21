@@ -28,10 +28,9 @@ return {
           ["<C-k>"] = cmp.mapping(cmp.mapping.select_prev_item(), { "i", "c", "s" }),
         },
         sources = cmp.config.sources({
-          { name = "copilot", group_index = 2 },
-          { name = "luasnip", keyword_length = 2 },
+          { name = "nvim_lsp", keyword_length = 2, priority = 100, max_item_count = 5 },
+          { name = "luasnip", keyword_length = 2, priority = 50, max_item_count = 2 },
           { name = "nvim_lsp_signature_help" },
-          { name = "nvim_lsp", keyword_length = 2, max_item_count = 5 },
           --{ name = 'ultisnips' }, -- For ultisnips users.
           {
             name = "buffer",
@@ -70,10 +69,8 @@ return {
       cmp.setup.cmdline(":", {
         mapping = cmp.mapping.preset.cmdline(),
         sources = cmp.config.sources({
-          { name = "path" },
-          { name = "buffer" },
-        }, {
-          { name = "cmdline" },
+          { name = "cmdline", priority = 100 },
+          { name = "buffer", priority = 80 },
         }),
       })
     end,
