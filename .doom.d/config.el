@@ -199,6 +199,7 @@
         :desc "fuzzy select buffer + open in vertical split" "v" #'consult-buffer-other-window
         :desc "horizontal split + fuzzy select buffer" "h" 'benson/consult-buffer-horizontal-window
         :desc "kill current buffer" "k" #'kill-this-buffer
+      :desc "delete workspace" "K" #'+workspace/close-window-or-workspace
         :desc "kill current buffer" "r" 'benson/rename-buffer
         ;; :desc "choose a buffer to delete" "d" #'ido-kill-buffer
         ;; :desc "cycle outshine mode" "c" #'outshine-cycle-buffer
@@ -234,7 +235,8 @@
       :desc "previous workspace" "p" #'+workspace/switch-left
       :desc "switch to last workspace" "m" #'+workspace/other
       :desc "switch to last workspace" ";" #'+workspace/other
-      :desc "display workspaces" "w" #'+workspace/display
+      :desc "display workspaces" "p" #'+workspace/display
+      :desc "display workspaces" "w" #'+workspace/switch-to
       )
 (map! :leader
       "w" nil

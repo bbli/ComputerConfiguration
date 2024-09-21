@@ -7,15 +7,15 @@ return {
       colorscheme = "edge",
     },
     keys = {
-      { "<leader>a", "", desc = "+ai" },
-      { "<leader>b", "", desc = "+buffer" },
-      { "<leader>w", "", desc = "+workspace" },
-      { "<leader>s", "", desc = "+search/send" },
-      { "<leader>j", "", desc = "+jump" },
-      { "<leader>f", "", desc = "+find" },
-      { "<leader>g", "", desc = "+git" },
-      { "<leader>t", "", desc = "+toggle" },
-      { "<leader>o", "", desc = "+open" },
+      { "<leader>a", "",  desc = "+ai" },
+      { "<leader>b", "",  desc = "+buffer" },
+      { "<leader>w", "",  desc = "+workspace" },
+      { "<leader>s", "",  desc = "+search/send" },
+      { "<leader>j", "",  desc = "+jump" },
+      { "<leader>f", "",  desc = "+find" },
+      { "<leader>g", "",  desc = "+git" },
+      { "<leader>t", "",  desc = "+toggle" },
+      { "<leader>o", "",  desc = "+open" },
     },
   },
 
@@ -60,7 +60,10 @@ return {
   {
     "edkolev/tmuxline.vim",
     config = function()
-      vim.cmd("Tmuxline vim_statusline_3")
+      -- local in_tmux = os.execute("echo $TMUX")
+      -- if in_tmux ~= "" then
+      --   vim.cmd("Tmuxline vim_statusline_3")
+      -- end
     end,
   },
   -- bufferline
@@ -84,8 +87,8 @@ return {
     "folke/trouble.nvim",
     keys = {
       { "<leader>od", "<cmd>Trouble diagnostics toggle filter.buf=0<CR>", desc = "Open Buffer Diagnostic" },
-      { "<leader>oD", "<cmd>Trouble diagnostics toggle<CR>", desc = "Open Project Diagnostic" },
-      { "<leader>tt", "<cmd>Trouble symbols toggle=false<CR>", desc = "Toggle Trouble TagBar" },
+      { "<leader>oD", "<cmd>Trouble diagnostics toggle<CR>",              desc = "Open Project Diagnostic" },
+      { "<leader>tt", "<cmd>Trouble symbols toggle=false<CR>",            desc = "Toggle Trouble TagBar" },
     },
   },
 }
