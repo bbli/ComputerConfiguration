@@ -47,28 +47,28 @@ vim.api.nvim_set_keymap(
 )
 -------------- 4. Toggle Keymaps -----------------
 function check_filetype(filetype)
-    local win_ids = vim.api.nvim_list_wins()
-    for _, win_id in ipairs(win_ids) do
-        local buf_id = vim.api.nvim_win_get_buf(win_id)
-        local buf_filetype = vim.api.nvim_buf_get_option(buf_id, 'filetype')
-        if buf_filetype == filetype then
-            return true
-        end
+  local win_ids = vim.api.nvim_list_wins()
+  for _, win_id in ipairs(win_ids) do
+    local buf_id = vim.api.nvim_win_get_buf(win_id)
+    local buf_filetype = vim.api.nvim_buf_get_option(buf_id, "filetype")
+    if buf_filetype == filetype then
+      return true
     end
-    return false
+  end
+  return false
 end
 
 function close_window_with_filetype(filetype)
-    local win_ids = vim.api.nvim_list_wins()
-    for _, win_id in ipairs(win_ids) do
-        local buf_id = vim.api.nvim_win_get_buf(win_id)
-        local buf_filetype = vim.api.nvim_buf_get_option(buf_id, 'filetype')
-        if buf_filetype == filetype then
-            vim.api.nvim_win_close(win_id, false)
-            return true
-        end
+  local win_ids = vim.api.nvim_list_wins()
+  for _, win_id in ipairs(win_ids) do
+    local buf_id = vim.api.nvim_win_get_buf(win_id)
+    local buf_filetype = vim.api.nvim_buf_get_option(buf_id, "filetype")
+    if buf_filetype == filetype then
+      vim.api.nvim_win_close(win_id, false)
+      return true
     end
-    return false
+  end
+  return false
 end
 
 function ToggleNoiceHistory()
@@ -76,7 +76,7 @@ function ToggleNoiceHistory()
     close_window_with_filetype("noice")
   else
     vim.cmd("NoiceHistory")
-  end 
+  end
 end
 vim.api.nvim_set_keymap(
   "n",
@@ -202,7 +202,8 @@ nnoremap <leader><leader>m @m
 
 -------------- 7. Jump/LSP Keymaps -----------------
 vim.cmd([[
-nnoremap <leader>jd <cmd>Telescope lsp_definitions<CR>
+" nnoremap <leader>jd <cmd>Telescope lsp_definitions<CR>
+nnoremap <leader>jd <cmd>lua vim.lsp.buf.definitions()<CR>
 nnoremap <leader>jD <cmd>lua vim.lsp.buf.declaration()<CR>
 nnoremap <leader>jr <cmd>lua vim.lsp.buf.references()<CR>
 nnoremap <leader>je <cmd>lua vim.diagnostic.goto_next({float=true})<CR>
