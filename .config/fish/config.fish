@@ -132,6 +132,10 @@ function py
 end
 
 # ************** DIRECTORIES ************** %%%1
+function cop
+    nvim ~/copy.txt
+end
+
 function code
     cd ~/Dropbox/Code
 end
@@ -163,7 +167,7 @@ end
 # set SPACEFISH_RUST_SHOW false
 # set SPACEFISH_GOLANG_SHOW false
 
-set -U fish_user_paths /opt/homebrew/bin ~/.cargo/bin ~/.fzf/bin ~/.config/emacs/bin ~/.emacs.d/bin ~/perl5/bin ~/.gem/ruby/3.0.0/bin ~/Software/comma-community-2022.01.0/bin ~/Software/cmake-3.26.3-linux-x86_64/bin
+set -U fish_user_paths /opt/homebrew/bin ~/.cargo/bin ~/.fzf/bin ~/.config/emacs/bin ~/.emacs.d/bin ~/perl5/bin ~/.gem/ruby/3.0.0/bin ~/Software/comma-community-2022.01.0/bin ~/Software/cmake-3.26.3-linux-x86_64/bin ~/LogParser/bin
 # ************** SOURCE ************** %%%1
 switch (uname)
     case Linux
