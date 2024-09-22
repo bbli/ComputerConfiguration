@@ -74,14 +74,6 @@ return {
     },
   },
 
-  -- lspconfig
-  {
-    "neovim/nvim-lspconfig",
-    config = function()
-      vim.diagnostic.config({ virtual_text = false })
-    end,
-  },
-
   -- Trouble
   {
     "folke/trouble.nvim",
