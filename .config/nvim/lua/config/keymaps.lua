@@ -203,7 +203,7 @@ nnoremap <leader><leader>m @m
 -------------- 7. Jump/LSP Keymaps -----------------
 vim.cmd([[
 " nnoremap <leader>jd <cmd>Telescope lsp_definitions<CR>
-nnoremap <leader>jd <cmd>lua vim.lsp.buf.definitions()<CR>
+nnoremap <leader>jd <cmd>lua vim.lsp.buf.definition()<CR>
 nnoremap <leader>jD <cmd>lua vim.lsp.buf.declaration()<CR>
 nnoremap <leader>jr <cmd>lua vim.lsp.buf.references()<CR>
 nnoremap <leader>je <cmd>lua vim.diagnostic.goto_next({float=true})<CR>
