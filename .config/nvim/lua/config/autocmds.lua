@@ -4,3 +4,10 @@
 vim.cmd([[
 autocmd BufEnter * lua vim.diagnostic.config({virtual_text = false})
 ]])
+
+vim.cmd([[
+autocmd BufEnter * nnoremap w w
+autocmd BufEnter * nnoremap W W
+autocmd BufEnter * nnoremap H H
+autocmd BufEnter * nnoremap L L
+]])
