@@ -1,16 +1,5 @@
-vim.g.toggleGitBase = true
-function toggleGitBase()
-  if vim.g.toggleGitBase then
-    vim.g.toggleGitBase = false
-    require("gitsigns").change_base("area/foundation")
-  else
-    vim.g.toggleGitBase = true
-    require("gitsigns").change_base()
-  end
-end
-
 local function showGitBase()
-  if vim.g.toggleGitBase then
+  if vim.g.toggleGitBase == 0 then
     return "index"
   else
     return "foundation"

@@ -1,3 +1,14 @@
+vim.g.toggleGitBase = 0
+function toggleGitBase()
+  if vim.g.toggleGitBase == 0 then
+    vim.g.toggleGitBase = 1
+    require("gitsigns").change_base("area/foundation")
+  else
+    vim.g.toggleGitBase = 0
+    require("gitsigns").change_base()
+  end
+end
+
 return {
   -------------- 1. Gitsigns -----------------
   {
@@ -69,7 +80,7 @@ return {
       mappings = {
         status = {
           ["E"] = "GoToFile",
-          ["<Enter>"] = "Toggle",
+          ["<CR>"] = "Toggle",
           ["<c-n>"] = "GoToNextHunkHeader",
           ["<c-p>"] = "GoToPreviousHunkHeader",
         },
@@ -91,7 +102,7 @@ return {
   {
     "sindrets/diffview.nvim",
     keys = {
-      { "<leader>gD", "<cmd>DiffviewOpen<CR>", desc = "Open diffview" },
+      { "<leader>gD", ":DiffviewOpen ", desc = "Open diffview" },
     },
   },
 
