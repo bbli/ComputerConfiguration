@@ -57,12 +57,12 @@ return {
     },
     keys = {
       { "<leader>gp", "<cmd>Gitsigns preview_hunk<CR>", desc = "Preview Git hunk" },
-      --{ "<leader>tb", "<cmd>Gitsigns toggle_current_line_blame<CR>", desc = "Toggle Git Blame on Current Line" },
+      { "<leader>tb", "<cmd>Gitsigns toggle_current_line_blame<CR>", desc = "Toggle Git Blame on Current Line" },
       { "<leader>gn", "<cmd>Gitsigns next_hunk<CR>", desc = "Next git hunk" },
       { "<leader>gN", "<cmd>Gitsigns prev_hunk<CR>", desc = "Prev git hunk" },
       { "<leader>gs", "<cmd>Gitsigns stage_hunk<CR>", desc = "Stage git hunk" },
       { "<leader>gu", "<cmd>Gitsigns reset_hunk<CR>", desc = "Undo git hunk" },
-      { "<leader>tb", toggleGitBase, desc = "Toggle Git Base" },
+      { "<leader>tg", toggleGitBase, desc = "Toggle Git Base" },
     },
   },
 
@@ -113,7 +113,7 @@ return {
     keys = {
       { "<leader>gd", ":Gvdiff", desc = "Git Diff this file" },
       { "<leader>gb", "<cmd>Git blame<CR>", desc = "Git Blame" },
-      { "<leader>gl", "<cmd>Gclog -10000<CR>", desc = "Git log" },
+      { "<leader>gl", "<cmd>Gclog -1000<CR>", desc = "Git log" },
     },
   },
 }
