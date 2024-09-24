@@ -31,7 +31,7 @@ local actions = require("telescope.actions")
 local action_state = require("telescope.actions.state")
 
 Last_Term_String = ""
-vim.cmd("command -nargs=+ ShellSend :lua BensonFloatTermSend(<q-args>")
+vim.cmd("command -nargs=+ ShellSend :lua BensonFloatTermSend(<q-args>)")
 function BensonFloatTermSend(term_string)
   -- 1. First let us just try to get command with spaces into Lua
   -- SC: vimscript does this with cword?
@@ -45,7 +45,6 @@ function BensonFloatTermSend(term_string)
   -- SC: grep pack directory to see if anyone else uses "nvim_cmd"!!!
   vim.api.nvim_command("FloatermShow test")
   vim.api.nvim_command("FloatermSend --name=test " .. term_string)
-  -- vim.api.nvim_cmd({cmd="FloatermSend",args={term_string}},{})
 end
 
 function SendLastStringToTestTerm()
@@ -102,7 +101,7 @@ end
 --     )
 
 function ToggleTerminalCreator(type)
-  -- local on_start = 0
+  local on_start = 0
   return function()
     if on_start == 0 then
       on_start = 1
