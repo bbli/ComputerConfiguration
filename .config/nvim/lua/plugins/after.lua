@@ -21,12 +21,15 @@ local function cpp_format_on_exit(job_id, data, event)
   vim.cmd("bufdo e")
 end
 
-local function make_async()
-  local handle = vim.loop.spawn("make clang-format-patch-stack", {
-    on_exit = cpp_format_on_exit,
-  })
-end
 vim.cmd([[autocmd BufWritePost *.cpp lua make_async()]])
+vim.api.nvim_create_autocmd({ "BufWritePost" }, {
+  pattern = { "*.cpp, *.h" },
+  callback = function()
+    local handle = vim.loop.spawn("make clang-format-patch-stack", {
+      on_exit = cpp_format_on_exit,
+    })
+  end,
+})
 
 return {
   --  "LazyVim/LazyVim",
