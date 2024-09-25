@@ -12,4 +12,8 @@ function PrintTable(t)
     end
   end
 end
+vim.cmd([[
+nnoremap <silent> <leader>al :call matchadd('Search', '\%'.line('.').'l')<CR>
+]])
+
 return {}
