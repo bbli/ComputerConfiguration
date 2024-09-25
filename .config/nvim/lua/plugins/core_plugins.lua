@@ -89,7 +89,7 @@ return {
     keys = {
       { "<leader>od", "<cmd>Trouble diagnostics toggle filter.buf=0<CR>", desc = "Open Buffer Diagnostic" },
       { "<leader>oD", "<cmd>Trouble diagnostics toggle<CR>", desc = "Open Project Diagnostic" },
-      { "<leader>tt", "<cmd>Trouble symbols toggle=false<CR>", desc = "Toggle Trouble TagBar" },
+      { "<leader>tt", "<cmd>Trouble symbols toggle=true<CR>", desc = "Toggle Trouble TagBar" },
     },
   },
 
