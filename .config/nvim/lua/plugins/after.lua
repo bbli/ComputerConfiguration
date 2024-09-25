@@ -14,6 +14,9 @@ function PrintTable(t)
 end
 vim.cmd([[
 nnoremap <silent> <leader>al :call matchadd('Search', '\%'.line('.').'l')<CR>
+nnoremap <silent> <leader>ac :call clearmatches()<CR>
 ]])
 
-return {}
+return {
+  --  "LazyVim/LazyVim",
+}

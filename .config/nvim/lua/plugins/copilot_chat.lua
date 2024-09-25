@@ -11,14 +11,6 @@ function M.pick(kind)
     require("CopilotChat.integrations." .. (ok and "fzflua" or "telescope")).pick(items)
   end
 end
-function CopilotQuickChat()
-  local input = vim.fn.input("Quick Chat: ")
-  if input ~= "" then
-    require("CopilotChat").ask(input)
-  end
-end
-
-vim.api.nvim_command("command! CopilotQuickChat lua CopilotQuickChat()")
 
 return {
   {
@@ -38,12 +30,6 @@ return {
       { "<leader>ad", M.pick("help"), desc = "Diagnostic Help (CopilotChat)", mode = { "n", "v" } },
       -- Show prompts actions with telescope
       { "<leader>ap", M.pick("prompt"), desc = "Prompt Actions (CopilotChat)", mode = { "n", "v" } },
-      {
-        "<leader>ac",
-        CopilotQuickChat,
-        desc = "Quick Chat (CopilotChat)",
-        mode = { "n", "v" },
-      },
     },
   },
 }
