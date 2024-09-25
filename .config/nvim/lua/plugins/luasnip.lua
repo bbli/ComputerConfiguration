@@ -95,11 +95,11 @@ ls.add_snippets(nil, {
   },
   cpp = {
     snip("sec", fmt([[// **************** {} ****************]], i(1, ""))),
-    snip("dd", fmt([[PS_DIAG_INFO(d_,"BENSON_DEBUG:: %%:%%  {}: {}",__FILE__, __LINE__);]], { i(1, "TAG"), i(2, "") })),
+    snip("dd", fmt([[PS_DIAG_INFO(d_,"BENSON_DEBUG:: %%:%%  {}:{}",__FILE__, __LINE__);]], { i(1, "TAG"), i(2, "") })),
     snip(
       "dv",
       fmt(
-        [[PS_DIAG_INFO(d_,"BENSON_DEBUG:: %%:%%  {}: {}=%%",__FILE__, __LINE__,{});]],
+        [[PS_DIAG_INFO(d_,"BENSON_DEBUG:: %%:%%  {}:{}=%%",__FILE__, __LINE__,{});]],
         { i(1, "TAG"), i(2, ""), rep(2) }
       )
     ),
