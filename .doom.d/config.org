@@ -712,7 +712,8 @@ or they provide fuzzy search:
         (interactive)
         (org-capture nil "t")
 )
-(map! :map benson/open-keymap "c" 'benson/org-capture)
+(map! :map evil-window-map "c" 'benson/org-capture)
+(map! :map doom-leader-map "c" 'benson/org-capture)
 #+end_src
 
 #+RESULTS:

@@ -525,7 +525,8 @@
         (interactive)
         (org-capture nil "t")
 )
-(map! :map benson/open-keymap "c" 'benson/org-capture)
+(map! :map evil-window-map "c" 'benson/org-capture)
+(map! :map doom-leader-map "c" 'benson/org-capture)
 
 (defun benson/split-window-advice ()
         (interactive)
