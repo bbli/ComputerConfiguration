@@ -169,7 +169,7 @@ nnoremap <leader>pp :echo expand('%:p')<CR>
 nnoremap <leader><leader>p :echo expand('%:p')<CR>
 nmap <leader><leader>c gcc
 vmap <leader><leader>c gc
-vnoremap Y :'<,'>w ~/copy.txt
+vnoremap Y :'<,'>w! ~/copy.txt<CR>
 
 nnoremap <leader><leader>m @m
 ]])
