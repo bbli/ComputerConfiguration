@@ -42,7 +42,6 @@ return {
       "<leader>oa",
       "<cmd>lua require'telescope.builtin'.find_files({ find_command = {'rg', '--no-ignore-vcs', '--files', '--hidden', '-g', '!.git' , '-g', '!node_modules'}})<cr>",
     },
-    { "<leader>ob", "<cmd>Telescope buffers<CR>" },
     { "<leader>oh", "<cmd>Telescope oldfiles<CR>" },
     { "<leader>om", "<cmd>Telescope help_tags<CR>" },
     { "<leader>oc", "<cmd>Telescope commands<CR>" },
