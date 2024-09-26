@@ -548,32 +548,3 @@
 (map! :map evil-window-map
       "m" 'benson/zen-toggle
 )
-
-(add-to-list 'auto-mode-alist '("ir_test\\.log\\'" . logview-mode))
-
-;; Logview definitions
-(setq logview-additional-submodes
-             '(("ir_test.log"
-               (format . "TIMESTAMP LEVEL <<RX:NAME:.*>> - ")
-               (levels . "ir_test_log_levels"))
-               ("fbsetup.log"
-                (format . "TIMESTAMP NAME fbsetup LEVEL admin.fbsetup [THREAD]: MESSAGE")
-                (levels . "Log4j"))
-               ("chassis.log"
-                (format . "TIMESTAMP NAME chassis: THREAD: MESSAGE"))
-               ))
-
-(setq logview-additional-level-mappings
-             '(("ir_test_log_levels"
-               (error       "E")
-               (warning     "W")
-               (information "I")
-               (debug       "D"))))
-
-(setq logview-additional-timestamp-formats
-             '(("ISO 8601 datetime + millis + Z"
-               (java-pattern . "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-               (aliases "ISO 8601 datetime"))
-               ("ISO 8601 datetime + micros"
-                (java-pattern . "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"))
-                ))
