@@ -106,9 +106,6 @@ function ToggleTerminalCreator(type)
     if on_start == 0 then
       on_start = 1
       vim.cmd("FloatermNew --name=" .. type .. " --cwd=<root>")
-      --vim.cmd("FloatermNew --cwd=<root> --name=shell")
-      vim.cmd("bn")
-      vim.cmd("normal <C-o>")
     else
       vim.cmd("FloatermToggle " .. type)
     end

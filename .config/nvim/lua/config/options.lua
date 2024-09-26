@@ -4,5 +4,6 @@
 vim.opt.hidden = true
 vim.opt.linebreak = true
 vim.opt.wrap = true
+vim.opt.cedit = "<C-e>"
 --vim.g.autoformat = false
 vim.g.maplocalleader = "-"
