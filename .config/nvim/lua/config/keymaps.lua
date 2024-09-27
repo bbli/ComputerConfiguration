@@ -164,8 +164,14 @@ tmap ;c <Esc><Esc>
 ]])
 
 -------------- 7. Utility Keymaps -----------------
+function PrintCurrentFilePath()
+  local path = vim.fn.expand("%:p")
+  vim.notify(path, vim.log.levels.INFO, {
+    title = "Current File's Absolute Path",
+  })
+end
 vim.cmd([[
-nnoremap <leader>pp :echo expand('%:p')<CR>
+nnoremap <leader>pp :lua PrintCurrentFilePath()<CR>
 nnoremap <leader><leader>p :echo expand('%:p')<CR>
 nmap <leader><leader>c gcc
 vmap <leader><leader>c gc
