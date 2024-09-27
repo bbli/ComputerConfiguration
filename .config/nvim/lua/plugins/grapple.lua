@@ -76,25 +76,46 @@ return {
         end,
       },
 
-      -- grapple file
+      -- grapple other: secondary file to main file
       {
-        "<leader>hf",
+        "<leader>ho",
         function()
-          require("grapple").tag({ name = "file" })
+          require("grapple").tag({ name = "other" })
         end,
-        desc = "Grapple File Tag",
+        desc = "Grapple Other Tag",
       },
       {
-        "<leader>jf",
+        "<leader>jo",
         function()
-          require("grapple").select({ name = "file" })
+          require("grapple").select({ name = "other" })
         end,
-        desc = "Jump to File Tag",
+        desc = "Jump to Other Tag",
       },
       {
-        "<leader>rf",
+        "<leader>ro",
         function()
-          require("grapple").untag({ name = "file" })
+          require("grapple").untag({ name = "other" })
+        end,
+      },
+      -- grapple similar file -> gs
+      {
+        "<leader>hs",
+        function()
+          require("grapple").tag({ name = "similar" })
+        end,
+        desc = "Grapple Similar Tag",
+      },
+      {
+        "<leader>js",
+        function()
+          require("grapple").select({ name = "similar" })
+        end,
+        desc = "Jump to Similar Tag",
+      },
+      {
+        "<leader>rl",
+        function()
+          require("grapple").untag({ name = "similar" })
         end,
       },
     },

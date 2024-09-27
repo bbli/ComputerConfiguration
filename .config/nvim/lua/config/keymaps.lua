@@ -186,9 +186,9 @@ nnoremap <leader>jE <cmd>lua vim.diagnostic.goto_prev({float=true})<CR>
 
 
 nnoremap K <cmd>lua vim.lsp.buf.hover()<CR>
-nnoremap <leader>jo <cmd>lua vim.lsp.buf.outgoing_calls()<CR>
+"nnoremap <leader>jo <cmd>lua vim.lsp.buf.outgoing_calls()<CR>
 "though references is better -> will also show from test files too
-nnoremap <leader>ji <cmd>lua vim.lsp.buf.incoming_calls()<CR>
+"nnoremap <leader>ji <cmd>lua vim.lsp.buf.incoming_calls()<CR>
 nnoremap <leader>jh <cmd>CclsDerivedHierarchy<CR>
 
 " nnoremap <leader>fr <cmd>lua vim.lsp.buf.rename()<CR>
