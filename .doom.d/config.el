@@ -102,7 +102,7 @@
         (custom-set-faces! '(org-meta-line :height 0.7))
         (custom-set-faces! '(org-block-begin-line :height 0.7))
         (custom-set-faces! '(org-block-end-line :height 0.7))
-        (custom-set-faces! '(org-code :height 0.9))
+        (custom-set-faces! '(org-code :height 1.1))
         (set-face-attribute 'org-level-1 nil :height 1.0)
         (set-face-attribute 'org-level-2 nil :height 1.4)
         (set-face-attribute 'org-level-3 nil :height 1.2)
