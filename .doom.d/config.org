@@ -402,10 +402,10 @@
                 "C-a" nil
                 "C-c" nil
                 ;"C-q" nil
-                ;"C-b" 'exwm-input-send-next-key
                 ;"C-d" 'exwm-input-send-next-key
                 ;"C-t" 'exwm-input-send-next-key
                 "C-f" 'exwm-input-send-next-key
+                "C-b" 'exwm-input-send-next-key
                 ;"C-n" 'exwm-input-send-next-key
                 ;"C-p" 'exwm-input-send-next-key
                 ;"C-v" 'exwm-input-send-next-key
@@ -749,3 +749,7 @@ or they provide fuzzy search:
 #+end_src
 
 #+RESULTS:
+* Open a floating window
+#+begin_src emacs-lisp
+
+#+end_src

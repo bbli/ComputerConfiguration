@@ -316,10 +316,10 @@
                 "C-a" nil
                 "C-c" nil
                 ;"C-q" nil
-                ;"C-b" 'exwm-input-send-next-key
                 ;"C-d" 'exwm-input-send-next-key
                 ;"C-t" 'exwm-input-send-next-key
                 "C-f" 'exwm-input-send-next-key
+                "C-b" 'exwm-input-send-next-key
                 ;"C-n" 'exwm-input-send-next-key
                 ;"C-p" 'exwm-input-send-next-key
                 ;"C-v" 'exwm-input-send-next-key
@@ -548,3 +548,5 @@
 (map! :map evil-window-map
       "m" 'benson/zen-toggle
 )
+
+

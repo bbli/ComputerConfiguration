@@ -12,6 +12,11 @@ function M.pick(kind)
   end
 end
 
+function CopilotChatFullscreen()
+  require("CopilotChat").toggle()
+  vim.cmd("only")
+end
+
 return {
   {
     "CopilotC-Nvim/CopilotChat.nvim",
@@ -27,9 +32,15 @@ return {
         mode = { "n", "v" },
       },
       -- Show help actions with telescope
-      { "<leader>ad", M.pick("help"), desc = "Diagnostic Help (CopilotChat)", mode = { "n", "v" } },
+      { "<leader>ad", M.pick("help"),   desc = "Diagnostic Help (CopilotChat)", mode = { "n", "v" } },
       -- Show prompts actions with telescope
-      { "<leader>ap", M.pick("prompt"), desc = "Prompt Actions (CopilotChat)", mode = { "n", "v" } },
+      { "<leader>ap", M.pick("prompt"), desc = "Prompt Actions (CopilotChat)",  mode = { "n", "v" } },
+      {
+        "<leader>ac",
+        CopilotChatFullscreen,
+        desc = "Quick Chat (CopilotChat)",
+        mode = { "n", "v" },
+      },
     },
   },
 }
