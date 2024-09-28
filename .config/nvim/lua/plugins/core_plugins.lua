@@ -18,6 +18,7 @@ function ToggleNoiceHistory()
     vim.cmd("NoiceHistory")
   end
 end
+
 return {
   -- add my colorscheme to LazyVim
   { "sainnhe/edge" },
@@ -62,6 +63,11 @@ return {
     "nvim-neo-tree/neo-tree.nvim",
     opts = {
       toggle = true,
+      window = {
+        mappings = {
+          ["<TAB>"] = "toggle_node",
+        }
+      }
     },
     keys = {
       { "<leader>tn", ":Neotree toggle<CR>", desc = "Toggle Neotree" },
@@ -108,8 +114,8 @@ return {
     "folke/trouble.nvim",
     keys = {
       { "<leader>od", "<cmd>Trouble diagnostics toggle filter.buf=0<CR>", desc = "Open Buffer Diagnostic" },
-      { "<leader>oD", "<cmd>Trouble diagnostics toggle<CR>", desc = "Open Project Diagnostic" },
-      { "<leader>tt", "<cmd>Trouble symbols toggle=true<CR>", desc = "Toggle Trouble TagBar" },
+      { "<leader>oD", "<cmd>Trouble diagnostics toggle<CR>",              desc = "Open Project Diagnostic" },
+      { "<leader>tt", "<cmd>Trouble symbols toggle=true<CR>",             desc = "Toggle Trouble TagBar" },
     },
   },
 
