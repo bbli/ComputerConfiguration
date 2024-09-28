@@ -17,18 +17,19 @@ nnoremap <silent> <leader>al :call matchadd('Search', '\%'.line('.').'l')<CR>
 nnoremap <silent> <leader>ac :call clearmatches()<CR>
 ]])
 
-local asynchronous_command_example = function()
+function AutoFormatOnSave()
   local Job = require("plenary.job")
   Job:new({
     command = "make",
     args = { "clang-format-patch-stack" },
     on_exit = function(job, return_val)
-      vim.uv.new_async(function()
-        vim.cmd("bufdo e")
-      end)
+      vim.cmd("bufdo checktime")
     end,
   }):start()
 end
+vim.cmd([[
+autocmd BufWritePost *.cpp,*.h lua AutoFormatOnSave()
+]])
 
 return {
   --  "LazyVim/LazyVim",
