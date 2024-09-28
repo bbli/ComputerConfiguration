@@ -17,19 +17,16 @@ nnoremap <silent> <leader>al :call matchadd('Search', '\%'.line('.').'l')<CR>
 nnoremap <silent> <leader>ac :call clearmatches()<CR>
 ]])
 
-local function cpp_format_on_exit(job_id, data, event)
-  vim.cmd("bufdo e")
+local asynchronous_command_example = function()
+  local Job = require("plenary.job")
+  Job:new({
+    command = "make",
+    args = { "clang-format-patch-stack" },
+    on_exit = function(job, return_val)
+      vim.cmd("bufdo e")
+    end,
+  }):start()
 end
-
-vim.cmd([[autocmd BufWritePost *.cpp lua make_async()]])
-vim.api.nvim_create_autocmd({ "BufWritePost" }, {
-  pattern = { "*.cpp, *.h" },
-  callback = function()
-    local handle = vim.loop.spawn("make clang-format-patch-stack", {
-      on_exit = cpp_format_on_exit,
-    })
-  end,
-})
 
 return {
   --  "LazyVim/LazyVim",
