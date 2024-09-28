@@ -23,7 +23,9 @@ local asynchronous_command_example = function()
     command = "make",
     args = { "clang-format-patch-stack" },
     on_exit = function(job, return_val)
-      vim.cmd("bufdo e")
+      vim.uv.new_async(function()
+        vim.cmd("bufdo e")
+      end)
     end,
   }):start()
 end
