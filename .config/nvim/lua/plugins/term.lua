@@ -32,6 +32,14 @@ local action_state = require("telescope.actions.state")
 
 Last_Term_String = ""
 vim.cmd("command -nargs=+ ShellSend :lua BensonFloatTermSend(<q-args>)")
+vim.api.nvim_exec(
+  [[
+augroup MakeFloatTermBufferVisible
+ autocmd FileType floaterm call setbufvar(bufnr('%'), '&buflisted', 1) 
+augroup END
+]],
+  false
+)
 function BensonFloatTermSend(term_string)
   -- 1. First let us just try to get command with spaces into Lua
   -- SC: vimscript does this with cword?
