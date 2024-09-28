@@ -23,7 +23,9 @@ function AutoFormatOnSave()
     command = "make",
     args = { "clang-format-patch-stack" },
     on_exit = function(job, return_val)
-      vim.cmd("bufdo checktime")
+      vim.schedule(function()
+        vim.cmd("bufdo e")
+      end)
     end,
   }):start()
 end
