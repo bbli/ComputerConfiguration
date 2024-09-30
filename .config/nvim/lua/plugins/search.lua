@@ -1,3 +1,4 @@
+require("benson-util")
 vim.cmd([[
 if executable("rg")
   set grepprg=rg
@@ -28,12 +29,6 @@ function RipGrepCurrentFile(pattern)
   vim.cmd("copen")
 end
 
-function FindGitRoot()
-  local handle = io.popen("git rev-parse --show-toplevel")
-  local git_root = handle:read("*a"):gsub("\n", "")
-  handle:close()
-  return git_root
-end
 function GetPathOfCurrentFile()
   return vim.fn.expand("%p:h")
 end

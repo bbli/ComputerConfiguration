@@ -1,28 +1,35 @@
-vim.cmd([[
-function! JumpToFile()
-    let cword = expand("<cWORD>")
-    echom cword
-    let fileline = trim(cword,":")
-    let array = split(fileline,':')
-    if len(array) > 1
-        " echom "file and line"
-        let filename = array[0]
-        let linenumber=array[1]
-        FloatermHide
-        let s = "edit +" . linenumber . " " . filename
-        " echom s
-        execute s
-    else
-        " echom "just file"
-        let filename = array[0]
-        FloatermHide
-        let s = "edit " .. filename
-        " echom s
-        execute s
-    endif
-endfunction
-nnoremap gl :call JumpToFile()<CR>
-]])
+require("benson-util")
+function ConvertFromContainer(container_filename)
+  local root = FindGitRoot()
+  return string.gsub(container_filename, "/home/ir/iridium", root)
+end
+
+function mysplit(inputstr, sep)
+  if sep == nil then
+    sep = "%s"
+  end
+  local t = {}
+  for str in string.gmatch(inputstr, "([^" .. sep .. "]+)") do
+    table.insert(t, str)
+  end
+  return t
+end
+
+-- Lua version of JumpToFile
+function JumpToFile()
+  local cword = vim.fn.expand("<cWORD>")
+  local fileline = cword:gsub("^%s*(.-)%s*$", "%1") -- trim
+  local array = mysplit(fileline, ":")
+  if #array > 1 then
+    local container_filename = array[1]
+    local linenumber = array[2]
+    local filename = ConvertFromContainer(container_filename)
+    vim.cmd("FloatermHide")
+    local s = "edit +" .. linenumber .. " " .. filename
+    vim.cmd(s)
+  end
+end
+
 local pickers = require("telescope.pickers")
 local finders = require("telescope.finders")
 local conf = require("telescope.config").values
@@ -139,6 +146,7 @@ return {
       { "<leader>sl", ":ShellSend ", desc = "Send a String to ShellSend" },
       { "<leader>ss", SendLastStringToTestTerm, desc = "Send Shell Command to Test Term" },
       { "<leader>sh", SendStringFromHistory, desc = "Fuzzy Search Shell Command History" },
+      { "gl", JumpToFile, desc = "Jump to Line in File" },
     },
   },
 }

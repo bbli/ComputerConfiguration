@@ -144,12 +144,6 @@ nnoremap <unique> gE g$
 " to jump between brackets/parantheses
 nnoremap S %
 vnoremap S %
-nnoremap w W
-nnoremap W w
-nnoremap b B
-nnoremap B b
-nnoremap n nzz
-nnoremap N Nzz
 
 nnoremap <unique> gb gi
 
