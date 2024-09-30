@@ -85,6 +85,7 @@ vim.api.nvim_set_keymap("n", "<leader>td", "<leader>ud", { desc = "Toggle LSP Di
 
 -------------- 4. LocalLeader Keymaps -----------------
 vim.cmd([[
+nnoremap <localleader>c :e ~/copy.txt<CR>
 nnoremap <localleader>v :e ~/.vimrc<CR>
 nnoremap <localleader>b :e ~/.bash_aliases<CR>
 nnoremap <localleader>t :e ~/.tmux.conf<CR>
