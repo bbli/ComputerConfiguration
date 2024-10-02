@@ -99,8 +99,10 @@ return {
   -------------- 4. Diffview -----------------
   {
     "sindrets/diffview.nvim",
+    event = "VimEnter",
     keys = {
       { "<leader>gD", ":DiffviewOpen ", desc = "Open diffview" },
+      { "<leader>gf", ":DiffviewFileHistory %<CR>", desc = "Open diffview" },
     },
   },
 
