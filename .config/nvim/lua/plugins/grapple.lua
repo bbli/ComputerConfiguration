@@ -10,6 +10,14 @@ return {
         desc = "Open Grapple Select Window",
       },
 
+      -- clear all tags
+      {
+        "<leader>hc",
+        function()
+          require("grapple").unload()
+        end,
+        desc = "Clear All Harpoon Tags",
+      },
       -- grapple log -> gl
       {
         "<leader>hl",
@@ -76,46 +84,46 @@ return {
         end,
       },
 
-      -- grapple other: secondary file to main file
+      -- grapple second: secondary file to main file
       {
         "<leader>ho",
+        function()
+          require("grapple").tag({ name = "second" })
+        end,
+        desc = "Grapple Second Tag",
+      },
+      {
+        "<leader>jo",
+        function()
+          require("grapple").select({ name = "second" })
+        end,
+        desc = "Jump to Second Tag",
+      },
+      {
+        "<leader>ro",
+        function()
+          require("grapple").untag({ name = "second" })
+        end,
+      },
+      -- grapple other file: for example of code to copy
+      {
+        "<leader>hs",
         function()
           require("grapple").tag({ name = "other" })
         end,
         desc = "Grapple Other Tag",
       },
       {
-        "<leader>jo",
+        "<leader>js",
         function()
           require("grapple").select({ name = "other" })
         end,
         desc = "Jump to Other Tag",
       },
       {
-        "<leader>ro",
-        function()
-          require("grapple").untag({ name = "other" })
-        end,
-      },
-      -- grapple similar file -> gs
-      {
-        "<leader>hs",
-        function()
-          require("grapple").tag({ name = "similar" })
-        end,
-        desc = "Grapple Similar Tag",
-      },
-      {
-        "<leader>js",
-        function()
-          require("grapple").select({ name = "similar" })
-        end,
-        desc = "Jump to Similar Tag",
-      },
-      {
         "<leader>rl",
         function()
-          require("grapple").untag({ name = "similar" })
+          require("grapple").untag({ name = "other" })
         end,
       },
     },
