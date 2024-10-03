@@ -132,6 +132,7 @@ local toggleTestTerminal = ToggleTerminalCreator("test")
 return {
   {
     "voldikss/vim-floaterm",
+    event = "VimEnter",
     config = function()
       vim.g.floaterm_opener = "edit"
       vim.g.floaterm_autoclose = 0
