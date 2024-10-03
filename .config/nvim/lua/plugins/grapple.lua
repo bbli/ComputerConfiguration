@@ -14,7 +14,7 @@ return {
       {
         "<leader>hc",
         function()
-          require("grapple").unload()
+          require("grapple").reset()
         end,
         desc = "Clear All Harpoon Tags",
       },
