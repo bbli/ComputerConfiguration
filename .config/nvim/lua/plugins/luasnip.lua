@@ -88,13 +88,13 @@ ls.add_snippets(nil, {
       { trig = "asdfd", dscr = "Top Level Comment with Vim Level 1 Fold Marker" },
       fmt("Text to insert {} and stuff {}", { i(1, "default"), rep(1) })
     ),
-    snip("sec", fmt([[-- **************** {} ****************]], i(1, ""))),
+    snip("sd", fmt([[-- **************** {} ****************]], i(1, ""))),
   },
   python = {
-    snip("sec", fmt([[# **************** {} ****************]], i(1, ""))),
+    snip("sd", fmt([[# **************** {} ****************]], i(1, ""))),
   },
   cpp = {
-    snip("sec", fmt([[// **************** {} ****************]], i(1, ""))),
+    snip("sd", fmt([[// **************** {} ****************]], i(1, ""))),
     snip("dd", fmt([[PS_DIAG_INFO(d_,"BENSON_DEBUG:: %%:%%  {}:{}",__FILE__, __LINE__);]], { i(1, ""), i(2, "") })),
     snip(
       "dv",
