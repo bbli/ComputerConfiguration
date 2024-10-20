@@ -7,5 +7,6 @@ vim.opt.wrap = true
 vim.opt.cedit = "<C-e>"
 vim.opt.timeoutlen = 100
 vim.opt.ttimeoutlen = 10
+vim.opt.foldmethod = "manual"
 --vim.g.autoformat = false
 vim.g.maplocalleader = "-"
