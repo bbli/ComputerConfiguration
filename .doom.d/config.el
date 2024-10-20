@@ -102,7 +102,7 @@
         (custom-set-faces! '(org-meta-line :height 0.7))
         (custom-set-faces! '(org-block-begin-line :height 0.7))
         (custom-set-faces! '(org-block-end-line :height 0.7))
-        (custom-set-faces! '(org-code :height 1.1))
+        (custom-set-faces! '(org-code :height 0.9))
         (set-face-attribute 'org-level-1 nil :height 1.0)
         (set-face-attribute 'org-level-2 nil :height 1.4)
         (set-face-attribute 'org-level-3 nil :height 1.2)
@@ -442,15 +442,22 @@
 (map! :n "P" 'ssh-and-copy-file)
 
 (defun benson-clock-start ()
-    (interactive)
-    (org-timer-set-timer 30)
-    (org-timer-start)
-    (org-clock-in)
+        (interactive)
+        (if (> (org-current-level) 1)
+                (org-clock-in)
+                ;(org-timer-set-timer 30)
+                ;(org-timer-start)
+        )
 )
+
 (map! :map org-mode-map
       :desc "start org timer" "C-c s" 'org-clock-in
       :desc "start org timer" "C-c d" 'org-clock-out
 )
+
+(add-hook 'org-insert-heading-hook 'benson-clock-start)
+(advice-add 'org-toggle-heading :after 'benson-clock-start)
+(map! :map evil-window-map "d" 'org-clock-out)
 
 (if (display-graphic-p)
         (add-hook 'after-init-hook (lambda () (find-file (concat org-directory "/Write_Ahead_Logging.org"))))
@@ -548,5 +555,3 @@
 (map! :map evil-window-map
       "m" 'benson/zen-toggle
 )
-
-

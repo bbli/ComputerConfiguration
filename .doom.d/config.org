@@ -573,20 +573,26 @@
 #+RESULTS:
 : ((ssh . src bash :exports both :dir /sshx:beli@fuse) (a . export ascii) (c . center) (C . comment) (e . example) (E . export) (h . export html) (l . export latex) (q . quote) (s . src) (v . verse))
 
-* Adding Clock to Org Mode Headers :Org:
+* Adding Automatic Clock to Org Mode Headers :Org:
 - [ ] Still need to make it automatic
 #+begin_src emacs-lisp
 (defun benson-clock-start ()
-    (interactive)
-    (org-timer-set-timer 30)
-    (org-timer-start)
-    (org-clock-in)
+        (interactive)
+        (if (> (org-current-level) 1)
+                (org-clock-in)
+                ;(org-timer-set-timer 30)
+                ;(org-timer-start)
+        )
 )
+
 (map! :map org-mode-map
       :desc "start org timer" "C-c s" 'org-clock-in
       :desc "start org timer" "C-c d" 'org-clock-out
 )
 
+(add-hook 'org-insert-heading-hook 'benson-clock-start)
+(advice-add 'org-toggle-heading :after 'benson-clock-start)
+(map! :map evil-window-map "d" 'org-clock-out)
 #+end_src
 
 #+RESULTS:
@@ -749,7 +755,3 @@ or they provide fuzzy search:
 #+end_src
 
 #+RESULTS:
-* Open a floating window
-#+begin_src emacs-lisp
-
-#+end_src
