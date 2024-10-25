@@ -82,6 +82,9 @@ ls.add_snippets(nil, {
     -- Example of passing a function
     snip("sametest", fmt("example: {}, function: {} ", { i(1), same(1) })),
   },
+  rust = {
+    snip("sd", fmt([[// **************** {} ****************]], i(1, ""))),
+  },
   lua = {
     -- Example of using rep(), which is a higher order function
     snip(
