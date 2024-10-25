@@ -57,12 +57,12 @@ return {
     },
     keys = {
       { "<leader>gp", "<cmd>Gitsigns preview_hunk<CR>", desc = "Preview Git hunk" },
-      { "<leader>tb", "<cmd>Gitsigns toggle_current_line_blame<CR>", desc = "Toggle Git Blame on Current Line" },
+      { "<leader>tg", "<cmd>Gitsigns toggle_current_line_blame<CR>", desc = "Toggle Git Blame on Current Line" },
       { "<leader>gn", "<cmd>Gitsigns next_hunk<CR>", desc = "Next git hunk" },
       { "<leader>gN", "<cmd>Gitsigns prev_hunk<CR>", desc = "Prev git hunk" },
       { "<leader>gs", "<cmd>Gitsigns stage_hunk<CR>", desc = "Stage git hunk" },
       { "<leader>gu", "<cmd>Gitsigns reset_hunk<CR>", desc = "Undo git hunk" },
-      { "<leader>tg", toggleGitBase, desc = "Toggle Git Base" },
+      { "<leader>tb", toggleGitBase, desc = "Toggle Git Base" },
     },
   },
 
