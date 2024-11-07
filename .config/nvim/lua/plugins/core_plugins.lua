@@ -69,12 +69,12 @@ return {
     "folke/todo-comments.nvim",
     opts = {
       keywords = {
-        BENSON_TODO = { color = "info" },
-        BENSON_HACK = { color = "warning" },
+        B_TODO = { color = "info" },
+        B_HACK = { color = "warning" },
       },
     },
     keys = {
-      { "<leader>tt", ":TodoQuickFix keywords=BENSON_TODO,BENSON_HACK<CR>", desc = "Toggle Todo-Comments" },
+      { "<leader>tt", ":TodoQuickFix keywords=B_TODO,B_HACK<CR>", desc = "Toggle Todo-Comments" },
     },
   },
 
