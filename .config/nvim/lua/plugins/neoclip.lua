@@ -34,7 +34,7 @@ return {
       })
     end,
     keys = {
-      { "<leader>or", "<cmd>Telescope nepclip" },
+      { "<leader>or", "<cmd>Telescope nepclip<CR>" },
     },
   },
 }

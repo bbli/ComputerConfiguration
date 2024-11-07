@@ -11,4 +11,4 @@ vim.opt.ttimeoutlen = 10
 --vim.g.autoformat = false
 vim.g.maplocalleader = "-"
 vim.opt.foldmethod = "marker"
-vim.opt.foldmarker = "%%%,^^^"
+vim.opt.foldmarker = "%%%,%%%"

@@ -64,6 +64,19 @@ return {
       { "<leader>tz", "<cmd>ZenMode<CR>", desc = "Toggle ZenMode" },
     },
   },
+  -- zen mode
+  {
+    "folke/todo-comments.nvim",
+    opts = {
+      keywords = {
+        BENSON_TODO = { color = "info" },
+        BENSON_HACK = { color = "warning" },
+      },
+    },
+    keys = {
+      { "<leader>tt", ":TodoQuickFix keywords=BENSON_TODO,BENSON_HACK<CR>", desc = "Toggle Todo-Comments" },
+    },
+  },
 
   -- diable flash.nvim
   {
@@ -135,7 +148,7 @@ return {
   {
     "stevearc/aerial.nvim",
     keys = {
-      { "<leader>tt", "<cmd>AerialToggle<CR>", desc = "Aerial Toggle" },
+      { "<leader>ts", "<cmd>AerialToggle<CR>", desc = "Toggle Symbols" },
     },
   },
 
