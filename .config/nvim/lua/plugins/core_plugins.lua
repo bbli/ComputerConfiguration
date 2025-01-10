@@ -71,10 +71,11 @@ return {
       keywords = {
         B_TODO = { color = "info" },
         B_HACK = { color = "warning" },
+        B_FUTURE = { color = "info" },
       },
     },
     keys = {
-      { "<leader>tt", ":TodoQuickFix keywords=B_TODO,B_HACK<CR>", desc = "Toggle Todo-Comments" },
+      { "<leader>tt", ":TodoQuickFix keywords=B_HACK,B_TODO,B_FUTURE<CR>", desc = "Toggle Todo-Comments" },
     },
   },
 

@@ -573,7 +573,7 @@
 #+RESULTS:
 : ((ssh . src bash :exports both :dir /sshx:beli@fuse) (a . export ascii) (c . center) (C . comment) (e . example) (E . export) (h . export html) (l . export latex) (q . quote) (s . src) (v . verse))
 
-* Adding Automatic Clock to Org Mode Headers :Org:
+* COMMENT Adding Automatic Clock to Org Mode Headers :Org:
 - [ ] Still need to make it automatic
 #+begin_src emacs-lisp
 (defun benson-clock-start ()
@@ -736,7 +736,7 @@ or they provide fuzzy search:
 #+end_src
 
 #+RESULTS:
-* My own focus mode with write_ahead log on the side
+* EXWM My own focus mode with write_ahead log on the side
 - NOTE: dependent on [[*Keybindings to Increase/Decrease Window Width]]
 #+begin_src emacs-lisp
 (defun benson/zen-toggle ()
@@ -755,3 +755,20 @@ or they provide fuzzy search:
 #+end_src
 
 #+RESULTS:
+* DONE Asking user to move notes to Obsidian when Done
+#+begin_src emacs-lisp
+(defun prompt-user-to-move-note ()
+        (posframe-show " *posframe-buffer"
+                       :string "See if any notes should be moved to Obsidian"
+                       :position (point)
+                       :timeout 5
+                       :foreground-color "blue"
+        )
+)
+(defun benson/ask-user-to-move-to-obsidian ()
+        (when (string-equal org-state "DONE")
+          (prompt-user-to-move-note)
+        )
+)
+(add-hook 'org-after-todo-state-change-hook 'benson/ask-user-to-move-to-obsidian)
+#+end_src

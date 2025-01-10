@@ -193,7 +193,7 @@ nnoremap K <cmd>lua vim.lsp.buf.hover()<CR>
 "nnoremap <leader>ji <cmd>lua vim.lsp.buf.incoming_calls()<CR>
 nnoremap <leader>jh <cmd>CclsDerivedHierarchy<CR>
 
-" nnoremap <leader>fr <cmd>lua vim.lsp.buf.rename()<CR>
+nnoremap <leader>fr <cmd>lua vim.lsp.buf.rename()<CR>
 " nnoremap <leader>js :vs<CR>:lua vim.lsp.buf.definition()<CR>
 " nnoremap <leader>jr <cmd>lua vim.lsp.buf.incoming_calls()<CR>
 " nnoremap <leader>ji <cmd>lua vim.lsp.buf.implementation()<CR>

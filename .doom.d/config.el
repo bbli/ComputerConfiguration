@@ -441,24 +441,6 @@
 )
 (map! :n "P" 'ssh-and-copy-file)
 
-(defun benson-clock-start ()
-        (interactive)
-        (if (> (org-current-level) 1)
-                (org-clock-in)
-                ;(org-timer-set-timer 30)
-                ;(org-timer-start)
-        )
-)
-
-(map! :map org-mode-map
-      :desc "start org timer" "C-c s" 'org-clock-in
-      :desc "start org timer" "C-c d" 'org-clock-out
-)
-
-(add-hook 'org-insert-heading-hook 'benson-clock-start)
-(advice-add 'org-toggle-heading :after 'benson-clock-start)
-(map! :map evil-window-map "d" 'org-clock-out)
-
 (if (display-graphic-p)
         (add-hook 'after-init-hook (lambda () (find-file (concat org-directory "/Write_Ahead_Logging.org"))))
 )
@@ -555,3 +537,18 @@
 (map! :map evil-window-map
       "m" 'benson/zen-toggle
 )
+
+(defun prompt-user-to-move-note ()
+        (posframe-show " *posframe-buffer"
+                       :string "See if any notes should be moved to Obsidian"
+                       :position (point)
+                       :timeout 5
+                       :foreground-color "blue"
+        )
+)
+(defun benson/ask-user-to-move-to-obsidian ()
+        (when (string-equal org-state "DONE")
+          (prompt-user-to-move-note)
+        )
+)
+(add-hook 'org-after-todo-state-change-hook 'benson/ask-user-to-move-to-obsidian)
