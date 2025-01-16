@@ -6,7 +6,7 @@ if executable("rg")
 endif
 ]])
 
-local rg_options = '--vimgrep --hidden -g "!.git" -g "!output.log" -g "!Triage/" -g "!.ccls-cache/"'
+local rg_options = '--vimgrep --hidden -g "!.git" -g "!*.log" -g "!Triage/" -g "!.ccls-cache/"'
 local only_nfs_options =
   '-g "!system/" -g "!ir_test/" -g "!ui/" -g "!tpc/" -g "!ir_test/" -g "!http/" -g "!environment/" -g "!infra/" -g "!hardware/" -g "!platform/" -g "!tools/" -g "!patches/" -g "!pb/"'
 function RipGrepProjectHelper(pattern, path)
