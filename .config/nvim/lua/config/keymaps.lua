@@ -41,6 +41,12 @@ vim.api.nvim_set_keymap(
 vim.api.nvim_set_keymap("n", "<leader>bk", ":bwipeout<CR>", { noremap = true, silent = true, desc = "Kill Buffer" })
 vim.api.nvim_set_keymap(
   "n",
+  "<leader>br",
+  ":%s/<C-R><C-W>/",
+  { noremap = true, silent = true, desc = "Replace in Buffer" }
+)
+vim.api.nvim_set_keymap(
+  "n",
   "<leader>bb",
   "<cmd>Telescope buffers<CR>",
   { noremap = true, silent = true, desc = "Fuzzy Search Buffers" }
