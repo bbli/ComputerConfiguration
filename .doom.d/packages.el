@@ -52,3 +52,4 @@
 (package! org-bullets)
 (package! exwm :pin "88fe86f3523d34e5229281b48f3cdf58e1b784f7")
 (package! logview)
+(package! posframe)

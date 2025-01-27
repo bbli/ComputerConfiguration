@@ -755,14 +755,14 @@ or they provide fuzzy search:
 #+end_src
 
 #+RESULTS:
-* DONE Asking user to move notes to Obsidian when Done
+* Asking user to move notes to Obsidian when Done
 #+begin_src emacs-lisp
 (defun prompt-user-to-move-note ()
         (posframe-show " *posframe-buffer"
                        :string "See if any notes should be moved to Obsidian"
                        :position (point)
                        :timeout 5
-                       :foreground-color "blue"
+                       :foreground-color "green"
         )
 )
 (defun benson/ask-user-to-move-to-obsidian ()
@@ -772,3 +772,6 @@ or they provide fuzzy search:
 )
 (add-hook 'org-after-todo-state-change-hook 'benson/ask-user-to-move-to-obsidian)
 #+end_src
+
+#+RESULTS:
+| benson/ask-user-to-move-to-obsidian |

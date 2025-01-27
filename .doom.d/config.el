@@ -543,7 +543,7 @@
                        :string "See if any notes should be moved to Obsidian"
                        :position (point)
                        :timeout 5
-                       :foreground-color "blue"
+                       :foreground-color "green"
         )
 )
 (defun benson/ask-user-to-move-to-obsidian ()
