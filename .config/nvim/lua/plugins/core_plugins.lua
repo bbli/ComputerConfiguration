@@ -39,6 +39,15 @@ return {
       { "<leader>o", "", desc = "+open" },
     },
   },
+  {
+    "nvim-tree/nvim-tree.lua",
+    config = function()
+      require("nvim-tree").setup()
+    end,
+    keys = {
+      { "<leader>tn", ":NvimTreeToggle<CR>", desc = "Toggle NvimTree" },
+    },
+  },
 
   -- undotree
   {
@@ -85,21 +94,21 @@ return {
     enabled = false,
   },
 
-  -- Neotree
-  {
-    "nvim-neo-tree/neo-tree.nvim",
-    opts = {
-      toggle = true,
-      window = {
-        mappings = {
-          ["<TAB>"] = "toggle_node",
-        },
-      },
-    },
-    keys = {
-      { "<leader>tn", ":Neotree toggle<CR>", desc = "Toggle Neotree" },
-    },
-  },
+  -- -- Neotree
+  -- {
+  --   "nvim-neo-tree/neo-tree.nvim",
+  --   opts = {
+  --     toggle = true,
+  --     window = {
+  --       mappings = {
+  --         ["<TAB>"] = "toggle_node",
+  --       },
+  --     },
+  --   },
+  --   keys = {
+  --     { "<leader>tn", ":Neotree toggle<CR>", desc = "Toggle Neotree" },
+  --   },
+  -- },
 
   -- visual star search
   {
