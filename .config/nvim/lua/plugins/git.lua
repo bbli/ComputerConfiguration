@@ -85,13 +85,6 @@ return {
       },
     },
     keys = {
-      {
-        "<leader>gm",
-        function()
-          require("neogit").open({ kind = "vsplit" })
-        end,
-        desc = "Open Magit",
-      },
       { "<leader>gg", "<cmd>Neogit<CR>", desc = "Open Neogit" },
     },
   },
@@ -114,6 +107,12 @@ return {
       { "<leader>gd", ":Gvdiff", desc = "Git Diff this file" },
       { "<leader>gb", "<cmd>Git blame<CR>", desc = "Git Blame" },
       { "<leader>gl", "<cmd>Gclog -1000<CR>", desc = "Git log" },
+      { "<leader>gs", ":Gclog -1000 -S", desc = "Git pickaxe" },
+      {
+        "<leader>gm",
+        "<cmd>Git difftool<CR>",
+        desc = "Put all Git diffs into Quickfix List",
+      },
     },
   },
 }
