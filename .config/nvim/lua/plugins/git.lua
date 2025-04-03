@@ -106,8 +106,8 @@ return {
     keys = {
       { "<leader>gd", ":Gvdiff", desc = "Git Diff this file" },
       { "<leader>gb", "<cmd>Git blame<CR>", desc = "Git Blame" },
-      { "<leader>gl", "<cmd>Gclog -1000<CR>", desc = "Git log" },
-      { "<leader>gs", ":Gclog -1000 -S", desc = "Git pickaxe" },
+      { "<leader>gl", "<cmd>Gclog -1000<CR>", desc = "Git Log" },
+      { "<leader>gS", ":Gclog -1000 -S ", desc = "Git Pickaxe" },
       {
         "<leader>gm",
         "<cmd>Git difftool<CR>",
