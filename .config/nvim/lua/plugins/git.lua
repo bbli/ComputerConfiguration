@@ -66,7 +66,7 @@ return {
     },
   },
 
-  -------------- 2. Neogit -----------------
+  -------------- 2. Neogit/Magit -----------------
   {
     "NeogitOrg/neogit",
     dependencies = {
@@ -89,6 +89,13 @@ return {
     },
   },
 
+  {
+    "NeogitOrg/neogit",
+    keys = {
+      { "<leader>gm", "<cmd>Magit<CR>", desc = "Open Magit" },
+    },
+  },
+
   -------------- 4. Diffview -----------------
   {
     "sindrets/diffview.nvim",
@@ -108,11 +115,6 @@ return {
       { "<leader>gb", "<cmd>Git blame<CR>", desc = "Git Blame" },
       { "<leader>gl", "<cmd>Gclog -1000<CR>", desc = "Git Log" },
       { "<leader>gS", ":Gclog -1000 -S ", desc = "Git Pickaxe" },
-      {
-        "<leader>gm",
-        "<cmd>Git difftool<CR>",
-        desc = "Put all Git diffs into Quickfix List",
-      },
     },
   },
 }
