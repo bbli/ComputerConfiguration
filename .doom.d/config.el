@@ -441,6 +441,24 @@
 )
 (map! :n "P" 'ssh-and-copy-file)
 
+(defun benson-clock-start ()
+        (interactive)
+        (if (> (org-current-level) 1)
+                (org-clock-in)
+                ;(org-timer-set-timer 30)
+                ;(org-timer-start)
+        )
+)
+
+(map! :map org-mode-map
+      :desc "start org timer" "C-c s" 'org-clock-in
+      :desc "start org timer" "C-c d" 'org-clock-out
+)
+
+;(add-hook 'org-insert-heading-hook 'benson-clock-start)
+;(advice-add 'org-toggle-heading :after 'benson-clock-start)
+(map! :map evil-window-map "d" 'org-clock-out)
+
 (if (display-graphic-p)
         (add-hook 'after-init-hook (lambda () (find-file (concat org-directory "/Write_Ahead_Logging.org"))))
 )
