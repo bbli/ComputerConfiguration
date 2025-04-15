@@ -90,7 +90,7 @@ return {
   },
 
   {
-    "NeogitOrg/neogit",
+    "jreybert/vimagit",
     keys = {
       { "<leader>gm", "<cmd>Magit<CR>", desc = "Open Magit" },
     },
@@ -115,6 +115,7 @@ return {
       { "<leader>gb", "<cmd>Git blame<CR>", desc = "Git Blame" },
       { "<leader>gl", "<cmd>Gclog -1000<CR>", desc = "Git Log" },
       { "<leader>gS", ":Gclog -1000 -S ", desc = "Git Pickaxe" },
+      { "<leader>gq", ":Git difftool", desc = "Load hunks into Quickfix List" },
     },
   },
 }
