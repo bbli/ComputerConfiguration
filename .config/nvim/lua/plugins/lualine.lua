@@ -1,9 +1,5 @@
 local function showGitBase()
-  if vim.g.toggleGitBase == 0 then
-    return "index"
-  else
-    return "foundation"
-  end
+  return vim.g.git_base
 end
 return {
   {

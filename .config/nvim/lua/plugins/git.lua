@@ -1,4 +1,13 @@
-vim.g.toggleGitBase = 0
+vim.g.git_base = "index"
+vim.api.nvim_create_user_command("ChangeGitBase", function(opts)
+  if opts.args == "" then
+    vim.g.git_base = "index"
+    require("gitsigns").change_base()
+  else
+    vim.g.git_base = opts.args
+    require("gitsigns").change_base(opts.args)
+  end
+end, { nargs = "?" })
 function toggleGitBase()
   if vim.g.toggleGitBase == 0 then
     vim.g.toggleGitBase = 1
@@ -62,7 +71,8 @@ return {
       { "<leader>gN", "<cmd>Gitsigns prev_hunk<CR>", desc = "Prev git hunk" },
       { "<leader>gs", "<cmd>Gitsigns stage_hunk<CR>", desc = "Stage git hunk" },
       { "<leader>gu", "<cmd>Gitsigns reset_hunk<CR>", desc = "Undo git hunk" },
-      { "<leader>tb", toggleGitBase, desc = "Toggle Git Base" },
+      { "<leader>tb", ":ChangeGitBase ", desc = "Change Git Base" },
+      { "<leader>gq", ":lua require('gitsigns').setqflist()<CR>", desc = "Load hunks into Quickfix List" },
     },
   },
 
@@ -115,7 +125,6 @@ return {
       { "<leader>gb", "<cmd>Git blame<CR>", desc = "Git Blame" },
       { "<leader>gl", "<cmd>Gclog -1000<CR>", desc = "Git Log" },
       { "<leader>gS", ":Gclog -1000 -S ", desc = "Git Pickaxe" },
-      { "<leader>gq", ":Git difftool", desc = "Load hunks into Quickfix List" },
     },
   },
 }
