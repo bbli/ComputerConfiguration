@@ -19,6 +19,12 @@ end
 
 return {
   {
+    "zbirenbaum/copilot.lua",
+    config = function()
+      require("copilot").setup({})
+    end,
+  },
+  {
     "CopilotC-Nvim/CopilotChat.nvim",
     keys = {
       { "<leader>ax", false },
@@ -32,9 +38,9 @@ return {
         mode = { "n", "v" },
       },
       -- Show help actions with telescope
-      { "<leader>ad", M.pick("help"),   desc = "Diagnostic Help (CopilotChat)", mode = { "n", "v" } },
+      { "<leader>ad", M.pick("help"), desc = "Diagnostic Help (CopilotChat)", mode = { "n", "v" } },
       -- Show prompts actions with telescope
-      { "<leader>ap", M.pick("prompt"), desc = "Prompt Actions (CopilotChat)",  mode = { "n", "v" } },
+      { "<leader>ap", M.pick("prompt"), desc = "Prompt Actions (CopilotChat)", mode = { "n", "v" } },
       {
         "<leader>ac",
         CopilotChatFullscreen,
