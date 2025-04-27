@@ -2,3 +2,4 @@
 tags
 packer_compiled.lua
 .git_old
+.aider*
