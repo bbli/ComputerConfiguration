@@ -2,10 +2,10 @@ vim.g.git_base = "index"
 vim.api.nvim_create_user_command("ChangeGitBase", function(opts)
   if opts.args == "" then
     vim.g.git_base = "index"
-    require("gitsigns").change_base()
+    require("gitsigns").change_base(nil, true)
   else
     vim.g.git_base = opts.args
-    require("gitsigns").change_base(opts.args)
+    require("gitsigns").change_base(opts.args, true)
   end
 end, { nargs = "?" })
 function toggleGitBase()
