@@ -127,6 +127,8 @@ function ToggleTerminalCreator(type)
     if on_start == 0 then
       on_start = 1
       vim.cmd("FloatermNew --name=" .. type .. " --cwd=<root>")
+      local bufnr = vim.api.nvim_get_current_buf()
+      vim.api.nvim_buf_set_name(bufnr, type .. "_terminal")
     else
       vim.cmd("FloatermToggle " .. type)
     end
@@ -135,6 +137,7 @@ end
 
 local toggleShellTerminal = ToggleTerminalCreator("shell")
 local toggleTestTerminal = ToggleTerminalCreator("test")
+local toggleAiderTerminal = ToggleTerminalCreator("aider")
 return {
   {
     "voldikss/vim-floaterm",
@@ -148,6 +151,7 @@ return {
     keys = {
       { "<leader>os", toggleShellTerminal, desc = "Open Shell Terminal" },
       { "<leader>ot", toggleTestTerminal, desc = "Open Test Terminal" },
+      { "<leader>oa", toggleAiderTerminal, desc = "Open Aider Terminal" },
       { "<leader>sn", "<cmd>FloatermNext", desc = "Next Terminal" },
       { "<leader>sN", "<cmd>FloatermPrev", desc = "Previous Terminal" },
       { "<leader>sl", ":ShellSend ", desc = "Send a String to ShellSend" },
