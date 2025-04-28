@@ -284,7 +284,7 @@ model: gemini-exp
 # Analytics:
 
 ## Enable/disable analytics for current session (default: random)
-#analytics: xxx
+analytics: true
 
 ## Specify a file to log analytics events
 #analytics-log: xxx
