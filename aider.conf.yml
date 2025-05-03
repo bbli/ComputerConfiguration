@@ -159,7 +159,7 @@ model: gemini-exp
 # Output settings:
 
 ## Use colors suitable for a dark terminal background (default: False)
-#dark-mode: false
+dark-mode: true
 
 ## Use colors suitable for a light terminal background (default: False)
 #light-mode: false
@@ -219,7 +219,7 @@ model: gemini-exp
 #subtree-only: false
 
 ## Enable/disable auto commit of LLM changes (default: True)
-#auto-commits: true
+auto-commits: false
 
 ## Enable/disable commits when repo is found dirty (default: True)
 #dirty-commits: true
@@ -284,7 +284,7 @@ model: gemini-exp
 # Analytics:
 
 ## Enable/disable analytics for current session (default: random)
-analytics: true
+analytics: false
 
 ## Specify a file to log analytics events
 #analytics-log: xxx

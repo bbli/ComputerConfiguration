@@ -22,18 +22,6 @@ return {
       strategies = {
         chat = {
           adaptor = "copilot",
-          -- tools = {
-          --   vectorcode = {
-          --     description = "Run VectorCode to retrieve the project context.",
-          --     callback = function()
-          --       return require("vectorcode.integrations.codecompanion").chat.make_tool()
-          --     end,
-          --   },
-          -- },
-          -- slash_commands = {
-          --   -- add the vectorcode command here.
-          --   codebase = require("vectorcode.integrations").codecompanion.chat.make_slash_command(),
-          -- },
         },
         inline = {
           adaptor = "copilot",
@@ -42,13 +30,15 @@ return {
           adaptor = "copilot",
         },
       },
+      extensions = {
+        vectorcode = {
+          opts = { add_tool = true, add_slash_command = true, tool_opts = {} },
+        },
+      },
     },
 
     keys = {
       { "<leader>at", ":CodeCompanionChat Toggle<cr>", desc = "Toggle CodeCompanion" },
     },
-    config = function()
-      require("codecompanion").setup({})
-    end,
   },
 }
