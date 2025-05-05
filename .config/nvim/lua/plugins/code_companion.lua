@@ -1,25 +1,6 @@
-return {
+ return {
   {
     "olimorris/codecompanion.nvim",
-    strategies = {
-      chat = {
-        adaptor = "copilot",
-        tools = {
-          vectorcode = {
-            description = "Run VectorCode to retrieve the project context.",
-            callback = function()
-              return require("vectorcode.integrations").codecompanion.chat.make_tool()
-            end,
-          },
-        },
-      },
-      inline = {
-        adaptor = "copilot",
-      },
-      cmd = {
-        adaptor = "copilot",
-      },
-    },
     dependencies = {
       "nvim-lua/plenary.nvim",
       "nvim-treesitter/nvim-treesitter",
@@ -34,14 +15,29 @@ return {
         build = "pipx upgrade vectorcode",
         dependencies = { "nvim-lua/plenary.nvim" },
       },
-      -- { "echasnovski/mini.pick", config = true },
-      -- { "ibhagwan/fzf-lua", config = true },
+      --{ "echasnovski/mini.pick", config = true },
+      --{ "ibhagwan/fzf-lua", config = true },
+    },
+    opts = {
+ strategies = {
+    chat = {
+      adapter = "gemini",
+    },
+    inline = {
+      adapter = "gemini",
+    },
+    cmd = {
+      adapter = "gemini",
+    }
+  },
+      extensions = {
+        vectorcode = {
+          opts = { add_tool = true, add_slash_command = true, tool_opts = {} },
+        },
+      }
     },
     keys = {
       { "<leader>at", ":CodeCompanionChat Toggle<cr>", desc = "Toggle CodeCompanion" },
     },
-    config = function()
-      require("codecompanion").setup({})
-    end,
   },
 }
