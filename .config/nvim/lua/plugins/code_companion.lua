@@ -1,4 +1,4 @@
-return {
+ return {
   {
     "olimorris/codecompanion.nvim",
     dependencies = {
@@ -15,8 +15,26 @@ return {
         build = "pipx upgrade vectorcode",
         dependencies = { "nvim-lua/plenary.nvim" },
       },
-      -- { "echasnovski/mini.pick", config = true },
-      -- { "ibhagwan/fzf-lua", config = true },
+      --{ "echasnovski/mini.pick", config = true },
+      --{ "ibhagwan/fzf-lua", config = true },
+    },
+    opts = {
+ strategies = {
+    chat = {
+      adapter = "gemini",
+    },
+    inline = {
+      adapter = "gemini",
+    },
+    cmd = {
+      adapter = "gemini",
+    }
+  },
+      extensions = {
+        vectorcode = {
+          opts = { add_tool = true, add_slash_command = true, tool_opts = {} },
+        },
+      }
     },
     opts = {
       strategies = {

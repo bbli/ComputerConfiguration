@@ -4,10 +4,10 @@
 -- NOTE: Most of the code here is to modify Vim core's behavior, instead of plugins
 
 -------------- 1. Individual deleting of unwanted LazyVim keymaps -----------------
-vim.keymap.del("n", "<leader>gB")
-vim.keymap.del("n", "<leader>ge")
-vim.keymap.del("n", "<leader>gG")
-vim.keymap.del("n", "<leader>gL")
+--vim.keymap.del("n", "<leader>gB")
+--vim.keymap.del("n", "<leader>ge")
+--vim.keymap.del("n", "<leader>gG")
+-- vim.keymap.del("n", "<leader>gL")
 
 -------------- 2. Workspace Keymaps -----------------
 vim.api.nvim_set_keymap("n", "<leader>wk", ":tabc<CR>", { noremap = true, silent = true, desc = "Kill Workspace" })

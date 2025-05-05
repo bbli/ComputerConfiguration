@@ -62,8 +62,6 @@ nnoremap <leader>fw :RipGrepProject "\b<C-r><C-w>\b"<CR>
 return {
   "nvim-telescope/telescope.nvim",
   keys = {
-    { "<leader>fb", "<cmd>Telescope current_buffer_fuzzy_find<CR>", desc = "Search Current Buffer" },
-    { "<leader>fs", "<cmd>Telescope lsp_dynamic_workspace_symbols<CR>", desc = "Search LSP Symbols" },
     { "<leader>fl", ":RipGrepCurrentFile " },
     { "<leader>fn", ":RipGrepNFS " },
   },

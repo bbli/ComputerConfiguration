@@ -33,12 +33,6 @@ return {
         end,
         desc = "Jump to Log Tag",
       },
-      {
-        "<leader>rl",
-        function()
-          require("grapple").untag({ name = "log" })
-        end,
-      },
 
       -- grapple main(for inserting debug/pinning before a bunch of jump to definition calls) -> gm
       {
@@ -54,12 +48,6 @@ return {
           require("grapple").select({ name = "main" })
         end,
         desc = "Jump to Main Tag",
-      },
-      {
-        "<leader>rm",
-        function()
-          require("grapple").untag({ name = "main" })
-        end,
       },
 
       -- grapple test
@@ -77,12 +65,6 @@ return {
         end,
         desc = "Jump to Test Tag",
       },
-      {
-        "<leader>rt",
-        function()
-          require("grapple").untag({ name = "test" })
-        end,
-      },
 
       -- grapple second: secondary file to main file
       {
@@ -99,12 +81,6 @@ return {
         end,
         desc = "Jump to Second Tag",
       },
-      {
-        "<leader>ro",
-        function()
-          require("grapple").untag({ name = "second" })
-        end,
-      },
       -- grapple other file: for example of code to copy
       {
         "<leader>hs",
@@ -119,12 +95,6 @@ return {
           require("grapple").select({ name = "other" })
         end,
         desc = "Jump to Other Tag",
-      },
-      {
-        "<leader>rl",
-        function()
-          require("grapple").untag({ name = "other" })
-        end,
       },
     },
   },
