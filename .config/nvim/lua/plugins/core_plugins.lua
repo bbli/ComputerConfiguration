@@ -23,6 +23,16 @@ return {
   -- add my colorscheme to LazyVim
   { "sainnhe/edge" },
   {
+  "folke/which-key.nvim",
+  event = "VeryLazy",
+  opts = {
+    -- your configuration comes here
+    -- or leave it empty to use the default settings
+    -- refer to the configuration section below
+    preset = "classic"
+  },
+},
+  {
     "LazyVim/LazyVim",
     opts = {
       colorscheme = "edge",
@@ -32,6 +42,7 @@ return {
       { "<leader>b", "", desc = "+buffer" },
       { "<leader>w", "", desc = "+workspace" },
       { "<leader>s", "", desc = "+search/send" },
+      { "<leader>r", "", desc = "+run" },
       { "<leader>j", "", desc = "+jump" },
       { "<leader>f", "", desc = "+find" },
       { "<leader>g", "", desc = "+git" },

@@ -36,18 +36,4 @@ return {
     })
   end,
 
-  keys = {
-    { "<leader>oo", "<cmd>Telescope git_files<CR>" },
-    {
-      "<leader>oa",
-      "<cmd>lua require'telescope.builtin'.find_files({ find_command = {'rg', '--no-ignore-vcs', '--files', '--hidden', '-g', '!.git' , '-g', '!node_modules'}})<cr>",
-    },
-    { "<leader>oh", "<cmd>Telescope oldfiles<CR>" },
-    { "<leader>om", "<cmd>Telescope help_tags<CR>" },
-    { "<leader>oc", "<cmd>Telescope commands<CR>" },
-    { "<leader>ok", "<cmd>Telescope keymaps<CR>" },
-    { "<leader>ov", "<cmd>Telescope vim_options<CR>" },
-    { "<leader>vv", "<cmd>Telescope vim_options<CR>" },
-    { "<leader>oq", "<cmd>Telescope quickfixhistory<CR>" },
-  },
 }
