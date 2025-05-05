@@ -1,6 +1,7 @@
 local actions = require("telescope.actions")
 return {
   "nvim-telescope/telescope.nvim",
+  cmd = "Telescope",
   config = function()
     vim.keymap.del("n", "<leader>fr")
     vim.keymap.del("n", "<leader>ff")
@@ -33,6 +34,8 @@ return {
           preview_width = 75,
         },
       },
+
+    keys = function () end,
     })
   end,
 

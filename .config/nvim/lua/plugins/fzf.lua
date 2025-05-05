@@ -13,21 +13,31 @@ return {
     --vim.keymap.del("n", "<leader><leader>")
   --end
   keys = {
-    { "<leader>ss", "<cmd>FzfLua git_files<CR>" , desc = "FZF git files"},
+    { "<leader>sg", "<cmd>FzfLua git_files<CR>" , desc = "FZF git files"},
+    { "<leader>oo", "<cmd>FzfLua git_files<CR>" , desc = "FZF git files"},
     {
-      "<leader>sa",
+      "<leader>oO",
       function ()
         require('fzf-lua').files({ cwd = vim.fn.expand('%:p:h') })
       end,
       desc = "FZF files in current directory"
     },
     { "<leader>sh", "<cmd>FzfLua oldfiles<CR>", desc = "FZF Recent History" },
-    { "<leader>sm", "<cmd>FzfLua helptags<CR>" , desc = "FZF Help Manual"},
+    { "<leader>oh", "<cmd>FzfLua oldfiles<CR>", desc = "FZF Recent History" },
+    { "<leader>sm", "<cmd>FzfLua helptags<CR>" , desc = "FZF Man Pages"},
+    { "<leader>om", "<cmd>FzfLua helptags<CR>" , desc = "FZF Man Pages"},
     { "<leader>sc", "<cmd>FzfLua commands<CR>" , desc = "FZF Commands"},
+    { "<leader>oc", "<cmd>FzfLua commands<CR>" , desc = "FZF Commands"},
     { "<leader>sk", "<cmd>FzfLua keymaps<CR>" , desc = "FZF keymaps"},
+    { "<leader>ok", "<cmd>FzfLua keymaps<CR>" , desc = "FZF keymaps"},
+    { "<leader>sr", "<cmd>FzfLua registers<CR>" , desc = "FZF Registers"},
+    { "<leader>or", "<cmd>FzfLua registers<CR>" , desc = "FZF Registers"},
+    { "<leader>fs", "<cmd>FzfLua lsp_workspace_symbols<CR>" , desc = "FZF Workspace Symbols"},
     { "<leader>sv", "<cmd>FzfLua nvim_options<CR>" , desc = "FZF vim options"},
+    { "<leader>ov", "<cmd>FzfLua nvim_options<CR>" , desc = "FZF vim options"},
     -- { "<leader>vv", "<cmd>FzfLua nvim_options<CR>" },
     { "<leader>sq", "<cmd>FzfLua quickfix_stack<CR>" , desc = "FZF quickfix history"},
+    { "<leader>oq", "<cmd>FzfLua quickfix_stack<CR>" , desc = "FZF quickfix history"},
   },
 },
 

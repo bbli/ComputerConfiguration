@@ -36,6 +36,9 @@ return {
     "LazyVim/LazyVim",
     opts = {
       colorscheme = "edge",
+      defaults = {
+        keymaps = false,
+      }
     },
     keys = {
       { "<leader>a", "", desc = "+ai" },
@@ -50,15 +53,15 @@ return {
       { "<leader>o", "", desc = "+open" },
     },
   },
-  {
-    "nvim-tree/nvim-tree.lua",
-    config = function()
-      require("nvim-tree").setup()
-    end,
-    keys = {
-      { "<leader>tn", ":NvimTreeToggle<CR>", desc = "Toggle NvimTree" },
-    },
-  },
+  --{
+  --  "nvim-tree/nvim-tree.lua",
+   -- config = function()
+    --  require("nvim-tree").setup()
+    --end,
+    --keys = {
+      --{ "<leader>tn", ":NvimTreeToggle<CR>", desc = "Toggle NvimTree" },
+    --},
+  --},
 
   -- undotree
   {
