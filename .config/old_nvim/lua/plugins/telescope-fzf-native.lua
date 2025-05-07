@@ -1,2 +1,0 @@
--- print("fzf-native")
--- require('telescope').load_extension('fzf')
