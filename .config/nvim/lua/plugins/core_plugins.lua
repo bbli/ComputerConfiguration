@@ -1,3 +1,14 @@
+function PrintTable(t)
+  for k, v in pairs(t) do
+    if type(v) == "table" then
+      print(k .. ":")
+      PrintTable(v)
+    else
+      print(k .. ": " .. tostring(v))
+    end
+  end
+end
+
 function close_window_with_filetype(filetype)
   local win_ids = vim.api.nvim_list_wins()
   for _, win_id in ipairs(win_ids) do
@@ -19,26 +30,50 @@ function ToggleNoiceHistory()
   end
 end
 
+function GetAllBuffers()
+  return vim.api.nvim_list_bufs()
+end
+
+function AsyncFormat()
+  local Job = require("plenary.job")
+  Job:new({
+    command = "make",
+    args = { "clang-format-patch-stack" },
+    on_exit = function(job, return_val)
+      vim.schedule(function()
+        vim.cmd("e")
+      end)
+    end,
+  }):start()
+end
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "cpp",
+  callback = function()
+    vim.b.autoformat = false
+  end,
+})
+
 return {
   -- add my colorscheme to LazyVim
   { "sainnhe/edge" },
   {
-  "folke/which-key.nvim",
-  event = "VeryLazy",
-  opts = {
-    -- your configuration comes here
-    -- or leave it empty to use the default settings
-    -- refer to the configuration section below
-    preset = "classic"
+    "folke/which-key.nvim",
+    event = "VeryLazy",
+    opts = {
+      -- your configuration comes here
+      -- or leave it empty to use the default settings
+      -- refer to the configuration section below
+      preset = "classic",
+    },
   },
-},
   {
     "LazyVim/LazyVim",
     opts = {
       colorscheme = "edge",
       defaults = {
         keymaps = false,
-      }
+      },
     },
     keys = {
       { "<leader>a", "", desc = "+ai" },
@@ -51,16 +86,24 @@ return {
       { "<leader>g", "", desc = "+git" },
       { "<leader>t", "", desc = "+toggle" },
       { "<leader>o", "", desc = "+open" },
+      {
+        "<leader>bl",
+        [[:call matchadd('Search', '\%'.line('.').'l')<CR>]],
+        desc = "highlight this line in the buffer",
+      },
+      { "<leader>bc", [[:call clearmatches()<CR>]], desc = "clear highlight on this line in the buffer" },
+      { "<leader>bp", "" },
+      { "<leader><leader>f", AsyncFormatCppCode, desc = "Format C++ code" },
     },
   },
   --{
   --  "nvim-tree/nvim-tree.lua",
-   -- config = function()
-    --  require("nvim-tree").setup()
-    --end,
-    --keys = {
-      --{ "<leader>tn", ":NvimTreeToggle<CR>", desc = "Toggle NvimTree" },
-    --},
+  -- config = function()
+  --  require("nvim-tree").setup()
+  --end,
+  --keys = {
+  --{ "<leader>tn", ":NvimTreeToggle<CR>", desc = "Toggle NvimTree" },
+  --},
   --},
 
   -- undotree
