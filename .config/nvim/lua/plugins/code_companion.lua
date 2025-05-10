@@ -85,7 +85,14 @@ return {
       { "<leader>m", "<cmd>MCPHub<CR>", desc = "Open MCPHub" },
     },
     config = function()
-      require("mcphub").setup({})
+      require("mcphub").setup({
+        log = {
+          level = vim.log.levels.INFO, -- or DEBUG for even more detailed logs
+          to_file = false, -- set to true if you want logs in a file
+          file_path = nil, -- specify a file path if to_file is true
+          prefix = "MCPHub",
+        },
+      })
     end,
   },
 }

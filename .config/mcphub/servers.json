@@ -1,5 +1,14 @@
 {
   "mcpServers": {
+    "openai-swarm": {
+      "url": "https://gitmcp.io/openai/swarm"
+    },
+    "git": {
+      "args": [
+        "mcp-server-git"
+      ],
+      "command": "uvx"
+    },
     "puppeteer": {
       "args": [
         "-y",
@@ -13,36 +22,47 @@
       ],
       "command": "uvx"
     },
-    "openai-swarm": {
-      "url": "https://gitmcp.io/openai/swarm"
+    "rust-lsp": {
+      "args": [
+        "--workspace",
+        "/Users/beli/LogParser",
+        "--lsp",
+        "rust-analyzer"
+      ],
+      "command": "mcp-language-server"
+    },
+    "serena": {
+      "args": [
+        "run",
+        "--directory",
+        "/Users/beli/Software/serena",
+        "serena-mcp-server",
+        "--project-file",
+        "/Users/beli/Software/serena/project.template.yml"
+      ],
+      "command": "/Users/beli/.local/bin/uv"
     },
     "perplexity": {
-      "env": {
-        "PERPLEXITY_API_KEY": null
-      },
       "args": [
         "/Users/beli/Documents/Claude/MCP/perplexity-mcp/build/index.js"
       ],
+      "env": {
+        "PERPLEXITY_API_KEY": null
+      },
       "command": "node"
     },
-    "git": {
-      "args": [
-        "mcp-server-git"
-      ],
-      "command": "uvx"
-    },
     "github": {
-      "command": "npx",
       "args": [
         "-y",
         "@modelcontextprotocol/server-github"
       ],
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": null
-      }
+      },
+      "command": "npx"
     }
   },
   "nativeMCPServers": [
-
+    
   ]
 }
