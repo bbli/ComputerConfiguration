@@ -1,0 +1,48 @@
+{
+  "mcpServers": {
+    "puppeteer": {
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-puppeteer"
+      ],
+      "command": "npx"
+    },
+    "docker": {
+      "args": [
+        "mcp-server-docker"
+      ],
+      "command": "uvx"
+    },
+    "openai-swarm": {
+      "url": "https://gitmcp.io/openai/swarm"
+    },
+    "perplexity": {
+      "env": {
+        "PERPLEXITY_API_KEY": null
+      },
+      "args": [
+        "/Users/beli/Documents/Claude/MCP/perplexity-mcp/build/index.js"
+      ],
+      "command": "node"
+    },
+    "git": {
+      "args": [
+        "mcp-server-git"
+      ],
+      "command": "uvx"
+    },
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": null
+      }
+    }
+  },
+  "nativeMCPServers": [
+
+  ]
+}

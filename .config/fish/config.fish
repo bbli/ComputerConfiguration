@@ -167,7 +167,6 @@ end
 # set SPACEFISH_RUST_SHOW false
 # set SPACEFISH_GOLANG_SHOW false
 
-set -Ux GEMINI_API_KEY AIzaSyCByNGdC2dAQSBYW9GVH1xV-3LBV-0hH7Q
 set -U fish_user_paths ~/Scripts/ ~/.local/bin /opt/homebrew/bin ~/.cargo/bin ~/.fzf/bin ~/.config/emacs/bin ~/.emacs.d/bin ~/perl5/bin ~/.gem/ruby/3.0.0/bin ~/Software/comma-community-2022.01.0/bin ~/Software/cmake-3.26.3-linux-x86_64/bin ~/LogParser/target/debug
 # ************** SOURCE ************** %%%1
 switch (uname)
@@ -198,3 +197,4 @@ set -x PERL_MM_OPT INSTALL_BASE=~/perl5
 # fzf_configure_bindings --directory=\ct
 set fish_greeting
 starship init fish | source
+source ~/.tokens.fish

@@ -38,6 +38,9 @@ return {
       -- { "<leader>vv", "<cmd>FzfLua nvim_options<CR>" },
       { "<leader>sq", "<cmd>FzfLua quickfix_stack<CR>", desc = "FZF quickfix history" },
       { "<leader>oq", "<cmd>FzfLua quickfix_stack<CR>", desc = "FZF quickfix history" },
+
+      -- Overiding FZF keymaps
+      { "<leader>gs", "<cmd>Gitsigns stage_hunk<CR>", desc = "Stage git hunk" },
     },
   },
 }

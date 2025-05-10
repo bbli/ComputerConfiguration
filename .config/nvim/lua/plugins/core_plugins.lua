@@ -34,7 +34,7 @@ function GetAllBuffers()
   return vim.api.nvim_list_bufs()
 end
 
-function AsyncFormat()
+function AsyncFormatCppCode()
   local Job = require("plenary.job")
   Job:new({
     command = "make",
@@ -92,6 +92,7 @@ return {
         desc = "highlight this line in the buffer",
       },
       { "<leader>bc", [[:call clearmatches()<CR>]], desc = "clear highlight on this line in the buffer" },
+      { "<leader>bp", "" },
       { "<leader>bp", "" },
       { "<leader><leader>f", AsyncFormatCppCode, desc = "Format C++ code" },
     },
