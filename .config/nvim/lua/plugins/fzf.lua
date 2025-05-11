@@ -9,7 +9,7 @@ return {
     config = function(opts)
       --delete during config to try to be as late as possible
       vim.keymap.del("n", "<leader>fb")
-      vim.keymap.del("n", "<leader>fc")
+      -- vim.keymap.del("n", "<leader>fc")
       vim.keymap.del("n", "<leader>fr")
       vim.keymap.del("n", "<leader>ff")
       require("fzf-lua").register_ui_select()

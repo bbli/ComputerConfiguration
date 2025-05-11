@@ -1,3 +1,4 @@
+local M = {}
 local group = vim.api.nvim_create_augroup("CodeCompanionCustom", { clear = true })
 vim.g.mcphub_auto_approve = true
 
@@ -30,6 +31,9 @@ return {
   {
     "olimorris/codecompanion.nvim",
     lazy = false,
+    -- init = function()
+    --   M:init()
+    -- end,
     dependencies = {
       "nvim-lua/plenary.nvim",
       "nvim-treesitter/nvim-treesitter",
@@ -37,7 +41,7 @@ return {
         "MeanderingProgrammer/render-markdown.nvim",
         ft = { "markdown", "codecompanion" },
       },
-      "j-hui/fidget.nvim",
+      { "j-hui/fidget.nvim" },
       {
         "Davidyz/VectorCode",
         version = "*",
@@ -78,9 +82,70 @@ return {
         },
       },
       prompt_library = {
-        ["Chat"] = false,
-        ["Custom Prompt"] = false,
-        ["Benson Prompt"] = {
+        ["Chat"] = {
+          condition = function()
+            return false
+          end,
+        },
+        ["Custom Prompt"] = {
+          condition = function()
+            return false
+          end,
+        },
+        ["Unit Tests"] = {
+          strategy = "chat",
+        },
+        ["Apply"] = {
+          condition = function()
+            return false
+          end,
+          strategy = "chat",
+          description = "generates a prompt to tell the llm to apply the generated code to the file",
+          opts = {
+            index = 20, -- Position in the action palette (higher numbers appear lower)
+            is_default = false, -- Not a default prompt
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            short_name = "apply", -- Used for calling via :CodeCompanion /mycustom
+            auto_submit = true, -- Automatically submit to LLM without waiting
+            user_prompt = false, -- Whether to ask for user input before submitting
+          },
+          prompts = {
+            {
+              role = "user", -- Can use constants.USER_ROLE if available
+              content = "@editor apply the generated code to #neovim://buffer",
+              opts = {
+                auto_submit = true,
+              },
+            },
+          },
+        },
+        ["Next"] = {
+          condition = function()
+            return false
+          end,
+          strategy = "chat",
+          description = "@cmd_runner Do the next step in the plan or fix the error from the output",
+          opts = {
+            is_default = false, -- Not a default prompt
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            short_name = "next", -- Used for calling via :CodeCompanion /mycustom
+            auto_submit = true, -- Automatically submit to LLM without waiting
+            user_prompt = false, -- Whether to ask for user input before submitting
+          },
+          prompts = {
+            {
+              role = "user", -- Can use constants.USER_ROLE if available
+              content = "Do the next step in the plan",
+              opts = {
+                auto_submit = true,
+              },
+            },
+          },
+        },
+        ["Example Prompt"] = {
+          condition = function()
+            return false
+          end,
           strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
           description = "Description of what this prompt does",
           opts = {
@@ -112,11 +177,31 @@ return {
     },
 
     keys = {
-      { "<leader>at", ":CodeCompanionChat Toggle<cr>", desc = "Toggle CodeCompanion Chat" },
-      { "<leader>ap", ":CodeCompanionActions<cr>", desc = "Toggle CodeCompanion Action Palette" },
+      { "<leader>aa", ":CodeCompanionChat Toggle<cr>", desc = "Toggle CodeCompanion Chat" },
+      { "<leader>ap", ":CodeCompanionActions<cr>", desc = "Toggle CodeCompanion Action Palette", mode = { "n", "v" } },
       { "<leader>aa", ":CodeCompanionChat Add<cr>", desc = "Add Visually Selected text to Chat", mode = { "v" } },
-      { "<leader>ac", ":CodeCompanionChat<CR>", desc = "Open a new CodeCompanionChat" },
+      {
+        "<leader>at",
+        ":CodeCompanion /tests<CR>",
+        desc = "Generate Unit Tests",
+        mode = { "v" },
+      },
+      {
+        "<leader>af",
+        ":CodeCompanion /fix<CR>",
+        desc = "Fix Code",
+        mode = { "v" },
+      },
+      {
+        "<leader>ac",
+        ":CodeCompanion /cw<CR>",
+        desc = "Edit Test Workflow",
+        mode = { "n" },
+      },
     },
+    init = function()
+      require("fidget-llm-spinner"):init()
+    end,
   },
   {
     "ravitemer/mcphub.nvim",
