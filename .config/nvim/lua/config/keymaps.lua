@@ -45,12 +45,13 @@ vim.api.nvim_set_keymap(
   ":%s/<C-R><C-W>/",
   { noremap = true, silent = true, desc = "Replace in Buffer" }
 )
-vim.api.nvim_set_keymap(
-  "n",
-  "<leader>bb",
-  "<cmd>Telescope buffers<CR>",
-  { noremap = true, silent = true, desc = "Fuzzy Search Buffers" }
-)
+-- Appears to be set last
+-- vim.api.nvim_set_keymap(
+--   "n",
+--   "<leader>bb",
+--   "<cmd>Telescope buffers<CR>",
+--   { noremap = true, silent = true, desc = "Fuzzy Search Buffers" }
+-- )
 -------------- 4. Toggle Keymaps -----------------
 function check_filetype(filetype)
   local win_ids = vim.api.nvim_list_wins()

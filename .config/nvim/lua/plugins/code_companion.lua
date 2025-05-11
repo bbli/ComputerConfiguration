@@ -47,11 +47,6 @@ return {
       --{ "echasnovski/mini.pick", config = true },
       { "ibhagwan/fzf-lua" },
     },
-    display = {
-      action_palette = {
-        provider = "snacks",
-      },
-    },
     opts = {
       strategies = {
         chat = {
@@ -62,6 +57,11 @@ return {
         },
         cmd = {
           adapter = "gemini",
+        },
+      },
+      display = {
+        action_palette = {
+          provider = "default",
         },
       },
       extensions = {
@@ -77,13 +77,45 @@ return {
           },
         },
       },
+      prompt_library = {
+        ["Chat"] = false,
+        ["Custom Prompt"] = false,
+        ["Benson Prompt"] = {
+          strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
+          description = "Description of what this prompt does",
+          opts = {
+            index = 20, -- Position in the action palette (higher numbers appear lower)
+            is_default = false, -- Not a default prompt
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            short_name = "benson", -- Used for calling via :CodeCompanion /mycustom
+            auto_submit = true, -- Automatically submit to LLM without waiting
+            user_prompt = false, -- Whether to ask for user input before submitting
+          },
+          prompts = {
+            {
+              role = "system", -- Can use constants.SYSTEM_ROLE if available
+              content = "You are a helpful assistant specialized in Lua programming.",
+              opts = {
+                visible = false, -- Whether this message is visible in the chat
+              },
+            },
+            {
+              role = "user", -- Can use constants.USER_ROLE if available
+              content = "Please help me with the following task: ",
+              opts = {
+                auto_submit = false, -- Allow editing before submission
+              },
+            },
+          },
+        },
+      },
     },
 
     keys = {
       { "<leader>at", ":CodeCompanionChat Toggle<cr>", desc = "Toggle CodeCompanion Chat" },
       { "<leader>ap", ":CodeCompanionActions<cr>", desc = "Toggle CodeCompanion Action Palette" },
       { "<leader>aa", ":CodeCompanionChat Add<cr>", desc = "Add Visually Selected text to Chat", mode = { "v" } },
-      { "<leader>ac", CodeCompanionChatFullscreen, desc = "Toggle CodeCompanionChat in Fullscreen" },
+      { "<leader>ac", ":CodeCompanionChat<CR>", desc = "Open a new CodeCompanionChat" },
     },
   },
   {

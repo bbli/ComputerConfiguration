@@ -3,9 +3,8 @@ return {
   "nvim-telescope/telescope.nvim",
   cmd = "Telescope",
   config = function()
-    vim.keymap.del("n", "<leader>fr")
-    vim.keymap.del("n", "<leader>ff")
-    vim.keymap.del("n", "<leader><leader>")
+    -- vim.keymap.del("n", "<leader>fr")
+    -- vim.keymap.del("n", "<leader>ff")
     require("telescope").setup({
       defaults = {
         --      file_ignore_patterns = {'build'},
@@ -35,8 +34,7 @@ return {
         },
       },
 
-    keys = function () end,
+      keys = function() end,
     })
   end,
-
 }
