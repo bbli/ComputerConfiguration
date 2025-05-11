@@ -2,16 +2,20 @@ return {
   {
     "ibhagwan/fzf-lua",
     -- optional for icon support
-    -- dependencies = { "nvim-tree/nvim-web-devicons" },
+    dependencies = { "nvim-tree/nvim-web-devicons" },
     -- or if using mini.icons/mini.nvim
     -- dependencies = { "echasnovski/mini.icons" },
     -- opts = {}
-    --config = function (opts)
-    -- delete during config to try to be as late as possible
-    --vim.keymap.del("n", "<leader>fr")
-    --vim.keymap.del("n", "<leader>ff")
-    --vim.keymap.del("n", "<leader><leader>")
-    --end
+    config = function(opts)
+      --delete during config to try to be as late as possible
+      vim.keymap.del("n", "<leader>fb")
+      vim.keymap.del("n", "<leader>fc")
+      vim.keymap.del("n", "<leader>fr")
+      vim.keymap.del("n", "<leader>ff")
+      require("fzf-lua").register_ui_select()
+
+      vim.ui.select = require("fzf-lua").ui_select
+    end,
     keys = {
       { "<leader>sg", "<cmd>FzfLua git_files<CR>", desc = "FZF git files" },
       { "<leader>oo", "<cmd>FzfLua git_files<CR>", desc = "FZF git files" },

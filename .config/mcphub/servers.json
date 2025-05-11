@@ -38,7 +38,7 @@
         "/Users/beli/Software/serena",
         "serena-mcp-server",
         "--project-file",
-        "/Users/beli/Software/serena/project.template.yml"
+        "/Users/beli/Software/serena/myproject.yml"
       ],
       "command": "/Users/beli/.local/bin/uv"
     },

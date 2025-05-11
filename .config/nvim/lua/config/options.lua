@@ -12,3 +12,4 @@ vim.opt.ttimeoutlen = 10
 vim.g.maplocalleader = "-"
 vim.opt.foldmethod = "marker"
 vim.opt.foldmarker = "%%%,%%%"
+vim.g.lazyvim_picker = "fzf"

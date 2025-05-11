@@ -1,4 +1,5 @@
 local group = vim.api.nvim_create_augroup("CodeCompanionCustom", { clear = true })
+vim.g.mcphub_auto_approve = true
 
 vim.api.nvim_create_autocmd("User", {
   pattern = "CodeCompanionChatCreated",
@@ -11,6 +12,11 @@ vim.api.nvim_create_autocmd("User", {
     end
   end,
 })
+
+function CodeCompanionChatFullscreen()
+  vim.cmd("CodeCompanionChat Toggle")
+  vim.cmd("only")
+end
 return {
   {
     "MeanderingProgrammer/render-markdown.nvim",
@@ -23,6 +29,7 @@ return {
   },
   {
     "olimorris/codecompanion.nvim",
+    lazy = false,
     dependencies = {
       "nvim-lua/plenary.nvim",
       "nvim-treesitter/nvim-treesitter",
@@ -38,7 +45,12 @@ return {
         dependencies = { "nvim-lua/plenary.nvim" },
       },
       --{ "echasnovski/mini.pick", config = true },
-      --{ "ibhagwan/fzf-lua", config = true },
+      { "ibhagwan/fzf-lua" },
+    },
+    display = {
+      action_palette = {
+        provider = "snacks",
+      },
     },
     opts = {
       strategies = {
@@ -68,7 +80,10 @@ return {
     },
 
     keys = {
-      { "<leader>at", ":CodeCompanionChat Toggle<cr>", desc = "Toggle CodeCompanion" },
+      { "<leader>at", ":CodeCompanionChat Toggle<cr>", desc = "Toggle CodeCompanion Chat" },
+      { "<leader>ap", ":CodeCompanionActions<cr>", desc = "Toggle CodeCompanion Action Palette" },
+      { "<leader>aa", ":CodeCompanionChat Add<cr>", desc = "Add Visually Selected text to Chat", mode = { "v" } },
+      { "<leader>ac", CodeCompanionChatFullscreen, desc = "Toggle CodeCompanionChat in Fullscreen" },
     },
   },
   {
@@ -86,12 +101,12 @@ return {
     },
     config = function()
       require("mcphub").setup({
-        log = {
-          level = vim.log.levels.INFO, -- or DEBUG for even more detailed logs
-          to_file = false, -- set to true if you want logs in a file
-          file_path = nil, -- specify a file path if to_file is true
-          prefix = "MCPHub",
-        },
+        -- log = {
+        --   level = vim.log.levels.TRACE, -- or DEBUG for even more detailed logs
+        --   to_file = true, -- set to true if you want logs in a file
+        --   file_path = "mcphub.log", -- specify a file path if to_file is true
+        --   prefix = "MCPHub",
+        -- },
       })
     end,
   },

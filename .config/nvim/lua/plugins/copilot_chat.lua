@@ -12,6 +12,10 @@ function M.pick(kind)
   end
 end
 
+if true then
+  return {}
+end
+
 function CopilotChatFullscreen()
   require("CopilotChat").toggle()
   vim.cmd("only")

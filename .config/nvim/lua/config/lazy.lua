@@ -21,6 +21,7 @@ require("lazy").setup({
     -- import/override with your plugins
     --{ import = "lazyvim.plugins.extras.editor.telescope" },
     -- { import = "lazyvim.plugins.extras.coding.copilot-chat" },
+    { import = "lazyvim.plugins.extras.editor.fzf" },
     { import = "lazyvim.plugins.extras.editor.aerial" },
     { import = "lazyvim.plugins.extras.editor.snacks_explorer" },
     { import = "lazyvim.plugins.extras.coding.luasnip" },
