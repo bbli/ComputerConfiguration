@@ -105,17 +105,73 @@ return {
             return false
           end,
         },
-        ["Unit Tests"] = {
-          strategy = "chat",
-        },
-        ["Code Review"] = {
-          condition = function()
-            return false
-          end,
+        ["Add Log Lines"] = {
           strategy = "chat",
           description = "generates a prompt to tell the llm to apply the generated code to the file",
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
+            is_default = false, -- Not a default prompt
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            short_name = "apply", -- Used for calling via :CodeCompanion /mycustom
+            auto_submit = true, -- Automatically submit to LLM without waiting
+            user_prompt = false, -- Whether to ask for user input before submitting
+          },
+          prompts = {
+            {
+              role = "user",
+              content = function(context)
+                -- Enable turbo mode!!!
+                vim.g.codecompanion_auto_tool_mode = true
+                local code = require("codecompanion.helpers.actions").get_code(context.start_line, context.end_line)
+
+                return string.format(
+                  [[
+### Plan to Follow
+- You will be acting as an expert debugging expert with knowledge of logging best practices.
+- Your job is to instrument the content so the user can understand which callpath the code executed at runtime. Generally we want to log every conditional path the code can take, but I will leave it up to you to decide the best places to add log lines
+- Try to following the following convention:
+  - The log line begins with a prefix(here "UNIT_TEST").
+  - Afterwards it records the name of the function/class this log line was in.
+  - Finally it has the actual semantic content we want to log
+```cpp
+void example_func(){
+  PS_DIAG_INFO(d_, "UNIT_TEST: snapshot_cleanup_req after dropping filesystem. " "space_scan_key=%%", k);
+}
+```
+- If there are existing log lines, modify them to have the prefix convention
+- Do not change anything else besides what the user requested
+
+### Content
+```%s
+%s
+```
+@editor add log lines to all the class methods of <object> based on the control flow
+          from buffer %d:
+]],
+                  context.filetype,
+                  code,
+                  context.bufnr
+                )
+              end,
+              opts = {
+                contains_code = true,
+              },
+            },
+          },
+        },
+        ["Unit Tests"] = {
+          strategy = "chat", -- change from inline to chat
+          opts = {
+            modes = { "n" },
+            auto_submit = false,
+          },
+        },
+        ["Code Review"] = {
+          strategy = "chat",
+          description = "generates a prompt to tell the llm to apply the generated code to the file",
+          opts = {
+            index = 20, -- Position in the action palette (higher numbers appear lower)
+            modes = { "n" },
             is_default = false, -- Not a default prompt
             is_slash_cmd = true, -- Whether it should be available as a slash command in chat
             short_name = "apply", -- Used for calling via :CodeCompanion /mycustom
@@ -163,9 +219,9 @@ const allUsers = getAllUsers();
 
 Think through your feedback step by step before replying.
 
-#### Content
-
-To obtain the content, run a git diff on the staged changes
+### Content
+@cmd_runner
+To obtain the content, compare the diff between <master_branch> and <target_branch>.
 
 
 ]]
@@ -175,6 +231,11 @@ To obtain the content, run a git diff on the staged changes
               },
             },
           },
+        },
+        ["Code workflow"] = {
+          condition = function()
+            return false
+          end,
         },
         ["Code Workflow"] = {
           strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
@@ -203,9 +264,10 @@ To obtain the content, run a git diff on the staged changes
 You are expert software engineer that will write code following the instructions provided above and test the correctness by checking lsp diagnostics. Always spend a few sentences explaining background context, assumptions, and step-by-step thinking BEFORE you try to answer a question. Don't be verbose in your answers, but do provide details and examples where it might help the explanation.
 
 #### Phase 1
-1. Update the code in #buffer{watch} using the @editor tool
-2. Then use the #neovim://diagnostics/current resource to check if there are any compile errors.
-3. If there are errors in the output, explain what they mean and then fix them using step 1
+1. Think about how to implement the users goal and explain each code snippet you plan to add
+2. Update the code in #buffer{watch} using the @editor tool
+3. Then use the #neovim://diagnostics/current resource to check if there are any compile errors.
+4. If there are errors in the output, explain what they mean and then fix them using step 2
 
 We'll repeat this cycle until there are no more error diagnostics.
 
@@ -217,7 +279,7 @@ We'll repeat this cycle until there are no more error diagnostics.
 
 Ensure no deviations from these steps.
 
-### Specific Task Instruction
+### Users Goal
 
 
 ]]
@@ -243,7 +305,7 @@ Ensure no deviations from these steps.
         "<leader>at",
         ":CodeCompanion /tests<CR>",
         desc = "Generate Unit Tests",
-        mode = { "v" },
+        mode = { "n", "v" },
       },
       {
         "<leader>af",
