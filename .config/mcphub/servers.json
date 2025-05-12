@@ -1,8 +1,5 @@
 {
   "mcpServers": {
-    "openai-swarm": {
-      "url": "https://gitmcp.io/openai/swarm"
-    },
     "git": {
       "args": [
         "mcp-server-git"
@@ -21,15 +18,6 @@
         "mcp-server-docker"
       ],
       "command": "uvx"
-    },
-    "rust-lsp": {
-      "args": [
-        "--workspace",
-        "/Users/beli/LogParser",
-        "--lsp",
-        "rust-analyzer"
-      ],
-      "command": "mcp-language-server"
     },
     "serena": {
       "args": [

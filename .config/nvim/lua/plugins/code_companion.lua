@@ -2,6 +2,14 @@ local M = {}
 local group = vim.api.nvim_create_augroup("CodeCompanionCustom", { clear = true })
 vim.g.mcphub_auto_approve = true
 
+function CodeCompanionNext()
+  -- 1. insert text
+  local esc = vim.api.nvim_replace_termcodes("<Esc>", true, false, true)
+  local cr = vim.api.nvim_replace_termcodes("<CR>", true, false, true)
+  vim.api.nvim_feedkeys("i@cmd_runner Do the next step in the plan or fix the error from the output" .. esc, "n", false)
+  vim.api.nvim_feedkeys(cr, "n", false)
+end
+
 vim.api.nvim_create_autocmd("User", {
   pattern = "CodeCompanionChatCreated",
   group = group,
@@ -119,57 +127,52 @@ return {
             },
           },
         },
-        ["Next"] = {
-          condition = function()
-            return false
-          end,
-          strategy = "chat",
-          description = "@cmd_runner Do the next step in the plan or fix the error from the output",
-          opts = {
-            is_default = false, -- Not a default prompt
-            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
-            short_name = "next", -- Used for calling via :CodeCompanion /mycustom
-            auto_submit = true, -- Automatically submit to LLM without waiting
-            user_prompt = false, -- Whether to ask for user input before submitting
-          },
-          prompts = {
-            {
-              role = "user", -- Can use constants.USER_ROLE if available
-              content = "Do the next step in the plan",
-              opts = {
-                auto_submit = true,
-              },
-            },
-          },
-        },
-        ["Example Prompt"] = {
-          condition = function()
-            return false
-          end,
+        ["Code Workflow"] = {
           strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
-          description = "Description of what this prompt does",
+          description = "Generates code as per user specifications until there are no more lsp diagnostics",
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
             is_slash_cmd = true, -- Whether it should be available as a slash command in chat
-            short_name = "benson", -- Used for calling via :CodeCompanion /mycustom
-            auto_submit = true, -- Automatically submit to LLM without waiting
-            user_prompt = false, -- Whether to ask for user input before submitting
+            short_name = "code", -- Used for calling via :CodeCompanion /mycustom
+            --auto_submit = true, -- Automatically submit to LLM without waiting
+            --user_prompt = false, -- Whether to ask for user input before submitting
           },
           prompts = {
             {
-              role = "system", -- Can use constants.SYSTEM_ROLE if available
-              content = "You are a helpful assistant specialized in Lua programming.",
-              opts = {
-                visible = false, -- Whether this message is visible in the chat
-              },
-            },
-            {
-              role = "user", -- Can use constants.USER_ROLE if available
-              content = "Please help me with the following task: ",
-              opts = {
-                auto_submit = false, -- Allow editing before submission
-              },
+              name = "Setup Test",
+              role = "user",
+              opts = { auto_submit = false },
+              content = function()
+                -- Enable turbo mode!!!
+                vim.g.codecompanion_auto_tool_mode = true
+
+                return [[
+
+### Plan to Follow
+
+You are expert software engineer that will write code following the instructions provided above and test the correctness by checking lsp diagnostics. Always spend a few sentences explaining background context, assumptions, and step-by-step thinking BEFORE you try to answer a question. Don't be verbose in your answers, but do provide details and examples where it might help the explanation.
+
+#### Phase 1
+1. Update the code in #buffer{watch} using the @editor tool
+2. Then use the #neovim://diagnostics/current resource to check if there are any compile errors.
+3. If there are errors in the output, explain what they mean and then fix them using step 1
+
+We'll repeat this cycle until there are no more error diagnostics.
+
+#### Phase 2(very similar to Phase 1)
+1. Use the #neovim://diagnostics/workspace resource to check if there are any compile errors. If not we are done.
+2. If there are errors in the output, explain what they mean and then fix them by updating the code in #buffer{watch} using the @editor tool
+3. Go back to step 1
+
+
+Ensure no deviations from these steps.
+
+### Specific Task Instruction
+
+
+]]
+              end,
             },
           },
         },
@@ -180,6 +183,7 @@ return {
       { "<leader>aa", ":CodeCompanionChat Toggle<cr>", desc = "Toggle CodeCompanion Chat" },
       { "<leader>ap", ":CodeCompanionActions<cr>", desc = "Toggle CodeCompanion Action Palette", mode = { "n", "v" } },
       { "<leader>aa", ":CodeCompanionChat Add<cr>", desc = "Add Visually Selected text to Chat", mode = { "v" } },
+      { "<leader>an", CodeCompanionNext, desc = "Prompt CodeCompanion to go to next step", mode = { "n" } },
       {
         "<leader>at",
         ":CodeCompanion /tests<CR>",
@@ -194,9 +198,9 @@ return {
       },
       {
         "<leader>ac",
-        ":CodeCompanion /cw<CR>",
-        desc = "Edit Test Workflow",
-        mode = { "n" },
+        ":CodeCompanion /code<CR>",
+        desc = "Edit Code Workflow",
+        mode = { "n", "v" },
       },
     },
     init = function()
