@@ -6,7 +6,12 @@ function CodeCompanionNext()
   -- 1. insert text
   local esc = vim.api.nvim_replace_termcodes("<Esc>", true, false, true)
   local cr = vim.api.nvim_replace_termcodes("<CR>", true, false, true)
-  vim.api.nvim_feedkeys("i@cmd_runner Do the next step in the plan or fix the error from the output" .. esc, "n", false)
+  vim.api.nvim_feedkeys(
+    "i@cmd_runner Do the next step in the plan OR @editor fix the error from the output OR @editor apply the edit"
+      .. esc,
+    "n",
+    false
+  )
   vim.api.nvim_feedkeys(cr, "n", false)
 end
 

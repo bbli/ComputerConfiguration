@@ -61,6 +61,17 @@ return {
       { "<leader><leader>f", AsyncFormatCppCode, desc = "Format C++ code" },
     },
   },
+  {
+    "stevearc/conform.nvim",
+    config = function()
+      require("conform").setup({
+        formatters_by_ft = {
+          -- You can customize some of the format options for the filetype (:help conform.format)
+          cpp = { "git-clang-format", lsp_format = "fallback" },
+        },
+      })
+    end,
+  },
   --{
   --  "nvim-tree/nvim-tree.lua",
   -- config = function()
