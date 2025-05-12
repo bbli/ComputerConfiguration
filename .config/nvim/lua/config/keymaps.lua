@@ -52,6 +52,21 @@ vim.api.nvim_set_keymap(
 --   "<cmd>Telescope buffers<CR>",
 --   { noremap = true, silent = true, desc = "Fuzzy Search Buffers" }
 -- )
+vim.api.nvim_set_keymap(
+  "n",
+  "<leader>bl",
+  [[:call matchadd('Search', '\%'.line('.').'l')<CR>]],
+  { noremap = true, silent = true, desc = "Add Highlight to Buffer's Line" }
+)
+vim.api.nvim_set_keymap(
+  "n",
+  "<leader>bc",
+  [[:call clearmatches()<CR>]],
+  { noremap = true, silent = true, desc = "Clear Highlight From Buffer's Line" }
+)
+vim.api.nvim_del_keymap("n", "<leader>bp")
+--vim.api.nvim_del_keymap('n', '<leader><leader>')
+
 -------------- 4. Toggle Keymaps -----------------
 function check_filetype(filetype)
   local win_ids = vim.api.nvim_list_wins()
