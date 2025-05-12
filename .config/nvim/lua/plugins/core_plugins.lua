@@ -19,13 +19,6 @@ function AsyncFormatCppCode()
   }):start()
 end
 
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "cpp",
-  callback = function()
-    vim.b.autoformat = false
-  end,
-})
-
 return {
   -- add my colorscheme to LazyVim
   { "sainnhe/edge" },
@@ -51,26 +44,23 @@ return {
       { "<leader>a", "", desc = "+ai" },
       { "<leader>b", "", desc = "+buffer" },
       { "<leader>w", "", desc = "+workspace" },
-      { "<leader>s", "", desc = "+search/send" },
+      { "<leader>s", "", desc = "+search" },
       { "<leader>r", "", desc = "+run" },
       { "<leader>j", "", desc = "+jump" },
       { "<leader>f", "", desc = "+find" },
       { "<leader>g", "", desc = "+git" },
       { "<leader>t", "", desc = "+toggle" },
       { "<leader>o", "", desc = "+open" },
-      { "<leader><leader>f", AsyncFormatCppCode, desc = "Format C++ code" },
     },
   },
   {
     "stevearc/conform.nvim",
-    config = function()
-      require("conform").setup({
-        formatters_by_ft = {
-          -- You can customize some of the format options for the filetype (:help conform.format)
-          cpp = { "git-clang-format", lsp_format = "fallback" },
-        },
-      })
-    end,
+    opts = {
+      formatters_by_ft = {
+        -- You can customize some of the format options for the filetype (:help conform.format)
+        cpp = { "git-clang-format", lsp_format = "fallback" },
+      },
+    },
   },
   --{
   --  "nvim-tree/nvim-tree.lua",
