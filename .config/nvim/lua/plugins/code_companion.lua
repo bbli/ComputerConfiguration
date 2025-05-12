@@ -183,7 +183,13 @@ Ensure no deviations from these steps.
       { "<leader>aa", ":CodeCompanionChat Toggle<cr>", desc = "Toggle CodeCompanion Chat" },
       { "<leader>ap", ":CodeCompanionActions<cr>", desc = "Toggle CodeCompanion Action Palette", mode = { "n", "v" } },
       { "<leader>aa", ":CodeCompanionChat Add<cr>", desc = "Add Visually Selected text to Chat", mode = { "v" } },
-      { "<leader>an", CodeCompanionNext, desc = "Prompt CodeCompanion to go to next step", mode = { "n" } },
+      {
+        "<leader>an",
+        CodeCompanionNext,
+        desc = "Prompt CodeCompanion to go to next step",
+        mode = { "n" },
+        ft = { "codecompanion" },
+      },
       {
         "<leader>at",
         ":CodeCompanion /tests<CR>",
