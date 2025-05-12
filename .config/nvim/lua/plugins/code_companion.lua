@@ -108,7 +108,7 @@ return {
         ["Unit Tests"] = {
           strategy = "chat",
         },
-        ["Apply"] = {
+        ["Code Review"] = {
           condition = function()
             return false
           end,
@@ -124,8 +124,52 @@ return {
           },
           prompts = {
             {
-              role = "user", -- Can use constants.USER_ROLE if available
-              content = "@editor apply the generated code to #neovim://buffer",
+              role = "user",
+
+              content = function()
+                -- Enable turbo mode!!!
+                vim.g.codecompanion_auto_tool_mode = true
+
+                return [[
+
+### Plan to Follow
+You will be acting as a senior software engineer performing a code review for a colleague. 
+
+Do not include a greeting. Immediately begin reviewing the changes.
+
+For each file, decide if you need to provide any feedback on the changes. 
+If so, outline the feedback using one or two sentences.
+If a code change is required, then mention the original code, and
+then propose a code change to fix it.
+Do not add any other text after the suggestion.
+If you have no feedback on a file, do not add a comment for that file.
+Lastly, provide a one to two summary of your feedback at the end.
+
+Here is an example of your output format:
+<example>
+### filename.js
+The name of this variable is unclear.
+
+Original:
+```js
+const x = getAllUsers();
+```
+
+Suggestion:
+```js
+const allUsers = getAllUsers();
+```
+</example>
+
+Think through your feedback step by step before replying.
+
+#### Content
+
+To obtain the content, run a git diff on the staged changes
+
+
+]]
+              end,
               opts = {
                 auto_submit = true,
               },
