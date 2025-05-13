@@ -1,45 +1,55 @@
 {
   "mcpServers": {
-    "git": {
+    "docker": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-docker"
+      ]
+    },
+    "puppeteer": {
+      "command": "npx",
       "args": [
         "mcp-server-git"
       ],
       "command": "uvx"
     },
-    "puppeteer": {
+    "github": {
+      "command": "npx",
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": null
+      },
       "args": [
         "-y",
         "@modelcontextprotocol/server-puppeteer"
       ],
       "command": "npx"
     },
-    "docker": {
-      "args": [
-        "mcp-server-docker"
-      ],
-      "command": "uvx"
-    },
     "serena": {
+      "command": "/home/ir/.local/bin/uv",
+      "env": {
+        "HOME": null
+      },
       "args": [
         "run",
         "--directory",
-        "/Users/beli/Software/serena",
+        "/home/ir/Software/serena",
         "serena-mcp-server",
         "--project-file",
-        "/Users/beli/Software/serena/myproject.yml"
-      ],
-      "command": "/Users/beli/.local/bin/uv"
+        "/home/ir/Software/serena/myproject.yml"
+      ]
+    },
+    "git": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-git"
+      ]
     },
     "perplexity": {
-      "args": [
-        "/Users/beli/Documents/Claude/MCP/perplexity-mcp/build/index.js"
-      ],
+      "command": "node",
       "env": {
+        "HOME": null,
         "PERPLEXITY_API_KEY": null
       },
-      "command": "node"
-    },
-    "github": {
       "args": [
         "-y",
         "@modelcontextprotocol/server-github"

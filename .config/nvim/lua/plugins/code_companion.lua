@@ -175,7 +175,7 @@ void example_func(){
             is_default = false, -- Not a default prompt
             is_slash_cmd = true, -- Whether it should be available as a slash command in chat
             short_name = "apply", -- Used for calling via :CodeCompanion /mycustom
-            auto_submit = true, -- Automatically submit to LLM without waiting
+            auto_submit = false, -- Automatically submit to LLM without waiting
             user_prompt = false, -- Whether to ask for user input before submitting
           },
           prompts = {
@@ -188,12 +188,16 @@ void example_func(){
 
                 return [[
 
+### System Role
+You will be acting as a senior software engineer performing a code review for a colleague.Do not include a greeting. Immediately begin reviewing the changes. You should focus on:
+
+- Correctness issues, particular in regards to data races and asynchronous operations.
+- Think about edge cases for the newly implemented code and point out any gaps in test coverage
+- Point out any changes to existing log lines, and critique the addition of new log lines(whether it is needed, or if more should be added).
+
 ### Plan to Follow
-You will be acting as a senior software engineer performing a code review for a colleague. 
-
-Do not include a greeting. Immediately begin reviewing the changes.
-
-For each file, decide if you need to provide any feedback on the changes. 
+Use @files to read all the files in the diff into your context.
+Then for each file, decide if you need to provide any feedback on the changes. 
 If so, outline the feedback using one or two sentences.
 If a code change is required, then mention the original code, and
 then propose a code change to fix it.
@@ -201,9 +205,12 @@ Do not add any other text after the suggestion.
 If you have no feedback on a file, do not add a comment for that file.
 Lastly, provide a one to two summary of your feedback at the end.
 
-Here is an example of your output format:
+Here is an example of your output format
+Notice how it includes the starting line number for the change.
+It also shows a code snippet of the suggestion
+Also remember to format newlines.
 <example>
-### filename.js
+### filename.js:20
 The name of this variable is unclear.
 
 Original:
@@ -220,8 +227,7 @@ const allUsers = getAllUsers();
 Think through your feedback step by step before replying.
 
 ### Content
-@cmd_runner
-To obtain the content, compare the diff between <master_branch> and <target_branch>.
+To obtain the diff, use @cmd_runner to compare the git diff between <old_branch> and <new_branch>. <intent>
 
 
 ]]
@@ -246,7 +252,7 @@ To obtain the content, compare the diff between <master_branch> and <target_bran
             is_slash_cmd = true, -- Whether it should be available as a slash command in chat
             short_name = "code", -- Used for calling via :CodeCompanion /mycustom
             --auto_submit = true, -- Automatically submit to LLM without waiting
-            --user_prompt = false, -- Whether to ask for user input before submitting
+            --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
           },
           prompts = {
             {

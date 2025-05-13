@@ -19,6 +19,13 @@ function AsyncFormatCppCode()
   }):start()
 end
 
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "cpp",
+  callback = function()
+    vim.b.autoformat = false
+  end,
+})
+
 return {
   -- add my colorscheme to LazyVim
   { "sainnhe/edge" },
@@ -59,6 +66,15 @@ return {
       formatters_by_ft = {
         -- You can customize some of the format options for the filetype (:help conform.format)
         cpp = { "git-clang-format", lsp_format = "fallback" },
+      },
+    },
+    keys = {
+      {
+        "<leader>bf",
+        function()
+          require("conform").format({ lsp_fallback = true, async = false, timeout_ms = 1000 })
+        end,
+        desc = "Format file or range (in visual mode)",
       },
     },
   },
