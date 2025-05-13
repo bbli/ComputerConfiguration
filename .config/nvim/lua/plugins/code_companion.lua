@@ -114,6 +114,26 @@ return {
             auto_submit = false, -- false so I can give a hint before submitting
           },
         },
+        ["Next"] = {
+          condition = function()
+            return false
+          end,
+          strategy = "chat",
+          description = "tell the LLM to proceed to the next step",
+          opts = {
+            is_default = false, -- Not a default prompt
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            short_name = "next", -- Used for calling via :CodeCompanion /mycustom
+            auto_submit = true, -- Automatically submit to LLM without waiting
+            user_prompt = false, -- Whether to ask for user input before submitting
+          },
+          prompts = {
+            {
+              role = "user",
+              content = "@cmd_runner Do the next step in the plan OR @editor fix the error from the output OR @editor apply the edit",
+            },
+          },
+        },
         ["Add Log Lines"] = {
           strategy = "chat",
           description = "generates a prompt to tell the llm to apply the generated code to the file",
@@ -168,6 +188,50 @@ void example_func(){
             },
           },
         },
+        ["Understand Code"] = {
+          strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
+          description = "AI assisted understanding",
+          opts = {
+            index = 20, -- Position in the action palette (higher numbers appear lower)
+            is_default = false, -- Not a default prompt
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            short_name = "understand", -- Used for calling via :CodeCompanion /mycustom
+            auto_submit = false, -- Automatically submit to LLM without waiting
+            --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
+            modes = { "n" },
+          },
+          prompts = {
+            {
+              name = "Setup Test",
+              role = "user",
+              opts = { auto_submit = false },
+              content = function()
+                -- Enable turbo mode!!!
+                vim.g.codecompanion_auto_tool_mode = true
+
+                return [[
+
+### System Plan
+
+You are expert software engineer that is trying to explain the Code Input to a colleague.
+In your analysis, do the following:
+
+- **Focus on the user's question** instead of a general explanation.
+- Provide a step by step break down
+- Use Code Snippets
+- Ask the user to provide more context if you lack the definition of functions/classes
+
+### User's Question
+<user_question>
+
+### Code Input
+<code_input>
+
+]]
+              end,
+            },
+          },
+        },
         ["Unit Tests"] = {
           strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
           description = "Generate Additonal Unit Test to see gaps in Test Coverage",
@@ -176,7 +240,7 @@ void example_func(){
             is_default = false, -- Not a default prompt
             is_slash_cmd = true, -- Whether it should be available as a slash command in chat
             short_name = "tests", -- Used for calling via :CodeCompanion /mycustom
-            --auto_submit = true, -- Automatically submit to LLM without waiting
+            auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
             modes = { "n", "v" },
           },
@@ -193,13 +257,15 @@ void example_func(){
 
 ### System Plan
 
-You are expert software engineer that is trying to ensure correctness of the code input by writing a comphrensive test suite.
+You are expert software engineer that is trying to ensure correctness of the code input by writing a comprehensive test suite.
 Your tests should cover typical cases and edge cases, especially in regards to interactions with the following services:
-  - <service 1>
-  - <service 2>
-Above each test, provide a summary of what the test does in comments
+  - <service1>
+  - <service2>
 
-- Use <example_unit_test> as a reference
+Above each test, provide a summary of what the test does in comments
+Furthermore, log each step that the user specifies in a summarized form
+Use <example_unit_test> as a reference
+
 #### Code Input
 <code_input>
 
@@ -272,7 +338,7 @@ To obtain the diff, use @cmd_runner to compare the git diff between <old_branch>
 ]]
               end,
               opts = {
-                auto_submit = true,
+                auto_submit = false,
               },
             },
           },
@@ -290,7 +356,7 @@ To obtain the diff, use @cmd_runner to compare the git diff between <old_branch>
             is_default = false, -- Not a default prompt
             is_slash_cmd = true, -- Whether it should be available as a slash command in chat
             short_name = "code", -- Used for calling via :CodeCompanion /mycustom
-            --auto_submit = true, -- Automatically submit to LLM without waiting
+            auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
           },
           prompts = {
@@ -306,7 +372,7 @@ To obtain the diff, use @cmd_runner to compare the git diff between <old_branch>
 
 ### Plan to Follow
 
-You are expert software engineer that will write code following the instructions provided above and test the correctness by checking lsp diagnostics. Always spend a few sentences explaining background context, assumptions, and step-by-step thinking BEFORE you try to answer a question. Don't be verbose in your answers, but do provide details and examples where it might help the explanation.
+You are expert software engineer that will write code to achieve the user's goal following the instructions provided above and test the correctness by checking lsp diagnostics. Always spend a few sentences explaining background context, assumptions, and step-by-step thinking BEFORE you try to answer a question. Don't be verbose in your answers, but do provide details and examples where it might help the explanation.
 
 #### Phase 1
 1. Think about how to implement the users goal and explain each code snippet you plan to add
@@ -337,13 +403,23 @@ Ensure no deviations from these steps.
 
     keys = {
       { "<leader>aa", ":CodeCompanionChat Toggle<cr>", desc = "Toggle CodeCompanion Chat" },
+      { "<leader>ab", ":CodeCompanionChat<cr>", desc = "New CodeCompanion Chat Buffer" },
       { "<leader>ap", ":CodeCompanionActions<cr>", desc = "Toggle CodeCompanion Action Palette", mode = { "n", "v" } },
       { "<leader>aa", ":CodeCompanionChat Add<cr>", desc = "Add Visually Selected text to Chat", mode = { "v" } },
       {
         "<leader>an",
-        CodeCompanionNext,
-        desc = "Prompt CodeCompanion to go to next step",
+        "}",
+        desc = "Next CodeCompanion Chat",
         mode = { "n" },
+        remap = true,
+        ft = { "codecompanion" },
+      },
+      {
+        "<leader>aN",
+        "{",
+        desc = "Previous CodeCompanion Chat",
+        mode = { "n" },
+        remap = true,
         ft = { "codecompanion" },
       },
       {
