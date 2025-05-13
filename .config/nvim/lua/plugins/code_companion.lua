@@ -79,6 +79,10 @@ return {
       display = {
         action_palette = {
           provider = "default",
+          opts = {
+            show_default_actions = false, -- Show the default actions in the action palette?
+            show_default_prompt_library = false, -- Show the default prompt library in the action palette?
+          },
         },
       },
       extensions = {
@@ -105,6 +109,11 @@ return {
             return false
           end,
         },
+        ["Fix code"] = {
+          opts = {
+            auto_submit = false, -- false so I can give a hint before submitting
+          },
+        },
         ["Add Log Lines"] = {
           strategy = "chat",
           description = "generates a prompt to tell the llm to apply the generated code to the file",
@@ -112,7 +121,7 @@ return {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
             is_slash_cmd = true, -- Whether it should be available as a slash command in chat
-            short_name = "apply", -- Used for calling via :CodeCompanion /mycustom
+            short_name = "log", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = true, -- Automatically submit to LLM without waiting
             user_prompt = false, -- Whether to ask for user input before submitting
           },
@@ -126,7 +135,7 @@ return {
 
                 return string.format(
                   [[
-### Plan to Follow
+### System Plan
 - You will be acting as an expert debugging expert with knowledge of logging best practices.
 - Your job is to instrument the content so the user can understand which callpath the code executed at runtime. Generally we want to log every conditional path the code can take, but I will leave it up to you to decide the best places to add log lines
 - Try to following the following convention:
@@ -160,10 +169,43 @@ void example_func(){
           },
         },
         ["Unit Tests"] = {
-          strategy = "chat", -- change from inline to chat
+          strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
+          description = "Generate Additonal Unit Test to see gaps in Test Coverage",
           opts = {
-            modes = { "n" },
-            auto_submit = false,
+            index = 20, -- Position in the action palette (higher numbers appear lower)
+            is_default = false, -- Not a default prompt
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            short_name = "tests", -- Used for calling via :CodeCompanion /mycustom
+            --auto_submit = true, -- Automatically submit to LLM without waiting
+            --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
+            modes = { "n", "v" },
+          },
+          prompts = {
+            {
+              name = "Setup Test",
+              role = "user",
+              opts = { auto_submit = false },
+              content = function()
+                -- Enable turbo mode!!!
+                vim.g.codecompanion_auto_tool_mode = true
+
+                return [[
+
+### System Plan
+
+You are expert software engineer that is trying to ensure correctness of the code input by writing a comphrensive test suite.
+Your tests should cover typical cases and edge cases, especially in regards to interactions with the following services:
+  - <service 1>
+  - <service 2>
+Above each test, provide a summary of what the test does in comments
+
+- Use <example_unit_test> as a reference
+#### Code Input
+<code_input>
+
+]]
+              end,
+            },
           },
         },
         ["Code Review"] = {
@@ -174,7 +216,7 @@ void example_func(){
             modes = { "n" },
             is_default = false, -- Not a default prompt
             is_slash_cmd = true, -- Whether it should be available as a slash command in chat
-            short_name = "apply", -- Used for calling via :CodeCompanion /mycustom
+            short_name = "review", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             user_prompt = false, -- Whether to ask for user input before submitting
           },
@@ -189,25 +231,22 @@ void example_func(){
                 return [[
 
 ### System Role
-You will be acting as a senior software engineer performing a code review for a colleague.Do not include a greeting. Immediately begin reviewing the changes. You should focus on:
+You will be acting as a senior software engineer performing a code review for a colleague. You should focus on:
 
 - Correctness issues, particular in regards to data races and asynchronous operations.
 - Think about edge cases for the newly implemented code and point out any gaps in test coverage
 - Point out any changes to existing log lines, and critique the addition of new log lines(whether it is needed, or if more should be added).
 
 ### Plan to Follow
-Use @files to read all the files in the diff into your context.
-Then for each file, decide if you need to provide any feedback on the changes. 
-If so, outline the feedback using one or two sentences.
-If a code change is required, then mention the original code, and
-then propose a code change to fix it.
-Do not add any other text after the suggestion.
-If you have no feedback on a file, do not add a comment for that file.
-Lastly, provide a one to two summary of your feedback at the end.
+- Decide if you need to provide any feedback on the changes. **Ask the user for more context if needed**
+- If not, do not add a comment for that file
+- If so, outline the feedback using one or two sentences.
+- If a code change is required, then mention the original code, and then propose a code change to fix it.
+- Lastly, provide a one to two summary of your feedback at the end.
 
 Here is an example of your output format
 Notice how it includes the starting line number for the change.
-It also shows a code snippet of the suggestion
+It also shows a code snippet for the proposed change
 Also remember to format newlines.
 <example>
 ### filename.js:20
@@ -245,7 +284,7 @@ To obtain the diff, use @cmd_runner to compare the git diff between <old_branch>
         },
         ["Code Workflow"] = {
           strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
-          description = "Generates code as per user specifications until there are no more lsp diagnostics",
+          description = "generates code as per user specifications until there are no more lsp diagnostics",
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
@@ -311,7 +350,7 @@ Ensure no deviations from these steps.
         "<leader>at",
         ":CodeCompanion /tests<CR>",
         desc = "Generate Unit Tests",
-        mode = { "n", "v" },
+        mode = { "n" },
       },
       {
         "<leader>af",
@@ -323,7 +362,7 @@ Ensure no deviations from these steps.
         "<leader>ac",
         ":CodeCompanion /code<CR>",
         desc = "Edit Code Workflow",
-        mode = { "n", "v" },
+        mode = { "n" },
       },
     },
     init = function()
