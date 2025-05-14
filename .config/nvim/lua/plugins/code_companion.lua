@@ -263,7 +263,7 @@ Your tests should cover typical cases and edge cases, especially in regards to i
 Above each test, provide a summary of what the test does in comments
 Furthermore, log each step that the user specifies in a summarized form
 @mcp use serena to look up referencing code snippets if lacking in the current context
-Use <example_unit_test> as a reference
+Use <example_unit_test> as a reference. Think step by step
 
 #### Code Input
 <code_input>
