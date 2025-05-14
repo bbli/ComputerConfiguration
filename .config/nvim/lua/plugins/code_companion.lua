@@ -16,7 +16,7 @@ function CodeCompanionNext()
 end
 
 vim.api.nvim_create_autocmd("User", {
-  pattern = "CodeCompanionChatCreated",
+  pattern = "CodeCompanionChatOpened",
   group = group,
   callback = function(event)
     -- The event data contains the buffer number
@@ -188,9 +188,49 @@ void example_func(){
             },
           },
         },
+        ["Debug Code"] = {
+          strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
+          description = "AI assisted Debugging",
+          opts = {
+            index = 20, -- Position in the action palette (higher numbers appear lower)
+            is_default = false, -- Not a default prompt
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            short_name = "debug", -- Used for calling via :CodeCompanion /mycustom
+            auto_submit = false, -- Automatically submit to LLM without waiting
+            --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
+            modes = { "n" },
+          },
+          prompts = {
+            {
+              role = "user",
+              opts = { auto_submit = false },
+              content = function()
+                -- Enable turbo mode!!!
+                vim.g.codecompanion_auto_tool_mode = true
+
+                return [[
+
+### System Plan
+
+You are expert software engineer that is trying to debug the Code Input.
+To do so, you will do the following:
+
+- Start by systematically examining the code’s execution flow
+- Identify the root cause through logical analysis of each step
+- Propose specific fixes based on your analysis
+- Explain your reasoning behind the solution
+
+
+### Code Input
+I would like you to trace <context>
+]]
+              end,
+            },
+          },
+        },
         ["Understand Code"] = {
           strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
-          description = "AI assisted understanding",
+          description = "AI assisted Understanding",
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
@@ -221,7 +261,7 @@ In your analysis, do the following:
 - @mcp Use Serena to look up definitions and referencing code snippets to assist in your explanation
 
 ### User's Question
-<user_question>
+Explain how <code_object> works, especially in regards to <context>
 
 ### Code Input
 <code_input>
@@ -261,12 +301,15 @@ Your tests should cover typical cases and edge cases, especially in regards to i
   - <service2>
 
 Above each test, provide a summary of what the test does in comments
-Furthermore, log each step that the user specifies in a summarized form
+Furthermore, log each step from the user's goal.
 @mcp use serena to look up referencing code snippets if lacking in the current context
-Use <example_unit_test> as a reference. Think step by step
+Each unit test should be in a separate code snippet
+Always spend a few sentences explaining background context, assumptions, and step by step thinking.
+Do not change anything else besides what the user requested
 
-#### Code Input
-<code_input>
+Use <example_unit_test> as a reference.
+#### User's Goal
+I would like you to write a test <context>
 
 ]]
               end,
@@ -395,6 +438,7 @@ We'll repeat this cycle until there are no more error diagnostics.
 
 
 Ensure no deviations from these steps.
+Do not change anything else besides what the user requested
 
 ### Users Goal
 
@@ -444,6 +488,18 @@ Ensure no deviations from these steps.
         "<leader>ac",
         ":CodeCompanion /code<CR>",
         desc = "Edit Code Workflow",
+        mode = { "n" },
+      },
+      {
+        "<leader>au",
+        ":CodeCompanion /understand<CR>",
+        desc = "Understand Code",
+        mode = { "n" },
+      },
+      {
+        "<leader>ad",
+        ":CodeCompanion /debug<CR>",
+        desc = "Debug Code",
         mode = { "n" },
       },
     },
