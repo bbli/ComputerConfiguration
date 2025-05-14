@@ -202,7 +202,6 @@ void example_func(){
           },
           prompts = {
             {
-              name = "Setup Test",
               role = "user",
               opts = { auto_submit = false },
               content = function()
@@ -218,8 +217,8 @@ In your analysis, do the following:
 
 - **Focus on the user's question** instead of a general explanation.
 - Provide a step by step break down
-- Use Code Snippets
-- Ask the user to provide more context if you lack the definition of functions/classes
+- Justify your reasoning with Code Snippets from the input
+- @mcp Use Serena to look up definitions and referencing code snippets to assist in your explanation
 
 ### User's Question
 <user_question>
@@ -246,7 +245,6 @@ In your analysis, do the following:
           },
           prompts = {
             {
-              name = "Setup Test",
               role = "user",
               opts = { auto_submit = false },
               content = function()
@@ -264,6 +262,7 @@ Your tests should cover typical cases and edge cases, especially in regards to i
 
 Above each test, provide a summary of what the test does in comments
 Furthermore, log each step that the user specifies in a summarized form
+@mcp use serena to look up referencing code snippets if lacking in the current context
 Use <example_unit_test> as a reference
 
 #### Code Input
@@ -307,6 +306,7 @@ You will be acting as a senior software engineer performing a code review for a 
 - Decide if you need to provide any feedback on the changes. **Ask the user for more context if needed**
 - If not, do not add a comment for that file
 - If so, outline the feedback using one or two sentences.
+- @mcp Use Serena to look up definitions and referencing code snippets to assist in your explanation
 - If a code change is required, then mention the original code, and then propose a code change to fix it.
 - Lastly, provide a one to two summary of your feedback at the end.
 
@@ -361,7 +361,6 @@ To obtain the diff, use @cmd_runner to compare the git diff between <old_branch>
           },
           prompts = {
             {
-              name = "Setup Test",
               role = "user",
               opts = { auto_submit = false },
               content = function()
@@ -378,13 +377,20 @@ You are expert software engineer that will write code to achieve the user's goal
 1. Think about how to implement the users goal and explain each code snippet you plan to add
 2. Update the code in #buffer{watch} using the @editor tool
 3. Then use the #neovim://diagnostics/current resource to check if there are any compile errors.
-4. If there are errors in the output, explain what they mean and then fix them using step 2
+4. If there are errors in the output:
+  - explain what they mean
+  - explain your fix
+  - and then fix them by updating the code in #buffer{watch} using the @editor tool
+5. Go back to step 3
 
 We'll repeat this cycle until there are no more error diagnostics.
 
 #### Phase 2(very similar to Phase 1)
 1. Use the #neovim://diagnostics/workspace resource to check if there are any compile errors. If not we are done.
-2. If there are errors in the output, explain what they mean and then fix them by updating the code in #buffer{watch} using the @editor tool
+2. If there are errors in the output:
+  - explain what they mean
+  - explain your fix
+  - and then fix them by updating the code in #buffer{watch} using the @editor tool
 3. Go back to step 1
 
 
