@@ -134,6 +134,26 @@ return {
             },
           },
         },
+        ["Reflect"] = {
+          condition = function()
+            return false
+          end,
+          strategy = "chat",
+          description = "Encourage the LLM to pursue another path",
+          opts = {
+            is_default = false, -- Not a default prompt
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            short_name = "reflect", -- Used for calling via :CodeCompanion /mycustom
+            auto_submit = true, -- Automatically submit to LLM without waiting
+            user_prompt = false, -- Whether to ask for user input before submitting
+          },
+          prompts = {
+            {
+              role = "user",
+              content = "Consider if there could be alternative viewpoints. <user_proposal>",
+            },
+          },
+        },
         ["Add Log Lines"] = {
           strategy = "chat",
           description = "generates a prompt to tell the llm to apply the generated code to the file",
@@ -216,8 +236,8 @@ You are expert software engineer that is trying to debug the Code Input.
 To do so, you will do the following:
 
 - Start by systematically examining the code’s execution flow
-- Identify the root cause through logical analysis of each step
-- Propose specific fixes based on your analysis
+- Identify possible root causes through logical analysis of each step
+- Propose specific fixes based on your analysis.
 - Explain your reasoning behind the solution
 
 
