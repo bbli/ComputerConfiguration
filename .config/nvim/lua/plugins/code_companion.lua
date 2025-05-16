@@ -68,7 +68,14 @@ return {
     opts = {
       strategies = {
         chat = {
-          adapter = "gemini",
+          adapter = "copilot",
+          slash_commands = {
+            ["file"] = {
+              opts = {
+                provider = "fzf_lua",
+              },
+            },
+          },
         },
         inline = {
           adapter = "gemini",
