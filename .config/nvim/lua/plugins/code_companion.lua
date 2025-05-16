@@ -49,6 +49,7 @@ return {
     -- end,
     dependencies = {
       "nvim-lua/plenary.nvim",
+      "ravitemer/codecompanion-history.nvim",
       "nvim-treesitter/nvim-treesitter",
       {
         "MeanderingProgrammer/render-markdown.nvim",
@@ -95,6 +96,31 @@ return {
             show_result_in_chat = true, -- Show the mcp tool result in the chat buffer
             make_vars = true, -- make chat #variables from MCP server resources
             make_slash_commands = true, -- make /slash_commands from MCP server prompts
+          },
+        },
+        history = {
+          enabled = true,
+          opts = {
+            -- Keymap to open history from chat buffer (default: gh)
+            keymap = "gh",
+            -- Keymap to save the current chat manually (when auto_save is disabled)
+            save_chat_keymap = "sc",
+            -- Save all chats by default (disable to save only manually using 'sc')
+            auto_save = true,
+            -- Number of days after which chats are automatically deleted (0 to disable)
+            expiration_days = 0,
+            -- Picker interface ("telescope" or "snacks" or "fzf-lua" or "default")
+            picker = "telescope",
+            -- Automatically generate titles for new chats
+            auto_generate_title = true,
+            ---On exiting and entering neovim, loads the last chat on opening chat
+            continue_last_chat = false,
+            ---When chat is cleared with `gx` delete the chat from history
+            delete_on_clearing_chat = false,
+            ---Directory path to save the chats
+            dir_to_save = vim.fn.stdpath("data") .. "/codecompanion-history",
+            ---Enable detailed logging for history extension
+            enable_logging = false,
           },
         },
       },
@@ -243,7 +269,7 @@ To do so, you will do the following:
 - Start by systematically examining the code’s execution flow
 - Identify possible root causes through logical analysis of each step
 - Propose specific fixes based on your analysis.
-- Explain your reasoning behind the solution
+- Explain your reasoning behind the solution. Use code snippets from the codebase in your explanation
 
 
 ### Code Input
@@ -286,7 +312,7 @@ In your analysis, do the following:
 - @mcp Use Serena to look up definitions and referencing code snippets if not in the current context
 
 ### User's Question
-Explain how <code_object> works, especially in regards to <context>
+Trace how <workflow_or_code_object> works. In particular, <context>
 
 ### Code Input
 <code_input>
@@ -466,6 +492,7 @@ Do not change anything else besides what the user requested
 
     keys = {
       { "<leader>aa", ":CodeCompanionChat Toggle<cr>", desc = "Toggle CodeCompanion Chat" },
+      { "<leader>ah", ":CodeCompanionHistory<cr>", desc = "Toggle CodeCompanion Chat" },
       { "<leader>ab", ":CodeCompanionChat<cr>", desc = "New CodeCompanion Chat Buffer" },
       { "<leader>ap", ":CodeCompanionActions<cr>", desc = "Toggle CodeCompanion Action Palette", mode = { "n", "v" } },
       { "<leader>aa", ":CodeCompanionChat Add<cr>", desc = "Add Visually Selected text to Chat", mode = { "v" } },
