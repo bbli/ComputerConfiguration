@@ -19,6 +19,7 @@ return {
     keys = {
       { "<leader>sg", "<cmd>FzfLua git_files<CR>", desc = "FZF git files" },
       { "<leader>oo", "<cmd>FzfLua git_files<CR>", desc = "FZF git files" },
+      { "<leader>oa", "<cmd>FzfLua files<CR>", desc = "FZF files in current directory" },
       {
         "<leader>oO",
         function()

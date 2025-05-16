@@ -137,7 +137,6 @@ end
 
 local toggleShellTerminal = ToggleTerminalCreator("shell")
 local toggleTestTerminal = ToggleTerminalCreator("test")
-local toggleAiderTerminal = ToggleTerminalCreator("aider")
 return {
   {
     "voldikss/vim-floaterm",
@@ -151,7 +150,6 @@ return {
     keys = {
       { "<leader>os", toggleShellTerminal, desc = "Open Shell Terminal" },
       { "<leader>ot", toggleTestTerminal, desc = "Open Test Terminal" },
-      { "<leader>oa", toggleAiderTerminal, desc = "Open Aider Terminal" },
       --{ "<leader>sn", "<cmd>FloatermNext", desc = "Next Terminal" },
       --{ "<leader>sN", "<cmd>FloatermPrev", desc = "Previous Terminal" },
       { "<leader>rl", ":ShellSend ", desc = "Send a String to ShellSend" },

@@ -68,14 +68,14 @@ return {
 
       -- grapple second: secondary file to main file
       {
-        "<leader>ho",
+        "<leader>hs",
         function()
           require("grapple").tag({ name = "second" })
         end,
         desc = "Grapple Second Tag",
       },
       {
-        "<leader>jo",
+        "<leader>js",
         function()
           require("grapple").select({ name = "second" })
         end,
@@ -83,14 +83,14 @@ return {
       },
       -- grapple other file: for example of code to copy
       {
-        "<leader>hs",
+        "<leader>ho",
         function()
           require("grapple").tag({ name = "other" })
         end,
         desc = "Grapple Other Tag",
       },
       {
-        "<leader>js",
+        "<leader>jo",
         function()
           require("grapple").select({ name = "other" })
         end,

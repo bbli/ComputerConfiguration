@@ -213,6 +213,7 @@ return {
   - The log line begins with a prefix(here "UNIT_TEST").
   - Afterwards it records the name of the function/class this log line was in.
   - Finally it has the actual semantic content we want to log
+Here is an example:
 ```cpp
 void example_func(){
   PS_DIAG_INFO(d_, "UNIT_TEST: snapshot_cleanup_req after dropping filesystem. " "space_scan_key=%%", k);
@@ -267,7 +268,7 @@ You are expert software engineer that is trying to debug the Code Input.
 To do so, you will do the following:
 
 - Start by systematically examining the code’s execution flow
-- Identify possible root causes through logical analysis of each step
+- Identify possible root causes through logical analysis of each step. Consider multiple causes unless you are confident there is only one
 - Propose specific fixes based on your analysis.
 - Explain your reasoning behind the solution. Use code snippets from the codebase in your explanation
 
@@ -351,11 +352,11 @@ Your tests should cover typical cases and edge cases, especially in regards to i
   - <service1>
   - <service2>
 
+Always spend a few sentences planning the background context, assumptions, and step by step thinking.
 Above each test, provide a summary of what the test does in comments
 Furthermore, log each step from the user's goal.
 @mcp use serena to look up referencing code snippets if lacking in the current context
 Each unit test should be in a separate code snippet
-Always spend a few sentences explaining background context, assumptions, and step by step thinking.
 Do not change anything else besides what the user requested
 
 Use <example_unit_test> as a reference.
