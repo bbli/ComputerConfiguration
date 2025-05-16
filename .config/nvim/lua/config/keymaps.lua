@@ -102,7 +102,15 @@ vim.api.nvim_set_keymap(
   { noremap = true, silent = true, desc = "Toggle QuickFix List" }
 )
 
-vim.api.nvim_set_keymap("n", "<leader>tf", "<leader>uf", { desc = "Toggle AutoFormat" })
+function ToggleAutoformat()
+  if vim.g.autoformat then
+    vim.g.autoformat = false
+  else
+    vim.g.autoformat = true
+  end
+end
+
+vim.api.nvim_set_keymap("n", "<leader>tf", ":lua ToggleAutoformat()<CR>", { desc = "Toggle AutoFormat" })
 vim.api.nvim_set_keymap("n", "<leader>td", "<leader>ud", { desc = "Toggle LSP Diagnostics" })
 
 -------------- 4. LocalLeader Keymaps -----------------

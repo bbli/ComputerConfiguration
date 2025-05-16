@@ -104,6 +104,11 @@ return {
             return false
           end,
         },
+        ["Workspace File"] = {
+          opts = {
+            is_default = false,
+          },
+        },
         ["Custom Prompt"] = {
           condition = function()
             return false
@@ -278,7 +283,7 @@ In your analysis, do the following:
 - **Focus on the user's question** instead of a general explanation.
 - Provide a step by step break down
 - Justify your reasoning with Code Snippets from the input
-- @mcp Use Serena to look up definitions and referencing code snippets to assist in your explanation
+- @mcp Use Serena to look up definitions and referencing code snippets if not in the current context
 
 ### User's Question
 Explain how <code_object> works, especially in regards to <context>
@@ -363,14 +368,12 @@ You will be acting as a senior software engineer performing a code review for a 
 
 - Correctness issues, particular in regards to data races and asynchronous operations.
 - Think about edge cases for the newly implemented code and point out any gaps in test coverage
-- Point out any changes to existing log lines, and critique the addition of new log lines(whether it is needed, or if more should be added).
+- Point out any changes to existing log lines, and critique the addition of new log lines(whether it is needed, or if more should be added, especially if they affect control flow).
 
 ### Plan to Follow
 - Decide if you need to provide any feedback on the changes. **Ask the user for more context if needed**
-- If not, do not add a comment for that file
-- If so, outline the feedback using one or two sentences.
-- @mcp Use Serena to look up definitions and referencing code snippets to assist in your explanation
 - If a code change is required, then mention the original code, and then propose a code change to fix it.
+- If not, do not add a comment for that file
 - Lastly, provide a one to two summary of your feedback at the end.
 
 Here is an example of your output format
@@ -434,29 +437,19 @@ To obtain the diff, use @cmd_runner to compare the git diff between <old_branch>
 
 ### Plan to Follow
 
-You are expert software engineer that will write code to achieve the user's goal following the instructions provided above and test the correctness by checking lsp diagnostics. Always spend a few sentences explaining background context, assumptions, and step-by-step thinking BEFORE you try to answer a question. Don't be verbose in your answers, but do provide details and examples where it might help the explanation.
+You are a senior software engineer and an expert in code diagnostics. You will write code to achieve the user's goal following the instructions provided above and test the correctness by checking lsp diagnostics. Always spend a few sentences explaining background context, assumptions, and step-by-step thinking BEFORE you try to answer a question. Don't be verbose in your answers, but do provide details and examples where it might help the explanation.
 
 #### Phase 1
 1. Think about how to implement the users goal and explain each code snippet you plan to add
-2. Update the code in #buffer{watch} using the @editor tool
-3. Then use the #neovim://diagnostics/current resource to check if there are any compile errors.
-4. If there are errors in the output:
+2. The next step is to use @mcp serena to make the edits
+3. When you are finished with the edits, use the neovim MCP server to check the workspace diagnostics for compile errors. Ignore diagnostics that are not related to your change
+4. For each of these filtered diagnostics:
   - explain what they mean
   - explain your fix
-  - and then fix them by updating the code in #buffer{watch} using the @editor tool
+  - then fix them
 5. Go back to step 3
 
 We'll repeat this cycle until there are no more error diagnostics.
-
-#### Phase 2(very similar to Phase 1)
-1. Use the #neovim://diagnostics/workspace resource to check if there are any compile errors. If not we are done.
-2. If there are errors in the output:
-  - explain what they mean
-  - explain your fix
-  - and then fix them by updating the code in #buffer{watch} using the @editor tool
-3. Go back to step 1
-
-
 Ensure no deviations from these steps.
 Do not change anything else besides what the user requested
 
