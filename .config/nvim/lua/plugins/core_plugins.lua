@@ -65,7 +65,6 @@ return {
     opts = {
       formatters_by_ft = {
         -- You can customize some of the format options for the filetype (:help conform.format)
-        cpp = { "git-clang-format", lsp_format = "fallback" },
         python = { "darker", lsp_format = "fallback" },
       },
     },
@@ -73,9 +72,10 @@ return {
       {
         "<leader>bf",
         function()
-          require("conform").format({ lsp_fallback = true, async = false, timeout_ms = 1000 })
+          vim.lsp.buf.format()
         end,
         desc = "Format file or range (in visual mode)",
+        mode = "v",
       },
     },
   },
