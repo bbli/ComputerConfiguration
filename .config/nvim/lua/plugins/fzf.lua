@@ -17,6 +17,7 @@ return {
       vim.ui.select = require("fzf-lua").ui_select
     end,
     keys = {
+      { "<leader>ff", "<cmd>FzfLua live_grep<CR>", desc = "FZF live grep" },
       { "<leader>sg", "<cmd>FzfLua git_files<CR>", desc = "FZF git files" },
       { "<leader>oo", "<cmd>FzfLua git_files<CR>", desc = "FZF git files" },
       { "<leader>oa", "<cmd>FzfLua files<CR>", desc = "FZF files in current directory" },

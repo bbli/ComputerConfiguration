@@ -68,7 +68,7 @@ return {
     opts = {
       strategies = {
         chat = {
-          adapter = "copilot",
+          adapter = "gemini",
           slash_commands = {
             ["file"] = {
               opts = {
@@ -311,7 +311,7 @@ I would like you to trace <context>
 
 ### System Plan
 
-You are expert software engineer that is trying to explain the Code Input to a colleague.
+You are expert software engineer that is trying to explain the User's Question to a colleague.
 In your analysis, do the following:
 
 - **Focus on the user's question** instead of a general explanation.
@@ -321,6 +321,7 @@ In your analysis, do the following:
 
 ### User's Question
 Trace how <workflow_or_code_object> works. In particular, <context>
+Add log lines to <variable>
 
 ### Code Input
 <code_input>
@@ -377,7 +378,7 @@ I would like you to write a test <context>
         },
         ["Code Review"] = {
           strategy = "chat",
-          description = "generates a prompt to tell the llm to apply the generated code to the file",
+          description = "Perform a Code Review",
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             modes = { "n" },
@@ -476,7 +477,7 @@ You are a senior software engineer and an expert in code diagnostics. You will w
 #### Phase 1
 1. Think about how to implement the users goal and explain each code snippet you plan to add
 2. The next step is to use @mcp serena to make the edits
-3. When you are finished with the edits, use the neovim MCP server to check the workspace diagnostics for compile errors. Ignore diagnostics that are not related to your change
+3. When you are finished with the edits, use the neovim MCP server to check the workspace diagnostics for compile errors. Ignore warnings and ignore diagnostics related with "attempting to allocate" an object of abstract class type(`format::catalog`)
 4. For each of these filtered diagnostics:
   - explain what they mean
   - explain your fix
@@ -488,8 +489,9 @@ Ensure no deviations from these steps.
 Do not change anything else besides what the user requested
 
 ### Users Goal
+<context>
 
-
+Afterwards, consider calling Code Review Prompt
 ]]
               end,
             },
@@ -542,6 +544,12 @@ Do not change anything else besides what the user requested
         "<leader>au",
         ":CodeCompanion /understand<CR>",
         desc = "Understand Code",
+        mode = { "n" },
+      },
+      {
+        "<leader>ar",
+        ":CodeCompanion /review<CR>",
+        desc = "Perform a Code Review",
         mode = { "n" },
       },
       {
