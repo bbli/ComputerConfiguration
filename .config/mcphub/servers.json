@@ -33,9 +33,7 @@
         "run",
         "--directory",
         "/home/ir/Software/serena",
-        "serena-mcp-server",
-        "--project-file",
-        "/home/ir/Software/serena/myproject.yml"
+        "serena-mcp-server"
       ]
     },
     "git": {

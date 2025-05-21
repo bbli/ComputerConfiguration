@@ -36,9 +36,9 @@ return {
             name = "buffer",
             keyword_length = 1,
             max_item_count = 5,
-            option = {
-              keyword_pattern = [[\k\+]], -- lsp gettings sigils without this
-            },
+            -- option = {
+            --   keyword_pattern = [[\k\+]], -- lsp gettings sigils without this
+            -- },
           },
           -- {name = 'tags', max_item_count = 6}, -- only turn on if no lsp
           { name = "tmux", keyword_length = 2, max_item_count = 3 },
@@ -58,6 +58,13 @@ return {
           { name = "buffer" },
         }),
       })
+      -- cmp.setup.filetype("codecompanion", {
+      --   sources = cmp.config.sources({
+      --     { name = "nvim_lsp" }, -- You can specify the `cmp_git` source if you were installed it.
+      --   }, {
+      --     { name = "buffer" },
+      --   }),
+      -- })
       -- Use buffer source for `/` (if you enabled `native_menu`, this won't work anymore).
       cmp.setup.cmdline({ "/", "?" }, {
         sources = {
