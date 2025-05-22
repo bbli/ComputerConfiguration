@@ -39,6 +39,11 @@ return {
             -- option = {
             --   keyword_pattern = [[\k\+]], -- lsp gettings sigils without this
             -- },
+            option = {
+              get_bufnrs = function()
+                return vim.api.nvim_list_bufs()
+              end,
+            },
           },
           -- {name = 'tags', max_item_count = 6}, -- only turn on if no lsp
           { name = "tmux", keyword_length = 2, max_item_count = 3 },

@@ -190,6 +190,7 @@ set -x PERL5LIB ~/perl5/lib/perl5
 set -x PERL_LOCAL_LIB_ROOT ~/perl5
 set -x PERL_MB_OPT --install_base\ \"~/perl5\"
 set -x PERL_MM_OPT INSTALL_BASE=~/perl5
+set -gx RUST_BACKTRACE 1
 
 # ************** PLUGIN CONFIGURATION ************** %%%1
 # FOr some reason git_status is being ignored

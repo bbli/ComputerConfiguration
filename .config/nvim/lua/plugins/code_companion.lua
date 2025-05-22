@@ -222,7 +222,7 @@ Use Markdown formatting and include the programming language name at the start o
 
 ### User's Goal
 Please fix this code from buffer %d.
-First explain the direction of the backtrace.
+First explain the callflow of the backtrace.
 
 ]],
                   context.filetype,
@@ -384,8 +384,7 @@ In your analysis, do the following:
 - @mcp Use Serena to look up definitions and referencing code snippets if not in the current context
 
 ### User's Question
-Trace how <workflow_or_code_object> works. In particular, <context>
-Add log lines to <variable>
+Trace the code flow for how <workflow_or_code_object> works. In particular, <context>
 
 ### Code Input
 <code_input>
