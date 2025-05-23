@@ -384,7 +384,8 @@ In your analysis, do the following:
 - Tell the user if definitions are lacking in the current context. Do not hallucinate!!!
 
 ### User's Question
-Trace the code flow and data handling for how <workflow_or_code_object> works. In particular, <context>
+Trace the code flow and data handling for how <workflow_or_code_object> works.
+In particular, <context>
 
 ### Code Input
 <code_input>
@@ -401,7 +402,7 @@ Trace the code flow and data handling for how <workflow_or_code_object> works. I
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
             is_slash_cmd = false, -- Whether it should be available as a slash command in chat
-            short_name = "refactor", -- Used for calling via :CodeCompanion /mycustom
+            short_name = "summarize", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
             modes = { "n" },
@@ -421,11 +422,8 @@ In your refactoring, do the following:
 - Provide a step by step break down of your refactoring
 - Use descriptive function names that clearly indicate their purpose
 - Keep the exact same behavior. 
-- Use the User's Input to help guide your refactoring.
 
-At the end, show met the refactored Code Block that calls all the helper functions you defined
-### User's Input
-The purpose of this code block is to <purpose>
+At the end, show met the refactored Code Block that calls all the helper functions you defined, with the original function at the end
 
 ### Code Block
 <code_input>
@@ -587,8 +585,42 @@ You are a senior software engineer. You will write code to achieve the user's go
 
 ### Users Goal
 <context>
-
+<example>
 Afterwards, consider calling Code Review Prompt
+]]
+              end,
+            },
+          },
+        },
+        ["Referencing Snippets"] = {
+          strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
+          description = "add files from the list to the context window",
+          opts = {
+            index = 20, -- Position in the action palette (higher numbers appear lower)
+            is_default = false, -- Not a default prompt
+            is_slash_cmd = false, -- Whether it should be available as a slash command in chat
+            short_name = "code", -- Used for calling via :CodeCompanion /mycustom
+            auto_submit = false, -- Automatically submit to LLM without waiting
+            --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
+          },
+          prompts = {
+            {
+              role = "user",
+              opts = { auto_submit = false },
+              content = function()
+                -- Enable turbo mode!!!
+                vim.g.codecompanion_auto_tool_mode = true
+
+                return [[
+
+### Plan to Follow
+- Use @files to add the following list of files to the context window.
+- The filename will appear at the beginning of each line
+- Prompt the user for each one
+- Do not prompt if files has alredy been added
+
+### List of Files
+
 ]]
               end,
             },
@@ -656,8 +688,8 @@ Afterwards, consider calling Code Review Prompt
         mode = { "n" },
       },
       {
-        "<leader>ab",
-        ":CodeCompanion /refactor<CR>",
+        "<leader>as",
+        ":CodeCompanion /summarize<CR>",
         desc = "Debug Code",
         mode = { "n" },
       },
