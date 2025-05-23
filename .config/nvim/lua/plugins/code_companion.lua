@@ -262,7 +262,7 @@ First explain the callflow of the backtrace.
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
-            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            is_slash_cmd = false, -- Whether it should be available as a slash command in chat
             short_name = "log", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = true, -- Automatically submit to LLM without waiting
             user_prompt = false, -- Whether to ask for user input before submitting
@@ -317,7 +317,7 @@ void example_func(){
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
-            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            is_slash_cmd = false, -- Whether it should be available as a slash command in chat
             short_name = "debug", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
@@ -357,7 +357,7 @@ I would like you to trace <context>
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
-            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            is_slash_cmd = false, -- Whether it should be available as a slash command in chat
             short_name = "understand", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
@@ -400,7 +400,7 @@ Trace the code flow and data handling for how <workflow_or_code_object> works. I
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
-            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            is_slash_cmd = false, -- Whether it should be available as a slash command in chat
             short_name = "refactor", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
@@ -459,7 +459,7 @@ The purpose of this code block is to <purpose>
 
 ### System Plan
 
-You are expert software engineer that is trying to ensure correctness of the code input by writing a comprehensive test suite.
+You are expert software engineer that is trying to ensure correctness of the Code Input by writing a comprehensive test suite.
 Your tests should cover typical cases and edge cases, especially in regards to interactions with the following services:
   - <service1>
   - <service2>
@@ -475,6 +475,8 @@ Use <example_unit_test> as a reference.
 #### User's Goal
 I would like you to write a test <context>
 
+#### Code Input
+
 ]]
               end,
             },
@@ -487,7 +489,7 @@ I would like you to write a test <context>
             index = 20, -- Position in the action palette (higher numbers appear lower)
             modes = { "n" },
             is_default = false, -- Not a default prompt
-            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            is_slash_cmd = false, -- Whether it should be available as a slash command in chat
             short_name = "review", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             user_prompt = false, -- Whether to ask for user input before submitting
@@ -560,7 +562,7 @@ To obtain the diff, use @cmd_runner to compare the git diff between <old_branch>
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
-            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            is_slash_cmd = false, -- Whether it should be available as a slash command in chat
             short_name = "code", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
