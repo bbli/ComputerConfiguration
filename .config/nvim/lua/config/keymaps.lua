@@ -204,6 +204,7 @@ vmap <leader><leader>c gc
 vnoremap Y :'<,'>w! ~/copy.txt<CR>
 
 nnoremap <leader><leader>m @m
+nnoremap <leader><leader>j 'm
 nnoremap <leader>ob :e scratch<CR>
 ]])
 
