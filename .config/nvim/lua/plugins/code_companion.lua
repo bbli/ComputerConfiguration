@@ -2,6 +2,13 @@ local M = {}
 local group = vim.api.nvim_create_augroup("CodeCompanionCustom", { clear = true })
 vim.g.mcphub_auto_approve = true
 
+LLM_DONE = false
+function LLMStart()
+  LLM_DONE = false
+end
+function LLMDone()
+  LLM_DONE = true
+end
 function CodeCompanionNext()
   -- 1. insert text
   local esc = vim.api.nvim_replace_termcodes("<Esc>", true, false, true)
@@ -74,6 +81,12 @@ return {
               opts = {
                 provider = "fzf_lua",
               },
+            },
+          },
+          tools = {
+            opts = {
+              auto_submit_errors = false,
+              auto_submit_success = false,
             },
           },
         },
@@ -173,65 +186,50 @@ return {
           },
         },
         ["Fix Code"] = {
-          strategy = "chat",
-          description = "Fix the selected code",
+          strategy = "workflow",
+          description = "Use a workflow to repeatedly edit then test code",
           opts = {
-            index = 8,
+            index = 5,
             is_default = false,
-            is_slash_cmd = false,
-            modes = { "v" },
-            short_name = "backtrace",
-            auto_submit = false,
-            user_prompt = false,
-            stop_context_insertion = true,
+            short_name = "fix_code",
           },
           prompts = {
             {
-              role = "system",
-              content = [[When asked to fix code, follow these steps:
+              {
+                name = "Setup Test",
+                role = "user",
+                opts = { auto_submit = false },
+                content = function()
+                  -- Enable turbo mode!!!
+                  vim.g.codecompanion_auto_tool_mode = true
 
-1. **Identify the Issues**: Carefully read the provided code and identify any potential issues or improvements.
-2. **Plan the Fix**: Describe the plan for fixing the code in pseudocode, detailing each step.
-3. **Implement the Fix**: Write the corrected code in a single code block.
-4. **Explain the Fix**: Briefly explain what changes were made and why.
+                  return [[### Instructions
 
-Ensure the fixed code:
+Your instructions here
 
-- Includes necessary imports.
-- Handles potential errors.
-- Follows best practices for readability and maintainability.
-- Is formatted correctly.
+### Steps to Follow
 
-Use Markdown formatting and include the programming language name at the start of the code block.]],
-              opts = {
-                visible = true,
+You are required to write code following the instructions provided above and test the correctness by running the designated test suite. Follow these steps exactly:
+
+1. Update the code in #buffer{watch} using the @editor tool
+2. Then use the @cmd_runner tool to run the test suite with `<test_cmd>` (do this after you have updated the code)
+3. Make sure you trigger both tools in the same response
+
+We'll repeat this cycle until the tests pass. Ensure no deviations from these steps.]]
+                end,
               },
             },
             {
-              role = "user",
-              content = function(context)
-                local code = require("codecompanion.helpers.actions").get_code(context.start_line, context.end_line)
-
-                return string.format(
-                  [[
-### Code Input
-
-```%s
-%s
-```
-
-### User's Goal
-Please fix this code from buffer %d.
-First explain the callflow of the backtrace.
-
-]],
-                  context.filetype,
-                  code,
-                  context.bufnr
-                )
-              end,
-              opts = {
-                contains_code = true,
+              {
+                name = "Repeat On Failure",
+                role = "user",
+                opts = { auto_submit = true },
+                -- Repeat until the tests pass, as indicated by the testing flag
+                -- which the cmd_runner tool sets on the chat buffer
+                repeat_until = function(chat)
+                  return false
+                end,
+                content = "The tests have failed. Can you edit the buffer and run the test suite again?",
               },
             },
           },
@@ -411,12 +409,12 @@ You are expert software engineer that is trying to explain the User's Question t
 In your analysis, do the following:
 
 - **Focus on the user's question** instead of a general explanation.
-- Provide a step by step break down
-- Justify your reasoning with Code Snippets from the input
+- Provide a step by step break down, using Markdown headers for each step
+- Justify your reasoning with Code Snippets from the input instead of referring to line numbers
 - Tell the user if definitions are lacking in the current context. Do not hallucinate!!!
 
 ### User's Question
-Trace the code flow and data handling for how <workflow_or_code_object> works.
+Trace the code flow for how <workflow> works.
 In particular, <context>
 
 ### Code Input
@@ -455,7 +453,7 @@ In your refactoring, do the following:
 - Use descriptive function names that clearly indicate their purpose
 - Keep the exact same behavior. 
 
-At the end, show met the refactored Code Block that calls all the helper functions you defined, with the original function at the end
+At the end, show the refactored Code Block that calls all the helper functions you defined
 
 ### Code Block
 <code_input>
@@ -697,9 +695,9 @@ Afterwards, consider calling Code Review Prompt
       },
       {
         "<leader>af",
-        ":CodeCompanion /backtrace<CR>",
+        ":CodeCompanion /fix_code<CR>",
         desc = "Fix Code",
-        mode = { "v" },
+        mode = { "n" },
       },
       {
         "<leader>aw",
@@ -710,7 +708,7 @@ Afterwards, consider calling Code Review Prompt
       {
         "<leader>am",
         ":CodeCompanion /metaprompt<CR>",
-        desc = "Edit Code Workflow",
+        desc = "Generate a prompt",
         mode = { "n" },
       },
       {
@@ -734,7 +732,7 @@ Afterwards, consider calling Code Review Prompt
       {
         "<leader>as",
         ":CodeCompanion /summarize<CR>",
-        desc = "Debug Code",
+        desc = "Summarize the Code Block",
         mode = { "n" },
       },
     },

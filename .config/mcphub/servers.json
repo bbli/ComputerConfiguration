@@ -1,20 +1,15 @@
 {
+  "nativeMCPServers": [
+    
+  ],
   "mcpServers": {
-    "docker": {
+    "git": {
       "command": "uvx",
       "args": [
-        "mcp-server-docker"
+        "mcp-server-git"
       ]
     },
-    "puppeteer": {
-      "command": "npx",
-      "args": [
-        "mcp-server-git"
-      ],
-      "command": "uvx"
-    },
     "github": {
-      "command": "npx",
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": null
       },
@@ -24,8 +19,13 @@
       ],
       "command": "npx"
     },
+    "docker": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-docker"
+      ]
+    },
     "serena": {
-      "command": "/home/ir/.local/bin/uv",
       "env": {
         "HOME": null
       },
@@ -34,31 +34,31 @@
         "--directory",
         "/home/ir/Software/serena",
         "serena-mcp-server"
-      ]
-    },
-    "git": {
-      "command": "uvx",
-      "args": [
-        "mcp-server-git"
-      ]
+      ],
+      "command": "/home/ir/.local/bin/uv"
     },
     "perplexity": {
-      "command": "node",
       "env": {
-        "HOME": null,
-        "PERPLEXITY_API_KEY": null
+        "GITHUB_PERSONAL_ACCESS_TOKEN": null
       },
       "args": [
         "-y",
         "@modelcontextprotocol/server-github"
       ],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": null
-      },
       "command": "npx"
+    },
+    "puppeteer": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-git"
+      ]
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
     }
-  },
-  "nativeMCPServers": [
-    
-  ]
+  }
 }
