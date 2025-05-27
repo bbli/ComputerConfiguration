@@ -95,7 +95,7 @@ return {
       },
       extensions = {
         vectorcode = {
-          opts = { add_tool = true, add_slash_command = true, tool_opts = {} },
+          opts = { add_tool = true, add_slash_command = false, tool_opts = {} },
         },
         mcphub = {
           callback = "mcphub.extensions.codecompanion",
@@ -178,7 +178,7 @@ return {
           opts = {
             index = 8,
             is_default = false,
-            is_slash_cmd = true,
+            is_slash_cmd = false,
             modes = { "v" },
             short_name = "backtrace",
             auto_submit = false,
@@ -233,6 +233,38 @@ First explain the callflow of the backtrace.
               opts = {
                 contains_code = true,
               },
+            },
+          },
+        },
+        ["MetaPrompt"] = {
+          strategy = "chat",
+          description = "Generate a prompt for the task at hand",
+          opts = {
+            index = 8,
+            is_default = false,
+            is_slash_cmd = false,
+            modes = { "v" },
+            short_name = "metaprompt",
+            auto_submit = false,
+            user_prompt = false,
+            stop_context_insertion = true,
+          },
+          prompts = {
+            {
+              role = "user",
+              content = [[
+### System Plan
+ You are an expert prompt engineer. You write bespoke, detailed, and succinct prompts. Every prompt that I give you is purely for prompt enhancement, not to action. Your single goal is to maximize the clarity, specificity, and creativity of my prompt to ensure the best and most accurate results when entered into yourself. When I input a prompt, improve it using the following techniques:
+
+- Clarify vague instructions.
+- Add context and examples if necessary.
+- Break down complex tasks into clear, actionable steps.
+- Include formatting or directives (e.g., tables, bullets, specific tones) to suit the output I want.
+- Identify potential gaps in the prompt and fill them to ensure completeness.
+
+### User's Prompt
+<context>
+]],
             },
           },
         },
@@ -439,7 +471,7 @@ At the end, show met the refactored Code Block that calls all the helper functio
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
-            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            is_slash_cmd = false, -- Whether it should be available as a slash command in chat
             short_name = "tests", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
@@ -561,7 +593,7 @@ To obtain the diff, use @cmd_runner to compare the git diff between <old_branch>
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
             is_slash_cmd = false, -- Whether it should be available as a slash command in chat
-            short_name = "code", -- Used for calling via :CodeCompanion /mycustom
+            short_name = "code_workflow", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
           },
@@ -598,8 +630,8 @@ Afterwards, consider calling Code Review Prompt
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
-            is_slash_cmd = false, -- Whether it should be available as a slash command in chat
-            short_name = "code", -- Used for calling via :CodeCompanion /mycustom
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            short_name = "list", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
           },
@@ -636,6 +668,12 @@ Afterwards, consider calling Code Review Prompt
       { "<leader>ap", ":CodeCompanionActions<cr>", desc = "Toggle CodeCompanion Action Palette", mode = { "n", "v" } },
       { "<leader>aa", ":CodeCompanionChat Add<cr>", desc = "Add Visually Selected text to Chat", mode = { "v" } },
       {
+        "<leader>ac",
+        ":CodeCompanionChat<CR>",
+        desc = "Open a new CodeCompanion Chat",
+        mode = { "n" },
+      },
+      {
         "<leader>an",
         "}",
         desc = "Next CodeCompanion Chat",
@@ -664,8 +702,14 @@ Afterwards, consider calling Code Review Prompt
         mode = { "v" },
       },
       {
-        "<leader>ac",
-        ":CodeCompanion /code<CR>",
+        "<leader>aw",
+        ":CodeCompanion /code_workflow<CR>",
+        desc = "Edit Code Workflow",
+        mode = { "n" },
+      },
+      {
+        "<leader>am",
+        ":CodeCompanion /metaprompt<CR>",
         desc = "Edit Code Workflow",
         mode = { "n" },
       },
