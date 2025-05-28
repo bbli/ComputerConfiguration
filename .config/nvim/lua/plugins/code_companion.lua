@@ -192,6 +192,7 @@ return {
             index = 5,
             is_default = false,
             short_name = "fix_code",
+            is_slash_cmd = true,
           },
           prompts = {
             {
@@ -205,17 +206,16 @@ return {
 
                   return [[### Instructions
 
-Your instructions here
+1. **Setup**: Use the Neovim MCP Server to call LLMStart()
+2. **Identify the Issues**: Carefully read the Error Backtrace. If you see the path "/home/ir/iridium", use @cmd_runner to replace with the output of `git rev-parse --show-toplevel`. Read in all files from the backtrace with @files(do this after updating the path) and then do your analysis
+3. **Plan the Fix**: Describe the plan for fixing the code, detailing each step with code snippets
+4. **Implement the Fix**: Use @editor to fix the code and then use @cmd_runner `<test_cmd>` to run the tests(do this after updating the code. Make sure you trigger both tools in the same response). If the test passes, use the Neovim MCP Server to call the lua function LLMDone(). Otherwise go back to step 2 and repeat.
 
-### Steps to Follow
 
-You are required to write code following the instructions provided above and test the correctness by running the designated test suite. Follow these steps exactly:
+Ensure no deviations from these steps. At the end, briefly explain what changes were made and why.
+### Error Backtrace
 
-1. Update the code in #buffer{watch} using the @editor tool
-2. Then use the @cmd_runner tool to run the test suite with `<test_cmd>` (do this after you have updated the code)
-3. Make sure you trigger both tools in the same response
-
-We'll repeat this cycle until the tests pass. Ensure no deviations from these steps.]]
+]]
                 end,
               },
             },
@@ -227,9 +227,9 @@ We'll repeat this cycle until the tests pass. Ensure no deviations from these st
                 -- Repeat until the tests pass, as indicated by the testing flag
                 -- which the cmd_runner tool sets on the chat buffer
                 repeat_until = function(chat)
-                  return false
+                  return LLM_DONE
                 end,
-                content = "The tests have failed. Can you edit the buffer and run the test suite again?",
+                content = "proceed with the next step in the plan",
               },
             },
           },
