@@ -207,7 +207,7 @@ return {
                   return [[### Instructions
 
 1. **Setup**: Use the Neovim MCP Server to call LLMStart()
-2. **Identify the Issues**: Carefully read the Error Backtrace. If you see the path "/home/ir/iridium", use @cmd_runner to replace with the output of `git rev-parse --show-toplevel`. Read in all files from the backtrace with @files(do this after updating the path) and then do your analysis
+2. **Identify the Issues**: Carefully read the Error Backtrace. If you see the path "/home/ir/iridium", use @cmd_runner to replace with the output of `git rev-parse --show-toplevel`. Read in all files from the backtrace with @files(do this after updating the path) as well as opening the files as buffers in Neovim. Then do your analysis
 3. **Plan the Fix**: Describe the plan for fixing the code, detailing each step with code snippets
 4. **Implement the Fix**: Use @editor to fix the code and then use @cmd_runner `<test_cmd>` to run the tests(do this after updating the code. Make sure you trigger both tools in the same response). If the test passes, use the Neovim MCP Server to call the lua function LLMDone(). Otherwise go back to step 2 and repeat.
 
@@ -488,22 +488,20 @@ At the end, show the refactored Code Block that calls all the helper functions y
 ### System Plan
 
 You are expert software engineer that is trying to ensure correctness of the Code Input by writing a comprehensive test suite.
-Your tests should cover typical cases and edge cases, especially in regards to interactions with the following services:
-  - <service1>
-  - <service2>
+Your tests should cover typical cases and edge cases
 
 Always spend a few sentences planning the background context, assumptions, and step by step thinking.
 Above each test, provide a summary of what the test does in comments
 Furthermore, log each step from the user's goal.
-@mcp use serena to look up referencing code snippets if lacking in the current context
 Each unit test should be in a separate code snippet
 Do not change anything else besides what the user requested
 
+### User's Goal
+I would like you to write unit tests for <code_object>
+In particular, focus on <purpose>
 Use <example_unit_test> as a reference.
-#### User's Goal
-I would like you to write a test <context>
 
-#### Code Input
+### Code Input
 
 ]]
               end,
