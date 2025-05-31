@@ -405,17 +405,18 @@ I would like you to trace <context>
 
 ### System Plan
 
-You are expert software engineer that is trying to explain the User's Question to a colleague.
+You are a senior software engineer that is trying to explain the User's Question to a colleague.
 In your analysis, do the following:
 
 - **Focus on the user's question** instead of a general explanation.
-- Provide a step by step break down, using Markdown headers for each step
-- Justify your reasoning with Code Snippets from the input instead of referring to line numbers
+- Provide a step by step break down, using Markdown headers for each step.
+- Justify your reasoning with Code Snippets from the input instead of referring to line numbers. Furthermore, if the user asks about how a unit test works, tie together the code from the test and the codebase
 - Tell the user if definitions are lacking in the current context. Do not hallucinate!!!
 
 ### User's Question
 Trace the code flow for how <workflow> works.
-In particular, <context>
+In particular, <purpose>
+Try to find tests that support your reasoning
 
 ### Code Input
 <code_input>
@@ -457,6 +458,38 @@ At the end, show the refactored Code Block that calls all the helper functions y
 
 ### Code Block
 <code_input>
+
+]]
+              end,
+            },
+          },
+        },
+        ["Find Git Commit"] = {
+          strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
+          description = "Find a git commit using git pickaxe",
+          opts = {
+            index = 20, -- Position in the action palette (higher numbers appear lower)
+            is_default = false, -- Not a default prompt
+            is_slash_cmd = false, -- Whether it should be available as a slash command in chat
+            short_name = "pickaxe", -- Used for calling via :CodeCompanion /mycustom
+            auto_submit = false, -- Automatically submit to LLM without waiting
+            --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
+            modes = { "n" },
+          },
+          prompts = {
+            {
+              role = "user",
+              opts = { auto_submit = false },
+              content = function()
+                return [[
+### System Plan
+- Use @cmd_runner to call git pickaxe(git log -S or git log -G) and search the commit history's latest 1000 commits
+- If multiple commits are found, identify the git diff that most pertain to the User's Question
+- Show me that git diff
+- At the end, provide a brief justification of what your reasoning using snippets from that git diff
+
+### User's Question
+Which commit <question>
 
 ]]
               end,
@@ -606,7 +639,7 @@ To obtain the diff, use @cmd_runner to compare the git diff between <old_branch>
 ### Plan to Follow
 
 You are a senior software engineer. You will write code to achieve the user's goal following these instructions:
-- Always spend a few sentences explaining background context, assumptions, and step-by-step thinking BEFORE you try to answer a question.
+- Make a plan. Always spend a few sentences explaining background context, assumptions, and step-by-step thinking BEFORE you try to answer a question.
 - Explain each code snippet you plan to add.
 - Don't be verbose in your answers, but do provide details and examples where it might help the explanation.
 - Ensure no deviations from these steps
