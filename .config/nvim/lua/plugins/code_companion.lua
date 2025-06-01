@@ -185,13 +185,13 @@ return {
             },
           },
         },
-        ["Fix Code"] = {
+        ["Fix Compile Errors"] = {
           strategy = "workflow",
-          description = "Use a workflow to repeatedly edit then test code",
+          description = "fix compile errors",
           opts = {
             index = 5,
             is_default = false,
-            short_name = "fix_code",
+            short_name = "fix_compile_errors",
             is_slash_cmd = true,
           },
           prompts = {
@@ -206,10 +206,9 @@ return {
 
                   return [[### Instructions
 
-1. **Setup**: Use the Neovim MCP Server to call LLMStart()
-2. **Identify the Issues**: Carefully read the Error Backtrace. If you see the path "/home/ir/iridium", use @cmd_runner to replace with the output of `git rev-parse --show-toplevel`. Read in all files from the backtrace with @files(do this after updating the path) as well as opening the files as buffers in Neovim. Then do your analysis
-3. **Plan the Fix**: Describe the plan for fixing the code, detailing each step with code snippets
-4. **Implement the Fix**: Use @editor to fix the code and then use @cmd_runner `<test_cmd>` to run the tests(do this after updating the code. Make sure you trigger both tools in the same response). If the test passes, use the Neovim MCP Server to call the lua function LLMDone(). Otherwise go back to step 2 and repeat.
+1. **Identify the Issues**: Carefully read the Error Backtrace and gather context from the codebase to help in your diagnosis.
+2. **Plan the Fix**: Describe the plan for fixing the code, detailing each step with code snippets
+3. **Implement the Fix**: Use @editor to fix the code and then use @cmd_runner `<test_cmd>` to run the tests(do this after updating the code. Make sure you trigger both tools in the same response).
 
 
 Ensure no deviations from these steps. At the end, briefly explain what changes were made and why.
@@ -368,7 +367,7 @@ void example_func(){
 You are expert software engineer that is trying to debug the Code Input.
 To do so, you will do the following:
 
-- Start by systematically examining the code’s execution flow
+- Start by systematically examining the code’s execution flow and gather context from the codebase to help in your diagnosis.
 - Identify possible root causes through logical analysis of each step. Consider multiple causes unless you are confident there is only one
 - Propose specific fixes based on your analysis.
 - Explain your reasoning behind the solution. Use code snippets from the codebase in your explanation
@@ -527,6 +526,7 @@ Always spend a few sentences planning the background context, assumptions, and s
 Above each test, provide a summary of what the test does in comments
 Furthermore, log each step from the user's goal.
 Each unit test should be in a separate code snippet
+Follows the existing conventions and patterns of the codebase
 Do not change anything else besides what the user requested
 
 ### User's Goal
@@ -543,13 +543,58 @@ Use <example_unit_test> as a reference.
         },
         ["Code Review"] = {
           strategy = "chat",
-          description = "Perform a Code Review",
+          description = "Review Code Adversially",
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             modes = { "n" },
             is_default = false, -- Not a default prompt
             is_slash_cmd = false, -- Whether it should be available as a slash command in chat
             short_name = "review", -- Used for calling via :CodeCompanion /mycustom
+            auto_submit = false, -- Automatically submit to LLM without waiting
+            user_prompt = false, -- Whether to ask for user input before submitting
+          },
+          prompts = {
+            {
+              role = "user",
+
+              content = function()
+                -- Enable turbo mode!!!
+                vim.g.codecompanion_auto_tool_mode = true
+
+                return [[
+
+### System Role
+You are an AI Code Reviewer adopting the persona of a "Devil's Advocate".
+
+- **Focus on the User's Intent** rather than a general code review
+- Your goal is not to confirm the code is correct, but to rigorously challenge its assumptions and execution paths to find potential weaknesses. 
+
+
+Maintain a skeptical and critical tone throughout the review. Do not assume the code is correct; actively try to find reasons why it might fail or be wrong.
+
+### User's Intent
+<purpose>
+
+### Code Input
+
+
+]]
+              end,
+              opts = {
+                auto_submit = false,
+              },
+            },
+          },
+        },
+        ["PR Review"] = {
+          strategy = "chat",
+          description = "Review Code before Submitting as a PR",
+          opts = {
+            index = 20, -- Position in the action palette (higher numbers appear lower)
+            modes = { "n" },
+            is_default = false, -- Not a default prompt
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            short_name = "pr", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             user_prompt = false, -- Whether to ask for user input before submitting
           },
@@ -642,11 +687,12 @@ You are a senior software engineer. You will write code to achieve the user's go
 - Make a plan. Always spend a few sentences explaining background context, assumptions, and step-by-step thinking BEFORE you try to answer a question.
 - Explain each code snippet you plan to add.
 - Don't be verbose in your answers, but do provide details and examples where it might help the explanation.
-- Ensure no deviations from these steps
+- Follows the existing conventions and patterns of the codebase
 
+Ensure no deviations from these steps
 ### Users Goal
 <context>
-<example>
+<example/how to find example>
 Afterwards, consider calling Code Review Prompt
 ]]
               end,
@@ -726,7 +772,7 @@ Afterwards, consider calling Code Review Prompt
       },
       {
         "<leader>af",
-        ":CodeCompanion /fix_code<CR>",
+        ":CodeCompanion /fix_compile_errors<CR>",
         desc = "Fix Code",
         mode = { "n" },
       },
@@ -751,7 +797,7 @@ Afterwards, consider calling Code Review Prompt
       {
         "<leader>ar",
         ":CodeCompanion /review<CR>",
-        desc = "Perform a Code Review",
+        desc = "Perform a Adversial Code Review",
         mode = { "n" },
       },
       {
