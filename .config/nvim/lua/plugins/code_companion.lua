@@ -89,6 +89,13 @@ return {
               auto_submit_success = false,
             },
           },
+          keymaps = {
+            close = {
+              modes = {
+                n = "q",
+              },
+            },
+          },
         },
         inline = {
           adapter = "gemini",
@@ -541,14 +548,14 @@ Use <example_unit_test> as a reference.
             },
           },
         },
-        ["Code Review"] = {
+        ["Adversial Code Review"] = {
           strategy = "chat",
           description = "Review Code Adversially",
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             modes = { "n" },
             is_default = false, -- Not a default prompt
-            is_slash_cmd = false, -- Whether it should be available as a slash command in chat
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
             short_name = "review", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             user_prompt = false, -- Whether to ask for user input before submitting
@@ -566,11 +573,10 @@ Use <example_unit_test> as a reference.
 ### System Role
 You are an AI Code Reviewer adopting the persona of a "Devil's Advocate".
 
-- **Focus on the User's Intent** rather than a general code review
+- **Focus on the User's Intent** rather than a general correctness review
 - Your goal is not to confirm the code is correct, but to rigorously challenge its assumptions and execution paths to find potential weaknesses. 
-
-
-Maintain a skeptical and critical tone throughout the review. Do not assume the code is correct; actively try to find reasons why it might fail or be wrong.
+- Provide a step by step break down, using Markdown headers for each step.
+- Justify your reasoning with Code Snippets from the input instead of referring to line numbers.
 
 ### User's Intent
 <purpose>
