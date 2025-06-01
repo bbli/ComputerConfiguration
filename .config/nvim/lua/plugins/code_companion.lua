@@ -763,7 +763,7 @@ Afterwards, consider calling Code Review Prompt
       {
         "<leader>as",
         ":CodeCompanion /summarize<CR>",
-        desc = "Summarize the Code Block",
+        desc = "Refactor Code block",
         mode = { "n" },
       },
     },
