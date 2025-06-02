@@ -92,7 +92,7 @@ return {
           keymaps = {
             close = {
               modes = {
-                n = "q",
+                -- n = "q",
               },
             },
           },
