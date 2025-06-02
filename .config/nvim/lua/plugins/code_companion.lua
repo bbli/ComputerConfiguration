@@ -73,9 +73,23 @@ return {
       { "ibhagwan/fzf-lua" },
     },
     opts = {
+      adapters = {
+        copilot = function()
+          return require("codecompanion.adapters").extend("copilot", {
+            schema = {
+              model = {
+                default = "gpt-4.1",
+              },
+              max_tokens = {
+                default = 1000000,
+              },
+            },
+          })
+        end,
+      },
       strategies = {
         chat = {
-          adapter = "gemini",
+          adapter = "copilot",
           slash_commands = {
             ["file"] = {
               opts = {
@@ -375,7 +389,7 @@ You are expert software engineer that is trying to debug the Code Input.
 To do so, you will do the following:
 
 - Start by systematically examining the code’s execution flow and gather context from the codebase to help in your diagnosis.
-- Identify possible root causes through logical analysis of each step. Consider multiple causes unless you are confident there is only one
+- Identify possible root causes through logical analysis of each step. Consider multiple causes and pick the best one
 - Propose specific fixes based on your analysis.
 - Explain your reasoning behind the solution. Use code snippets from the codebase in your explanation
 
@@ -414,7 +428,7 @@ I would like you to trace <context>
 You are a senior software engineer that is trying to explain the User's Question to a colleague.
 In your analysis, do the following:
 
-- **Focus on the user's question** instead of a general explanation.
+- Make a plan before answering the user's question. Also **Focus on the user's question** instead of a general explanation. Consider multiple explanations and pick the best one
 - Provide a step by step break down, using Markdown headers for each step.
 - Justify your reasoning with Code Snippets from the input instead of referring to line numbers. Furthermore, if the user asks about how a unit test works, tie together the code from the test and the codebase
 - Tell the user if definitions are lacking in the current context. Do not hallucinate!!!
@@ -422,7 +436,6 @@ In your analysis, do the following:
 ### User's Question
 Trace the code flow for how <workflow> works.
 In particular, <purpose>
-Try to find tests that support your reasoning
 
 ### Code Input
 <code_input>
