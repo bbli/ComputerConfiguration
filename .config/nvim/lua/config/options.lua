@@ -13,3 +13,4 @@ vim.g.maplocalleader = "-"
 vim.opt.foldmethod = "marker"
 vim.opt.foldmarker = "%%%,%%%"
 vim.g.lazyvim_picker = "fzf"
+vim.g.markdown_folding = 1

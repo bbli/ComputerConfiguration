@@ -205,7 +205,7 @@ vnoremap Y :'<,'>w! ~/copy.txt<CR>
 
 nnoremap <leader><leader>m @m
 nnoremap <leader><leader>j 'm
-nnoremap <leader>ob :e scratch<CR>
+nnoremap <leader>ob :e scratch.md<CR>
 ]])
 
 -------------- 7. Jump/LSP Keymaps -----------------

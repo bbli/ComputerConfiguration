@@ -1,23 +1,14 @@
 {
-  "nativeMCPServers": [
-    
-  ],
   "mcpServers": {
-    "git": {
-      "command": "uvx",
-      "args": [
-        "mcp-server-git"
-      ]
-    },
-    "github": {
+    "perplexity": {
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": null
       },
+      "command": "npx",
       "args": [
         "-y",
-        "@modelcontextprotocol/server-puppeteer"
-      ],
-      "command": "npx"
+        "@modelcontextprotocol/server-github"
+      ]
     },
     "docker": {
       "command": "uvx",
@@ -25,32 +16,14 @@
         "mcp-server-docker"
       ]
     },
-    "serena": {
-      "env": {
-        "HOME": null
-      },
-      "args": [
-        "run",
-        "--directory",
-        "/home/ir/Software/serena",
-        "serena-mcp-server"
-      ],
-      "command": "/home/ir/.local/bin/uv"
-    },
-    "perplexity": {
+    "github": {
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": null
       },
+      "command": "npx",
       "args": [
         "-y",
-        "@modelcontextprotocol/server-github"
-      ],
-      "command": "npx"
-    },
-    "puppeteer": {
-      "command": "uvx",
-      "args": [
-        "mcp-server-git"
+        "@modelcontextprotocol/server-puppeteer"
       ]
     },
     "sequential-thinking": {
@@ -59,6 +32,45 @@
         "-y",
         "@modelcontextprotocol/server-sequential-thinking"
       ]
+    },
+    "serena": {
+      "env": {
+        "HOME": null
+      },
+      "command": "/home/ir/.local/bin/uv",
+      "args": [
+        "run",
+        "--directory",
+        "/home/ir/Software/serena",
+        "serena-mcp-server"
+      ]
+    },
+    "Log": {
+      "env": {
+        "QDRANT_URL":"http://localhost:6333",
+        "QDRANT_API_KEY": null,
+        "COLLECTION_NAME": "Log",
+        "EMBEDDING_MODEL": "sentence-transformers/all-MiniLM-L6-v2"
+      },
+      "command": "uvx",
+      "args": [
+        "mcp-server-qdrant"
+      ]
+    },
+    "git": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-git"
+      ]
+    },
+    "puppeteer": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-git"
+      ]
     }
-  }
+  },
+  "nativeMCPServers": [
+    
+  ]
 }

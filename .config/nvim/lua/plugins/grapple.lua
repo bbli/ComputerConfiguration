@@ -66,20 +66,20 @@ return {
         desc = "Jump to Test Tag",
       },
 
-      -- grapple second: secondary file to main file
+      -- grapple scratch: Scratch file to main file
       {
         "<leader>hs",
         function()
-          require("grapple").tag({ name = "second" })
+          require("grapple").tag({ name = "scratch" })
         end,
-        desc = "Grapple Second Tag",
+        desc = "Grapple Scratch Tag",
       },
       {
         "<leader>js",
         function()
-          require("grapple").select({ name = "second" })
+          require("grapple").select({ name = "scratch" })
         end,
-        desc = "Jump to Second Tag",
+        desc = "Jump to Scratch Tag",
       },
       -- grapple other file: for example of code to copy
       {

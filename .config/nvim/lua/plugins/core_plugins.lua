@@ -116,6 +116,22 @@ return {
       { "<leader>tz", "<cmd>ZenMode<CR>", desc = "Toggle ZenMode" },
     },
   },
+  -- {
+  -- "samjwill/nvim-unception",
+  -- init = function()
+  -- Optional settings go here!
+  -- e.g.) vim.g.unception_open_buffer_in_new_tab = true
+  -- end
+  -- },
+  {
+    "willothy/flatten.nvim",
+    config = true,
+    -- or pass configuration with
+    -- opts = {  }
+    -- Ensure that it runs first to minimize delay when opening file from terminal
+    lazy = false,
+    priority = 1001,
+  },
   -- zen mode
   {
     "folke/todo-comments.nvim",
