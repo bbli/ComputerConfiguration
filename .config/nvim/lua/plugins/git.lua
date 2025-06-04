@@ -113,7 +113,7 @@ return {
     event = "VimEnter",
     keys = {
       { "<leader>gD", ":DiffviewOpen ", desc = "Open diffview" },
-      { "<leader>gf", ":DiffviewFileHistory %<CR>", desc = "Open diffview" },
+      { "<leader>gf", ":DiffviewFileHistory %<CR>", desc = "Open diffview on this file" },
     },
   },
 

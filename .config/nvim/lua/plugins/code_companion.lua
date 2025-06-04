@@ -489,7 +489,7 @@ At the end, show the refactored Code Block that calls all the helper functions y
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
-            is_slash_cmd = false, -- Whether it should be available as a slash command in chat
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
             short_name = "pickaxe", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
