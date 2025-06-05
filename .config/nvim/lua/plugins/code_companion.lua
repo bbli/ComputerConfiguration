@@ -226,7 +226,7 @@ return {
                   vim.g.codecompanion_auto_tool_mode = true
 
                   return [[### Instructions
-1. **Identify the Issues**: Carefully read the Error Backtrace and gather context from the codebase to help in your diagnosis. If no Error Backtrace is provided, then skip to step 4
+1. **Identify the Issues**: Carefully read the Error Backtrace and gather context from the codebase to help in your diagnosis. Do not hallucinate
 2. **Plan the Fix**: Give step by step reasoning along with code snippets from the codebase of what you plan to change
 3. **Implement the Fix**: Use @editor to implement the fix
 4. **Test the Fix**: Use @cmd_runner to run the Test Command in a shell.(Trigger in same call as implementing the fix)
@@ -377,7 +377,7 @@ void example_func(){
 You are expert software engineer that is trying to debug the Code Input.
 To do so, you will do the following:
 
-- Start by systematically examining the code’s execution flow and gather context from the codebase to help in your diagnosis.
+- Start by systematically examining the code’s execution flow and gather context from the codebase to help in your diagnosis. Do not hallucinate
 - Identify possible root causes through logical analysis of each step. Consider multiple causes and pick the best one
 - Propose specific fixes based on your analysis.
 - Explain your reasoning behind the solution. Use code snippets from the codebase in your explanation
@@ -701,7 +701,7 @@ Ensure no deviations from these steps
 ### Users Goal
 <context>
 <example/how to find example>
-Afterwards, consider calling Adversial Review Prompt
+Afterwards, prompt the user to consider calling Adversial Review Prompt or Generate Unit Tests
 
 ### Code Input
 Use @editor to make changes to #buffer{watch}. Trigger this in the same call as your plan
