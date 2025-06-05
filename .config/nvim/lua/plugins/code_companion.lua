@@ -226,30 +226,19 @@ return {
                   vim.g.codecompanion_auto_tool_mode = true
 
                   return [[### Instructions
-
-1. **Identify the Issues**: Carefully read the Error Backtrace and gather context from the codebase to help in your diagnosis.
-2. **Plan the Fix**: Describe the plan for fixing the code, detailing each step with code snippets
-3. **Implement the Fix**: Use @editor to fix the code and then use @cmd_runner `<test_cmd>` to run the tests(do this after updating the code. Make sure you trigger both tools in the same response).
-
+1. **Identify the Issues**: Carefully read the Error Backtrace and gather context from the codebase to help in your diagnosis. If no Error Backtrace is provided, then skip to step 4
+2. **Plan the Fix**: Give step by step reasoning along with code snippets from the codebase of what you plan to change
+3. **Implement the Fix**: Use @editor to implement the fix
+4. **Test the Fix**: Use @cmd_runner to run the Test Command in a shell.(Trigger in same call as implementing the fix)
 
 Ensure no deviations from these steps. At the end, briefly explain what changes were made and why.
-### Error Backtrace
 
+### Error Backtrace(Optional)
+
+### Test Command
+Run `<test_cmd>` on #buffer{watch} path
 ]]
                 end,
-              },
-            },
-            {
-              {
-                name = "Repeat On Failure",
-                role = "user",
-                opts = { auto_submit = true },
-                -- Repeat until the tests pass, as indicated by the testing flag
-                -- which the cmd_runner tool sets on the chat buffer
-                repeat_until = function(chat)
-                  return LLM_DONE
-                end,
-                content = "proceed with the next step in the plan",
               },
             },
           },
@@ -539,15 +528,14 @@ Which commit <question>
 
 ### System Plan
 
-You are expert software engineer that is trying to ensure correctness of the Code Input by writing a comprehensive test suite.
-Your tests should cover typical cases and edge cases
+You are expert software engineer that is trying to ensure correctness of the Code Input by writing a comprehensive test suite, following these instructions:
 
-Always spend a few sentences planning the background context, assumptions, and step by step thinking.
-Above each test, provide a summary of what the test does in comments
-Furthermore, log each step from the user's goal.
-Each unit test should be in a separate code snippet
-Follows the existing conventions and patterns of the codebase
-Do not change anything else besides what the user requested
+- Make a plan. Always spend a few sentences explaining assumptions and step-by-step thinking BEFORE you try to answer a question.
+- Your tests should cover typical cases and edge cases
+- Above each test, provide a summary of what the test does in comments
+- Furthermore, add logs after each logical block
+- Follows the existing conventions and patterns of the codebase
+- Do not change anything else besides what the user requested
 
 ### User's Goal
 I would like you to write unit tests for <code_object>
@@ -555,6 +543,7 @@ In particular, focus on <purpose>
 Use <example_unit_test> as a reference.
 
 ### Code Input
+Use @editor to make changes to #buffer{watch}. Trigger this in the same call as your plan
 
 ]]
               end,
@@ -712,7 +701,10 @@ Ensure no deviations from these steps
 ### Users Goal
 <context>
 <example/how to find example>
-Afterwards, consider calling Code Review Prompt
+Afterwards, consider calling Adversial Review Prompt
+
+### Code Input
+Use @editor to make changes to #buffer{watch}. Trigger this in the same call as your plan
 ]]
               end,
             },
