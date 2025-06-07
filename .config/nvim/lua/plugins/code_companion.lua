@@ -356,7 +356,7 @@ void example_func(){
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
-            is_slash_cmd = false, -- Whether it should be available as a slash command in chat
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
             short_name = "debug", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
@@ -378,7 +378,7 @@ You are expert software engineer that is trying to debug the Code Input.
 To do so, you will do the following:
 
 - Start by systematically examining the code’s execution flow and gather context from the codebase to help in your diagnosis. Do not hallucinate
-- Identify possible root causes through logical analysis of each step. Consider multiple causes and pick the best one
+- Identify **multiple possible** root causes through logical analysis of each step.
 - Propose specific fixes based on your analysis.
 - Explain your reasoning behind the solution. Use code snippets from the codebase in your explanation
 
@@ -396,7 +396,7 @@ I would like you to trace <context>
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
-            is_slash_cmd = false, -- Whether it should be available as a slash command in chat
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
             short_name = "understand", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
@@ -423,9 +423,10 @@ In your analysis, do the following:
 - Tell the user if definitions are lacking in the current context. Do not hallucinate!!!
 
 ### User's Question
-Trace the code flow for how <workflow> works.
-In particular, <purpose>
+Trace the code flow for how <general_area> works.
+In particular, <specific>
 
+At the end, ask the user to call the Adversial Review Prompt
 ### Code Input
 <code_input>
 
@@ -510,7 +511,7 @@ Which commit <question>
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
-            is_slash_cmd = false, -- Whether it should be available as a slash command in chat
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
             short_name = "tests", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
@@ -539,9 +540,10 @@ You are expert software engineer that is trying to ensure correctness of the Cod
 
 ### User's Goal
 I would like you to write unit tests for <code_object>
-In particular, focus on <purpose>
+Consider situations where <scenario>
 Use <example_unit_test> as a reference.
 
+At the end, ask the user to call the Adversial Review Prompt
 ### Code Input
 Use @editor to make changes to #buffer{watch}. Trigger this in the same call as your plan
 
@@ -619,10 +621,10 @@ You are an AI Code Reviewer adopting the persona of a "Devil's Advocate".
 ### System Role
 You will be acting as a senior software engineer performing a code review for a colleague. You should focus on:
 
-- Correctness issues, particular in regards to data races and asynchronous operations.
+- Correctness issues
 - Think about edge cases for the newly implemented code and point out any gaps in test coverage
 - Point out any changes to existing log lines, and critique the addition of new log lines(whether it is needed, or if more should be added, especially if they affect control flow).
-- Point out changes in formatting
+- Look for any typos or accidentally deleted code
 
 ### Plan to Follow
 - Decide if you need to provide any feedback on the changes. **Ask the user for more context if needed**
@@ -701,8 +703,8 @@ Ensure no deviations from these steps
 ### Users Goal
 <context>
 <example/how to find example>
-Afterwards, prompt the user to consider calling Adversial Review Prompt or Generate Unit Tests
 
+At the end, ask the user to call Adversial Review Prompt or Generate Unit Tests
 ### Code Input
 Use @editor to make changes to #buffer{watch}. Trigger this in the same call as your plan
 ]]
