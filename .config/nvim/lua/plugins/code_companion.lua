@@ -89,7 +89,7 @@ return {
       },
       strategies = {
         chat = {
-          adapter = "copilot",
+          adapter = "gemini",
           slash_commands = {
             ["file"] = {
               opts = {
@@ -385,6 +385,8 @@ To do so, you will do the following:
 
 ### Code Input
 I would like you to trace <context>
+
+At the end, ask the user to call the Adversial Review Prompt
 ]]
               end,
             },
@@ -425,6 +427,7 @@ In your analysis, do the following:
 ### User's Question
 Trace the code flow for how <general_area> works.
 In particular, <specific>
+Try to find tests that support your reasoning.
 
 At the end, ask the user to call the Adversial Review Prompt
 ### Code Input
@@ -527,7 +530,7 @@ Which commit <question>
 
                 return [[
 
-### System Plan
+### System Test Plan
 
 You are expert software engineer that is trying to ensure correctness of the Code Input by writing a comprehensive test suite, following these instructions:
 
@@ -542,6 +545,7 @@ You are expert software engineer that is trying to ensure correctness of the Cod
 I would like you to write unit tests for <code_object>
 Consider situations where <scenario>
 Use <example_unit_test> as a reference.
+To run the tests, <instructions>
 
 At the end, ask the user to call the Adversial Review Prompt
 ### Code Input
@@ -582,6 +586,11 @@ You are an AI Code Reviewer adopting the persona of a "Devil's Advocate".
 - Provide a step by step break down, using Markdown headers for each step.
 - Justify your reasoning with Code Snippets from the input instead of referring to line numbers.
 
+Throughout our conversation, if you notice that my questions are:
+- Going down rabbit holes that won't help solve the immediate problem
+- Focusing on tangential details rather than root causes
+
+Please politely redirect me by saying something like: 'This question seems to be moving away from your main goal of [restate the problem]. Would it be more helpful to focus on [suggest a more relevant direction]?'
 ### User's Intent
 <purpose>
 
@@ -691,7 +700,7 @@ To obtain the diff, use @cmd_runner to compare the git diff between <old_branch>
 
                 return [[
 
-### Plan to Follow
+### System Code Plan
 
 You are a senior software engineer. You will write code to achieve the user's goal following these instructions:
 - Make a plan. Always spend a few sentences explaining background context, assumptions, and step-by-step thinking BEFORE you try to answer a question.
@@ -700,11 +709,12 @@ You are a senior software engineer. You will write code to achieve the user's go
 - Follows the existing conventions and patterns of the codebase
 
 Ensure no deviations from these steps
-### Users Goal
+### User's Goal
 <context>
 <example/how to find example>
 
-At the end, ask the user to call Adversial Review Prompt or Generate Unit Tests
+At the end, ask the user to call Adversial Review Prompt. 
+Or Combine this with Generate Unit Tests For Agentic Workflow
 ### Code Input
 Use @editor to make changes to #buffer{watch}. Trigger this in the same call as your plan
 ]]
@@ -719,7 +729,7 @@ Use @editor to make changes to #buffer{watch}. Trigger this in the same call as 
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
             is_slash_cmd = true, -- Whether it should be available as a slash command in chat
-            short_name = "list", -- Used for calling via :CodeCompanion /mycustom
+            short_name = "references", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
           },
@@ -733,11 +743,12 @@ Use @editor to make changes to #buffer{watch}. Trigger this in the same call as 
 
                 return [[
 
-### Plan to Follow
 - Use @files to add the following list of files to the context window.
 - The filename will appear at the beginning of each line
 - Prompt the user for each one
 - Do not prompt if files has alredy been added
+
+Trigger the tool call for all these files in the same call along with the plan
 
 ### List of Files
 
