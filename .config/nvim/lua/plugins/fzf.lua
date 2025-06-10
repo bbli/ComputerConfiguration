@@ -11,7 +11,7 @@ return {
       vim.keymap.del("n", "<leader>fb")
       -- vim.keymap.del("n", "<leader>fc")
       vim.keymap.del("n", "<leader>fr")
-      vim.keymap.del("n", "<leader>ff")
+      --vim.keymap.del("n", "<leader>ff")
       require("fzf-lua").register_ui_select()
 
       vim.ui.select = require("fzf-lua").ui_select
@@ -20,7 +20,7 @@ return {
       { "<leader>ff", "<cmd>FzfLua live_grep<CR>", desc = "FZF live grep" },
       { "<leader>sg", "<cmd>FzfLua git_files<CR>", desc = "FZF git files" },
       { "<leader>oo", "<cmd>FzfLua git_files<CR>", desc = "FZF git files" },
-      { "<leader>oa", "<cmd>FzfLua files<CR>", desc = "FZF files in current directory" },
+      --{ "<leader>oa", "<cmd>FzfLua files<CR>", desc = "FZF files in current directory" },
       {
         "<leader>oO",
         function()

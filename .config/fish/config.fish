@@ -136,9 +136,9 @@ function cop
     nvim ~/copy.txt
 end
 
-function code
-    cd ~/Dropbox/Code
-end
+# function code
+#     cd ~/Dropbox/Code
+# end
 
 function dot
     cd ~/Dropbox/Code/dotfiles
@@ -199,3 +199,10 @@ set -gx RUST_BACKTRACE 1
 set fish_greeting
 starship init fish | source
 source ~/.tokens.fish
+
+# pnpm
+set -gx PNPM_HOME /Users/beli/Library/pnpm
+if not string match -q -- $PNPM_HOME $PATH
+    set -gx PATH "$PNPM_HOME" $PATH
+end
+# pnpm end

@@ -89,7 +89,7 @@ return {
       },
       strategies = {
         chat = {
-          adapter = "gemini",
+          adapter = "copilot",
           slash_commands = {
             ["file"] = {
               opts = {
@@ -226,12 +226,12 @@ return {
                   vim.g.codecompanion_auto_tool_mode = true
 
                   return [[### Instructions
-1. **Identify the Issues**: Carefully read the Error Backtrace and gather context from the codebase to help in your diagnosis. Do not hallucinate
-2. **Plan the Fix**: Give step by step reasoning along with code snippets from the codebase of what you plan to change
+1. **Identify the Issues**: Carefully read the Error Backtrace and use @files to gather context from the codebase to help in your diagnosis. Do not hallucinate
+2. **Plan the Fix**: Explain the execution flow for the error. Then give step by step reasoning along with code snippets from the codebase of what you plan to change
 3. **Implement the Fix**: Use @editor to implement the fix
 4. **Test the Fix**: Use @cmd_runner to run the Test Command in a shell.(Trigger in same call as implementing the fix)
 
-Ensure no deviations from these steps. At the end, briefly explain what changes were made and why.
+Ensure no deviations from these steps. At the end, have a SUMMARY markdown header which concisely explains the changes that were made and why.
 
 ### Error Backtrace(Optional)
 
@@ -301,9 +301,9 @@ Run `<test_cmd>` on #buffer{watch} path
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
-            is_slash_cmd = false, -- Whether it should be available as a slash command in chat
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
             short_name = "log", -- Used for calling via :CodeCompanion /mycustom
-            auto_submit = true, -- Automatically submit to LLM without waiting
+            auto_submit = false, -- Automatically submit to LLM without waiting
             user_prompt = false, -- Whether to ask for user input before submitting
           },
           prompts = {
@@ -314,13 +314,12 @@ Run `<test_cmd>` on #buffer{watch} path
                 vim.g.codecompanion_auto_tool_mode = true
                 local code = require("codecompanion.helpers.actions").get_code(context.start_line, context.end_line)
 
-                return string.format(
-                  [[
+                return string.format([[
 ### System Plan
 - You will be acting as an expert debugging expert with knowledge of logging best practices.
 - Your job is to instrument the content so the user can understand which callpath the code executed at runtime. Generally we want to log every conditional path the code can take, but I will leave it up to you to decide the best places to add log lines
 - Try to following the following convention:
-  - The log line begins with a prefix(here "UNIT_TEST").
+  - The log line begins with a prefix(i.e "UNIT_TEST").
   - Afterwards it records the name of the function/class this log line was in.
   - Finally it has the actual semantic content we want to log
 Here is an example:
@@ -333,16 +332,7 @@ void example_func(){
 - Do not change anything else besides what the user requested
 
 ### Content
-```%s
-%s
-```
-@editor add log lines to all the class methods of <object> based on the control flow
-          from buffer %d:
-]],
-                  context.filetype,
-                  code,
-                  context.bufnr
-                )
+]])
               end,
               opts = {
                 contains_code = true,
@@ -378,15 +368,15 @@ You are expert software engineer that is trying to debug the Code Input.
 To do so, you will do the following:
 
 - Start by systematically examining the code’s execution flow and gather context from the codebase to help in your diagnosis. Do not hallucinate
-- Identify **multiple possible** root causes through logical analysis of each step.
-- Propose specific fixes based on your analysis.
-- Explain your reasoning behind the solution. Use code snippets from the codebase in your explanation
+- Identify **multiple possible** root causes through logical analysis of each step. Your analysis should include code snippets from the codebase
+- Propose specific fixes based on your analysis. This should be in a SUMMARY markdown header
 
 
 ### Code Input
 I would like you to trace <context>
 
 At the end, ask the user to call the Adversial Review Prompt
+Run `<test_cmd>` to verify your fix. If you fail, restart your analysis.
 ]]
               end,
             },
@@ -424,6 +414,7 @@ In your analysis, do the following:
 - Justify your reasoning with Code Snippets from the input instead of referring to line numbers. Furthermore, if the user asks about how a unit test works, tie together the code from the test and the codebase
 - Tell the user if definitions are lacking in the current context. Do not hallucinate!!!
 
+At the end, have a SUMMARY markdown header which gives a concise explanation
 ### User's Question
 Trace the code flow for how <general_area> works.
 In particular, <specific>
@@ -545,7 +536,7 @@ You are expert software engineer that is trying to ensure correctness of the Cod
 I would like you to write unit tests for <code_object>
 Consider situations where <scenario>
 Use <example_unit_test> as a reference.
-To run the tests, <instructions>
+Run `<test_cmd>` to verify the tests are passing. Iterate until passing
 
 At the end, ask the user to call the Adversial Review Prompt
 ### Code Input
@@ -586,8 +577,8 @@ You are an AI Code Reviewer adopting the persona of a "Devil's Advocate".
 - Provide a step by step break down, using Markdown headers for each step.
 - Justify your reasoning with Code Snippets from the input instead of referring to line numbers.
 
-Throughout our conversation, if you notice that my questions are:
-- Going down rabbit holes that won't help solve the immediate problem
+Throughout our conversation, I may ask followup questions. if you notice that my questions are:
+- Going down rabbit holes that won't help solve the immediate problem from the beginning of the conversation
 - Focusing on tangential details rather than root causes
 
 Please politely redirect me by saying something like: 'This question seems to be moving away from your main goal of [restate the problem]. Would it be more helpful to focus on [suggest a more relevant direction]?'
@@ -705,10 +696,9 @@ To obtain the diff, use @cmd_runner to compare the git diff between <old_branch>
 You are a senior software engineer. You will write code to achieve the user's goal following these instructions:
 - Make a plan. Always spend a few sentences explaining background context, assumptions, and step-by-step thinking BEFORE you try to answer a question.
 - Explain each code snippet you plan to add.
-- Don't be verbose in your answers, but do provide details and examples where it might help the explanation.
 - Follows the existing conventions and patterns of the codebase
 
-Ensure no deviations from these steps
+Ensure no deviations from these steps. At the end, have a SUMMARY markdown header which concisely explains the changes that were made and why.
 ### User's Goal
 <context>
 <example/how to find example>
@@ -833,6 +823,12 @@ Trigger the tool call for all these files in the same call along with the plan
         "<leader>as",
         ":CodeCompanion /summarize<CR>",
         desc = "Refactor Code block",
+        mode = { "n" },
+      },
+      {
+        "<leader>al",
+        ":CodeCompanion /log<CR>",
+        desc = "Add Log Lines",
         mode = { "n" },
       },
     },
