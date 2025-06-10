@@ -236,7 +236,7 @@ Ensure no deviations from these steps. At the end, have a SUMMARY markdown heade
 ### Error Backtrace(Optional)
 
 ### Test Command
-Run `<test_cmd>` on #buffer{watch} path
+Run `<test_cmd>` on #buffer{watch} path. **ITERATE UNTIL THIS TEST PASSES**
 ]]
                 end,
               },
@@ -694,19 +694,18 @@ To obtain the diff, use @cmd_runner to compare the git diff between <old_branch>
 ### System Code Plan
 
 You are a senior software engineer. You will write code to achieve the user's goal following these instructions:
-- Make a plan. Always spend a few sentences explaining background context, assumptions, and step-by-step thinking BEFORE you try to answer a question.
+- **Make a plan**. Always spend a few sentences explaining background context, assumptions, and step-by-step thinking BEFORE you try to answer a question.
 - Explain each code snippet you plan to add.
 - Follows the existing conventions and patterns of the codebase
 
 Ensure no deviations from these steps. At the end, have a SUMMARY markdown header which concisely explains the changes that were made and why.
 ### User's Goal
-<context>
+<users_goal>
 <example/how to find example>
 
-At the end, ask the user to call Adversial Review Prompt. 
-Or Combine this with Generate Unit Tests For Agentic Workflow
-### Code Input
-Use @editor to make changes to #buffer{watch}. Trigger this in the same call as your plan
+### Code Input + Running Tests
+- Use @editor to make changes to #buffer{watch}. Trigger this in the same call as your plan
+- Run `<test_cmd>` on #buffer{watch} path. **ITERATE UNTIL THIS TEST PASSES**
 ]]
               end,
             },
