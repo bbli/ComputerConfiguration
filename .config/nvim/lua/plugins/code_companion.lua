@@ -420,7 +420,7 @@ In your analysis, do the following:
 3. **Step-by-Step Breakdown:**
    - Structure your explanation using Markdown headers for each step.
    - For each step, justify your reasoning with direct code snippets from the input, rather than referencing line numbers.
-   - When applicable, demonstrate how code from tests triggers or interacts with code from the main codebase.
+   - When applicable, demonstrate how code from tests triggers or interacts with code from the main codebase. Have a code snippet from both the test and the codebase
 
 4. **Address Gaps in Definitions:**
    - If any definitions or context are missing, explicitly state this. Do not infer or invent missing information.
@@ -684,7 +684,7 @@ To obtain the diff, use @cmd_runner to compare the git diff between <old_branch>
         },
         ["Code Workflow"] = {
           strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
-          description = "generates code as per user specifications until there are no more lsp diagnostics",
+          description = "generates code as per user specifications",
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
@@ -709,8 +709,11 @@ You are a senior software engineer. You will write code to achieve the user's go
 - **Make a plan**. Always spend a few sentences explaining background context, assumptions, and step-by-step thinking BEFORE you try to answer a question.
 - Explain each code snippet you plan to add.
 - Follows the existing conventions and patterns of the codebase
+- Add log lines at important parts of the implementation
+- After implementing, write a new test for your implementation
 
 Ensure no deviations from these steps. At the end, have a SUMMARY markdown header which concisely explains the changes that were made and why.
+Also at the end, prompt to call the Adversial Review Prompt and ask if the implementation is correct and/or if it not accounting for certain edge cases
 ### User's Goal
 <users_goal>
 <example/how to find example>
