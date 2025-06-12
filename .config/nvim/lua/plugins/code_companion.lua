@@ -551,11 +551,11 @@ You are expert software engineer that is trying to ensure correctness of the Cod
 I would like you to write unit tests for <code_object>
 Consider situations where <scenario>
 Use <example_unit_test> as a reference.
-Run `<test_cmd>` to verify the tests are passing. Iterate until passing
 
 At the end, ask the user to call the Adversial Review Prompt
 ### Code Input
-Use @editor to make changes to #buffer{watch}. Trigger this in the same call as your plan
+Use @editor to make changes to <buffer>. Trigger this in the same call as your plan
+Run `<test_cmd>` to verify the tests are passing. Iterate until passing
 
 ]]
               end,
@@ -635,11 +635,12 @@ You will be acting as a senior software engineer performing a code review for a 
 
 - Correctness issues
 - Think about edge cases for the newly implemented code and point out any gaps in test coverage
-- Point out any changes to existing log lines, and critique the addition of new log lines(whether it is needed, or if more should be added, especially if they affect control flow).
+- Point out any changes to existing log lines, critique whether new log lines are needed, and analyze whether we should add more log lines, especially for fail cases
 - Look for any typos or accidentally deleted code
+- Justify your reasoning with code snippets from the codebase
 
-### Plan to Follow
-- Decide if you need to provide any feedback on the changes. **Ask the user for more context if needed**
+### Output Format
+- For each file, think hard and decide if you need to provide any feedback on the changes.
 - If a code change is required, then mention the original code, and then propose a code change to fix it.
 - If not, do not add a comment for that file
 - Lastly, provide a one to two summary of your feedback at the end.
@@ -666,7 +667,11 @@ const allUsers = getAllUsers();
 Think through your feedback step by step before replying.
 
 ### Content
-To obtain the diff, use @cmd_runner to compare the git diff between <old_branch> and <new_branch>. <intent>
+Here is the git diff:
+```diff
+
+```
+Use @files to read in the files from this diff before responding to the user
 
 
 ]]
