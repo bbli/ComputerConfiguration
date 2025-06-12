@@ -236,7 +236,7 @@ Ensure no deviations from these steps. At the end, have a SUMMARY markdown heade
 ### Error Backtrace(Optional)
 
 ### Test Command
-Run `<test_cmd>` on #buffer{watch} path. **ITERATE UNTIL THIS TEST PASSES**
+Run `<test_cmd>` on <buffer> path. **ITERATE UNTIL THIS TEST PASSES**
 ]]
                 end,
               },
@@ -704,8 +704,8 @@ Ensure no deviations from these steps. At the end, have a SUMMARY markdown heade
 <example/how to find example>
 
 ### Code Input + Running Tests
-- Use @editor to make changes to #buffer{watch}. Trigger this in the same call as your plan
-- Run `<test_cmd>` on #buffer{watch} path. **ITERATE UNTIL THIS TEST PASSES**
+- Use @editor to make changes to <buffer>. Trigger this in the same call as your plan
+- Run `<test_cmd>` on <buffer> path. **ITERATE UNTIL THIS TEST PASSES**
 ]]
               end,
             },

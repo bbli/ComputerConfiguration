@@ -196,6 +196,12 @@ function PrintCurrentFilePath()
     title = "Current File's Absolute Path",
   })
 end
+vim.api.nvim_create_user_command("CreateUnitTestFile", function(opts)
+  local dir = "/tmp/unit_tests"
+  local filepath = dir .. "/" .. opts.args
+  vim.fn.mkdir(dir, "p")
+  vim.cmd.edit(vim.fn.fnameescape(filepath))
+end, { nargs = 1 })
 vim.cmd([[
 nnoremap <leader>pp :lua PrintCurrentFilePath()<CR>
 nnoremap <leader><leader>p :echo expand('%:p')<CR>
@@ -205,7 +211,7 @@ vnoremap Y :'<,'>w! ~/copy.txt<CR>
 
 nnoremap <leader><leader>m @m
 nnoremap <leader><leader>j 'm
-nnoremap <leader>ob :e scratch.md<CR>
+nnoremap <leader>ob :CreateUnitTestFile 
 ]])
 
 -------------- 7. Jump/LSP Keymaps -----------------
