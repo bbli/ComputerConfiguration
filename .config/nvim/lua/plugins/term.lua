@@ -69,54 +69,41 @@ function SendLastStringToTestTerm()
 end
 
 -- SC: How does Telescope command_history remember current session + old commands?
-function SendStringFromHistory(opts)
-  -- -- Option 1: Open Telescope commands with BensonFloatTerm already prepopulated
-  --     -- TrySomething: call feedkeys after Telescope to see what happens
-  --         -- keys did not seem to be sent
-  -- vim.api.nvim_cmd({cmd="Telescope",args={"command_history"}},{})
-  -- vim.api.nvim_feedkeys("BensonFloatTerm ",'i',false)
-  -- Option 2: Create own list of just BensonFloatTerm stuff
+function SendStringFromHistory()
   local history_string = vim.fn.execute("history cmd")
   local history_list = vim.split(history_string, "\n")
-
   local results = {}
-  for i = #history_list, 3, -1 do --Beginning has some fluff
+  for i = #history_list, 3, -1 do
     local item = history_list[i]
     local _, finish = string.find(item, "%d+ +")
-    local actual_cmd_string = string.sub(item, finish + 1)
-    if string.find(actual_cmd_string, "ShellSend") then
-      table.insert(results, string.sub(item, finish + 1))
+    if finish then
+      local actual_cmd_string = string.sub(item, finish + 1)
+      if string.find(actual_cmd_string, "ShellSend") then
+        table.insert(results, actual_cmd_string)
+      end
     end
   end
-  opts = opts or {}
-  pickers
-    .new(opts, {
-      prompt_title = "FloatSend Command History",
-      finder = finders.new_table(results),
-      sorter = conf.generic_sorter(opts),
-      attach_mappings = function(prompt_bufnr, map)
-        map("i", "<C-e>", function()
-          actions.close(prompt_bufnr)
-          local selection = action_state.get_selected_entry()
-          vim.api.nvim_feedkeys(":" .. selection[1], "n", false)
-        end)
-        map("i", "<C-d>", function()
-          actions.close(prompt_bufnr)
-          local selection = action_state.get_selected_entry()
-          vim.fn.histdel("cmd", selection[1])
-          SendStringFromHistory(opts)
-        end)
-        actions.select_default:replace(function()
-          actions.close(prompt_bufnr)
-          local selection = action_state.get_selected_entry()
-          -- print(vim.inspect(selection))
-          vim.api.nvim_command(selection[1])
-        end)
-        return true
+
+  require("fzf-lua").fzf_exec(results, {
+    prompt = "ShellSend Command History> ",
+    actions = {
+      -- <CR>: run the command
+      ["default"] = function(selected)
+        vim.api.nvim_command(selected[1])
       end,
-    })
-    :find()
+      -- <C-e>: feed command to command line
+      ["ctrl-e"] = function(selected)
+        vim.api.nvim_feedkeys(":" .. selected[1], "n", false)
+      end,
+      -- <C-d>: delete from history and reload picker
+      ["ctrl-d"] = function(selected, opts)
+        vim.fn.histdel("cmd", selected[1])
+        return { reload = true }
+      end,
+    },
+  })
 end
+
 -- vim.keymap.set('n','<leader>ss',
 --     function() SaveCommandToList() end
 --     )
