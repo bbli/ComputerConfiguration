@@ -112,10 +112,10 @@ return {
           },
         },
         inline = {
-          adapter = "gemini",
+          adapter = "copilot",
         },
         cmd = {
-          adapter = "gemini",
+          adapter = "copilot",
         },
       },
       display = {
@@ -236,7 +236,7 @@ Ensure no deviations from these steps. At the end, have a SUMMARY markdown heade
 ### Error Backtrace(Optional)
 
 ### Test Command
-Run `<test_cmd>` on <buffer> path. **ITERATE UNTIL THIS TEST PASSES**
+Run `<test_cmd>` to verify your fix. **ITERATE UNTIL THIS TEST PASSES**
 ]]
                 end,
               },
@@ -438,7 +438,7 @@ In your analysis, do the following:
 
 3. **Step-by-Step Breakdown:**
    - Structure your explanation using Markdown headers for each step.
-   - For each step, justify your reasoning with direct code snippets from the input, rather than referencing line numbers.
+   - For each step, justify your reasoning with direct code snippets from the input, rather than referencing line numbers. But do mention the filename the code snippet comes from though
    - When applicable, demonstrate how code from tests triggers or interacts with code from the main codebase. Have a code snippet from both the test and the codebase
 
 4. **Address Gaps in Definitions:**
@@ -452,7 +452,7 @@ In your analysis, do the following:
 ### User's Question
 Trace the code flow for how <general_area> works.
 In particular, <specific>
-Try to find tests that support your reasoning.
+Try to find tests that support your reasoning or write a test to confirm your reasoning.
 
 At the end, ask the user to call the Adversial Review Prompt
 ### Code Input
@@ -744,7 +744,7 @@ Also at the end, prompt to call the Adversial Review Prompt and ask if the imple
 
 ### Code Input + Running Tests
 - Use @editor to make changes to <buffer>. Trigger this in the same call as your plan
-- Run `<test_cmd>` on <buffer> path. **ITERATE UNTIL THIS TEST PASSES**
+- Run `<test_cmd>` to verify your change. **ITERATE UNTIL THIS TEST PASSES**
 ]]
               end,
             },
