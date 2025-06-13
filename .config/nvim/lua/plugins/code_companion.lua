@@ -317,7 +317,7 @@ Run `<test_cmd>` on <buffer> path. **ITERATE UNTIL THIS TEST PASSES**
                 return string.format([[
 ### System Plan
 - You will be acting as an expert debugging expert with knowledge of logging best practices.
-- Your job is to instrument the content so the user can understand which callpath the code executed at runtime. Generally we want to log every conditional path the code can take, but I will leave it up to you to decide the best places to add log lines
+  - Given the User's Goal, first gather context and make a plan. Your job is to instrument the content so the user can understand which callpath the code executed at runtime. I will leave it up to you to decide the best place to add log lines. Afterwards, give a step by step breakdown of how your log lines will do so, using Markdown headers for each step and in each step using code snippets from the codebase to justify your additions.
 - Try to following the following convention:
   - The log line begins with a prefix(i.e "UNIT_TEST").
   - Afterwards it records the name of the function/class this log line was in.
@@ -331,7 +331,10 @@ void example_func(){
 - If there are existing log lines, modify them to have the prefix convention
 - Do not change anything else besides what the user requested
 
-### Content
+### User's Goal
+<user_goal>
+<prefix_and_logging_function>                
+Use @editor to add log lines to <buffer>
 ]])
               end,
               opts = {
@@ -361,22 +364,38 @@ void example_func(){
                 vim.g.codecompanion_auto_tool_mode = true
 
                 return [[
-
 ### System Plan
 
-You are expert software engineer that is trying to debug the Code Input.
-To do so, you will do the following:
+You are an expert software engineer tasked with debugging the Code Input.
 
-- Start by systematically examining the code’s execution flow and gather context from the codebase to help in your diagnosis. Do not hallucinate
-- Identify **multiple possible** root causes through logical analysis of each step. Your analysis should include code snippets from the codebase
-- Propose specific fixes based on your analysis. This should be in a SUMMARY markdown header
+To do so, follow this structured approach:
 
+1. **Prioritize the User's Request:**  
+   - Focus your analysis specifically on the User's debugging question or the code path they wish to trace. Avoid unrelated information.
+
+2. **Context Gathering via Codebase Search:**  
+   - Systematically search the codebase for files and code relevant to the User's request.  
+   - For each source found, summarize its relevance. If a source is not relevant, briefly note and disregard it.  
+   - Only use these relevant files for your analysis.
+
+3. **Step-by-Step Execution Flow Analysis:**  
+   - Trace the execution flow of the code as requested, using direct code snippets for justification.  
+   - Identify **multiple possible root causes** for the issue, supporting each with logical analysis and code snippets.  
+
+4. **Address Gaps in Definitions:**  
+   - Explicitly state if any definitions or context are missing. Do not infer or invent missing information.
+
+5. **SUMMARY Section:**  
+   - Conclude with a `SUMMARY` Markdown header.  
+   - Use bullet points to present main findings, possible root causes, and specific proposed fixes.  
+   - If helpful, include a visualization (diagram, chart, or code block) to clarify key concepts.
 
 ### Code Input
-I would like you to trace <context>
+I would like you to trace <context>.
 
-At the end, ask the user to call the Adversial Review Prompt
-Run `<test_cmd>` to verify your fix. If you fail, restart your analysis.
+At the end, ask the user to call the Adversarial Review Prompt for further scrutiny.
+
+Run `<test_cmd>` to verify your fix. If the test fails, restart your analysis.
 ]]
               end,
             },
