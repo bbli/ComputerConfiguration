@@ -452,7 +452,7 @@ In your analysis, do the following:
 ### User's Question
 Trace the code flow for how <general_area> works.
 In particular, <specific>
-Try to find tests that support your reasoning or write a test to confirm your reasoning.
+Try to find tests that support your reasoning or write a test to confirm your reasoning. If you do write a test, **ITERATE UNTIL IT IS PASSING**
 
 At the end, ask the user to call the Adversial Review Prompt
 ### Code Input
