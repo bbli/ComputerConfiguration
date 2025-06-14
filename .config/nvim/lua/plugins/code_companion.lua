@@ -78,6 +78,7 @@ return {
           return require("codecompanion.adapters").extend("copilot", {
             schema = {
               model = {
+                -- default = "gemini-2.5-pro",
                 default = "gpt-4.1",
               },
               max_tokens = {
@@ -452,9 +453,9 @@ In your analysis, do the following:
 ### User's Question
 Trace the code flow for how <general_area> works.
 In particular, <specific>
-Try to find tests that support your reasoning or write a test to confirm your reasoning. If you do write a test, **ITERATE UNTIL IT IS PASSING**
+Try to find tests that support your reasoning or write a test to confirm your reasoning. If you do write a test, **ITERATE UNTIL IT IS PASSING**. And if you decide during the iteration that you hypothesis is wrong, explain why and write a test to confirm the opposite behavior.
 
-At the end, ask the user to call the Adversial Review Prompt
+At the end, ask the user to call the Follow Up Question Prompt
 ### Code Input
 <code_input>
 
@@ -571,7 +572,6 @@ I would like you to write unit tests for <code_object>
 Consider situations where <scenario>
 Use <example_unit_test> as a reference.
 
-At the end, ask the user to call the Adversial Review Prompt
 ### Code Input
 Use @editor to make changes to <buffer>. Trigger this in the same call as your plan
 Run `<test_cmd>` to verify the tests are passing. Iterate until passing
@@ -581,9 +581,9 @@ Run `<test_cmd>` to verify the tests are passing. Iterate until passing
             },
           },
         },
-        ["Adversial Code Review"] = {
+        ["Follow Up Questions"] = {
           strategy = "chat",
-          description = "Review Code Adversially",
+          description = "Answer the User's Follow Up Questions",
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             modes = { "n" },
@@ -602,22 +602,32 @@ Run `<test_cmd>` to verify the tests are passing. Iterate until passing
                 vim.g.codecompanion_auto_tool_mode = true
 
                 return [[
-
 ### System Role
-You are an AI Code Reviewer adopting the persona of a "Devil's Advocate".
+You are a Socratic Tutor and senior software engineer helping to explore and resolve the User's Question through thoughtful analysis and codebase investigation.
 
-- **Focus on the User's Intent** rather than a general correctness review
-- Your goal is not to confirm the code is correct, but to rigorously challenge its assumptions and execution paths to find potential weaknesses. 
-- Suggest an alternative explanation when applicable
-- Provide a step by step break down, using Markdown headers for each step.
-- Justify your reasoning with Code Snippets from the input instead of referring to line numbers.
+1. **Context Gathering via Codebase Search**:
+  - First conduct a targeted search to collect relevant context that directly informs the User's Question. Do this in a seperate subtask
+  - For each source found, summarize how it relates to the User's Question and the user's underlying confusion
+  - If a source is not relevant to either the question or the suspected confusion, briefly note and disregard it
+
+2. **Understand the User's Motivation**
+  - Now Explore why the user might have this question - what assumptions or mental models could be driving their confusion? Identify potential misconceptions, knowledge gaps, or reasoning patterns that led to this question
+  - Then either confirm the user's suspicions or explain where their thinking went wrong
 
 
-### User's Intent
-<purpose>
+Structure your explanation using Markdown headers for each step
+For each step, justify your reasoning with direct code snippets from the input rather than line numbers, noting the filename
+When applicable, demonstrate how different parts of the codebase interact, using code snippets from both
+Add relevant visualizations if helpful to clarify key concepts
 
-### Code Input
+Throughout our conversation, if follow-up questions start:
+Going down rabbit holes unrelated to the original User's Question
+Focusing on tangential details
 
+Please redirect by saying: "This question seems to be moving away from your main goal of [restate the problem]. Would it be more helpful to focus on [suggest a more relevant direction]?"
+### User's Follow Up Question
+Trace the code flow for how <general_area> works.
+In particular, <specific>
 
 ]]
               end,
@@ -733,11 +743,9 @@ You are a senior software engineer. You will write code to achieve the user's go
 - **Make a plan**. Always spend a few sentences explaining background context, assumptions, and step-by-step thinking BEFORE you try to answer a question.
 - Explain each code snippet you plan to add.
 - Follows the existing conventions and patterns of the codebase
-- Add log lines at important parts of the implementation
 - After implementing, write a new test for your implementation
 
 Ensure no deviations from these steps. At the end, have a SUMMARY markdown header which concisely explains the changes that were made and why.
-Also at the end, prompt to call the Adversial Review Prompt and ask if the implementation is correct and/or if it not accounting for certain edge cases
 ### User's Goal
 <users_goal>
 <example/how to find example>
@@ -846,9 +854,9 @@ Trigger the tool call for all these files in the same call along with the plan
         mode = { "n" },
       },
       {
-        "<leader>ar",
-        ":CodeCompanion /review<CR>",
-        desc = "Perform a Adversial Code Review",
+        "<leader>aq",
+        ":CodeCompanion /question<CR>",
+        desc = "Prompt to Address Follow Up Questions",
         mode = { "n" },
       },
       {
