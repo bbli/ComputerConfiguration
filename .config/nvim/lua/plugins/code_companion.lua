@@ -394,7 +394,6 @@ To do so, follow this structured approach:
 ### Code Input
 I would like you to trace <context>.
 
-At the end, ask the user to call the Adversarial Review Prompt for further scrutiny.
 
 Run `<test_cmd>` to verify your fix. If the test fails, restart your analysis.
 ]]
@@ -426,7 +425,7 @@ Run `<test_cmd>` to verify your fix. If the test fails, restart your analysis.
 
 ### System Plan
 
-You are a senior software engineer that is trying to explain the User's Question to a colleague.
+You are a senior software engineer that is trying to explain the User's Question to a colleague, in relation to the MAIN GOAL
 In your analysis, do the following:
 
 1. **Prioritize the User's Question:** Center your explanation specifically on the User's Question, avoiding general or unrelated information.
@@ -448,12 +447,17 @@ In your analysis, do the following:
 5. **SUMMARY Section:**
    - Conclude your response with a `SUMMARY` section, formatted as a Markdown header.
    - Use bullet points to concisely present the main findings and insights.
-   - If helpful, include a relevant visualization (such sequence diagrams, component diagrams, flowchart, etc) in Mermaid to clarify **key concepts**.
+   - If helpful, include a relevant visualization (such sequence, state, component diagrams, flowchart, etc) in Mermaid to clarify **key concepts**.
+
+### MAIN GOAL
+<main_goal>
 
 ### User's Question
 Trace the code flow for how <general_area> works.
 In particular, <specific>
-Try to find tests that support your reasoning or write a test to confirm your reasoning. If you do write a test, **ITERATE UNTIL IT IS PASSING**. And if you decide during the iteration that you hypothesis is wrong, explain why and write a test to confirm the opposite behavior.
+
+<hint_for_gathering_context>
+Try to find tests that support your reasoning or write a test to confirm your reasoning. If you do write a test, switch over to Test Mode or prompt the user to do so.
 
 At the end, ask the user to call the Follow Up Question Prompt
 ### Code Input
@@ -609,7 +613,7 @@ Run `<test_cmd>` to verify the tests are passing. Iterate until passing
             modes = { "n" },
             is_default = false, -- Not a default prompt
             is_slash_cmd = true, -- Whether it should be available as a slash command in chat
-            short_name = "review", -- Used for calling via :CodeCompanion /mycustom
+            short_name = "follow", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             user_prompt = false, -- Whether to ask for user input before submitting
           },
@@ -641,7 +645,7 @@ When applicable, demonstrate how different parts of the codebase interact, using
 Add relevant visualizations if helpful to clarify key concepts
 
 Throughout our conversation, if follow-up questions start:
-Going down rabbit holes unrelated to the original User's Question
+Going down rabbit holes unrelated to the MAIN GOAL
 Focusing on tangential details
 
 Please redirect by saying: "This question seems to be moving away from your main goal of [restate the problem]. Would it be more helpful to focus on [suggest a more relevant direction]?"
