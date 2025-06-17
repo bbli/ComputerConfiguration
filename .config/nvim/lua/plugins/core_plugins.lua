@@ -309,7 +309,7 @@ return {
     },
     opts = { -- you can just pass {}, defaults below
       events = {
-        render_buffer = { "TabEnter", "InsertLeave", "BufEnter", "TextChanged" },
+        render_buffer = { "BufWinEnter", "TabEnter", "InsertLeave", "BufEnter", "TextChanged" },
         clear_buffer = { "TabLeave", "TabClosed", "WinClosed", "QuitPre", "VimLeavePre" },
       },
       renderer_options = {

@@ -9,6 +9,7 @@ $git_state\
 $git_metrics\
 $git_status\
 $conda\
+$python\
 $memory_usage\
 $custom\
 $cmd_duration\
@@ -79,17 +80,17 @@ charging_symbol = " "
 discharging_symbol = " "
 disabled = true
 
-[[battery.display]]  # "bold red" style when capacity is between 0% and 10%
+[[battery.display]] # "bold red" style when capacity is between 0% and 10%
 threshold = 15
 style = "bold red"
 disabled = true
 
-[[battery.display]]  # "bold yellow" style when capacity is between 10% and 30%
+[[battery.display]] # "bold yellow" style when capacity is between 10% and 30%
 threshold = 50
 style = "bold yellow"
 disabled = true
 
-[[battery.display]]  # "bold green" style when capacity is between 10% and 30%
+[[battery.display]] # "bold green" style when capacity is between 10% and 30%
 threshold = 80
 style = "bold green"
 disabled = true

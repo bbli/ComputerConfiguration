@@ -318,9 +318,9 @@ Run `<test_cmd>` to verify your fix. **ITERATE UNTIL THIS TEST PASSES**
                 return string.format([[
 ### System Plan
 - You will be acting as an expert debugging expert with knowledge of logging best practices.
-  - Given the User's Goal, first gather context and make a plan. Your job is to instrument the content so the user can understand which callpath the code executed at runtime. I will leave it up to you to decide the best place to add log lines. Afterwards, give a step by step breakdown of how your log lines will do so, using Markdown headers for each step and in each step using code snippets from the codebase to justify your additions.
+  - Given the User's Goal, first gather context based off the conversation so far make a plan. Your job is to instrument the content so the user can understand which callpath the code executed at runtime. I will leave it up to you to decide the best place to add log lines. Afterwards, give a step by step breakdown of how your log lines will do so, using Markdown headers for each step and in each step using code snippets from the codebase to justify your additions.
 - Try to following the following convention:
-  - The log line begins with a prefix(i.e "UNIT_TEST").
+  - The log line begins with a prefix(i.e "RENDER_BUFFER"), which typically is a class or module name, or an abbreviation of the User's Goal.
   - Afterwards it records the name of the function/class this log line was in.
   - Finally it has the actual semantic content we want to log
 Here is an example:
@@ -394,8 +394,8 @@ To do so, follow this structured approach:
 ### Code Input
 I would like you to trace <context>.
 
-
-Run `<test_cmd>` to verify your fix. If the test fails, restart your analysis.
+<hint_for_gathering_context>
+Write a test which will trigger your proposal's call path.
 ]]
               end,
             },
@@ -425,7 +425,7 @@ Run `<test_cmd>` to verify your fix. If the test fails, restart your analysis.
 
 ### System Plan
 
-You are a senior software engineer that is trying to explain the User's Question to a colleague, in relation to the MAIN GOAL
+You are a senior software engineer that is trying to explain the User's Question to a colleague
 In your analysis, do the following:
 
 1. **Prioritize the User's Question:** Center your explanation specifically on the User's Question, avoiding general or unrelated information.
@@ -449,15 +449,12 @@ In your analysis, do the following:
    - Use bullet points to concisely present the main findings and insights.
    - If helpful, include a relevant visualization (such sequence, state, component diagrams, flowchart, etc) in Mermaid to clarify **key concepts**.
 
-### MAIN GOAL
-<main_goal>
-
 ### User's Question
-Trace the code flow for how <general_area> works.
-In particular, <specific>
+**My main goal is** <main_goal>
+<compare_references>
+<hint_for_files>
 
-<hint_for_gathering_context>
-Try to find tests that support your reasoning or write a test to confirm your reasoning. If you do write a test, switch over to Test Mode or prompt the user to do so.
+Try to find tests and/or references that support your reasoning, or even alternatively writing a test that will trigger your reasoning.
 
 At the end, ask the user to call the Follow Up Question Prompt
 ### Code Input
@@ -578,6 +575,7 @@ You are expert software engineer that is trying to write a comprehensive test su
    - For each test, include a concise comment above the test summarizing its purpose.
    - Insert log statements after each logical block within the test to aid in debugging and traceability.
    - Use mocking only when absolutely necessary, preferring real implementations where possible.
+   - Test setup should be abstracted away into helper functions if possible
    - Adhere strictly to the existing conventions and patterns of the codebase.
    - Do not modify any code outside the scope of the requested tests.
 
@@ -687,7 +685,7 @@ In particular, <specific>
 You will be acting as a senior software engineer performing a code review for a colleague. You should focus on:
 
 - Correctness issues
-- Think about edge cases for the newly implemented code and point out any gaps in test coverage
+- Think about edge cases for the newly implemented code and if it **can cause unwanted control flow**. Also point out any gaps in test coverage
 - Point out any changes to existing log lines, critique whether new log lines are needed, and analyze whether we should add more log lines, especially for fail cases
 - Look for any typos or accidentally deleted code
 - Justify your reasoning with code snippets from the codebase
@@ -776,7 +774,7 @@ Ensure no deviations from these steps. At the end, have a SUMMARY markdown heade
 
 ### Code Input + Running Tests
 - Use @editor to make changes to <buffer>. Trigger this in the same call as your plan
-- Run `<test_cmd>` to verify your change. **ITERATE UNTIL THIS TEST PASSES**
+- Run `<test_cmd>` to verify/trigger your change. **ITERATE UNTIL THIS TEST PASSES**
 ]]
               end,
             },
@@ -855,8 +853,8 @@ Trigger the tool call for all these files in the same call along with the plan
       },
       {
         "<leader>af",
-        ":CodeCompanion /fix_compile_errors<CR>",
-        desc = "Fix Code",
+        ":CodeCompanion /follow<CR>",
+        desc = "Follow Up Questions",
         mode = { "n" },
       },
       {

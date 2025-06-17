@@ -89,11 +89,15 @@ function SendStringFromHistory()
     actions = {
       -- <CR>: run the command
       ["default"] = function(selected)
-        vim.api.nvim_command(selected[1])
+        pcall(function()
+          vim.api.nvim_command(selected[1])
+        end)
       end,
       -- <C-e>: feed command to command line
       ["ctrl-e"] = function(selected)
-        vim.api.nvim_feedkeys(":" .. selected[1], "n", false)
+        pcall(function()
+          vim.api.nvim_feedkeys(":" .. selected[1], "n", false)
+        end)
       end,
       -- <C-d>: delete from history and reload picker
       ["ctrl-d"] = function(selected, opts)
