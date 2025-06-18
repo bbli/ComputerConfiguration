@@ -15,11 +15,12 @@ return {
       sections = {
         lualine_x = {
           { require("grapple").statusline },
-          {
-            require("noice").api.statusline.mode.get,
-            cond = require("noice").api.statusline.mode.has,
-            color = { fg = "#ff9e64" },
-          },
+          { "searchcount" },
+          -- {
+          --   require("noice").api.statusline.mode.get,
+          --   cond = require("noice").api.statusline.mode.has,
+          --   color = { fg = "#ff9e64" },
+          -- },
         },
         lualine_z = { showGitBase },
       },

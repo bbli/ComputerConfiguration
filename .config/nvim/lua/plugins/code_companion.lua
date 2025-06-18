@@ -454,8 +454,9 @@ In your analysis, do the following:
 
 ### User's Question
 **My main goal is** <main_goal>
-<compare_references>
+<entry_point>
 <hint_for_files>
+<anti-hint_for_files>
 
 Try to find tests and/or references that support your reasoning, or even alternatively writing a test that will trigger your reasoning.
 
