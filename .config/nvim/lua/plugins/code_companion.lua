@@ -78,7 +78,7 @@ return {
           return require("codecompanion.adapters").extend("copilot", {
             schema = {
               model = {
-                -- default = "gemini-2.5-pro",
+                -- default = "gemini-2.0-flash-001",
                 default = "gpt-4.1",
               },
               max_tokens = {
@@ -395,6 +395,7 @@ To do so, follow this structured approach:
 I would like you to trace <context>.
 
 <hint_for_gathering_context>
+<anti-hint>
 Write a test which will trigger your proposal's call path.
 ]]
               end,
@@ -454,9 +455,9 @@ In your analysis, do the following:
 
 ### User's Question
 **My main goal is** <main_goal>
-<entry_point>
+<first_step>
 <hint_for_files>
-<anti-hint_for_files>
+<anti-hint>
 
 Try to find tests and/or references that support your reasoning, or even alternatively writing a test that will trigger your reasoning.
 
