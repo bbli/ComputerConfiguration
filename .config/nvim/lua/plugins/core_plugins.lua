@@ -88,6 +88,10 @@ return {
   --{ "<leader>tn", ":NvimTreeToggle<CR>", desc = "Toggle NvimTree" },
   --},
   --},
+  { "preservim/nerdtree", keys = {
+    { "<leader>tn", ":NERDTreeToggle<CR>", desc = "Toggle NerdTree" },
+  } },
+  { "ryanoasis/vim-devicons" },
 
   -- undotree
   {
