@@ -38,7 +38,7 @@ local actions = require("telescope.actions")
 local action_state = require("telescope.actions.state")
 
 Last_Term_String = ""
--- vim.cmd("command -nargs=+ ShellSend :lua BensonFloatTermSend(<q-args>)")
+vim.cmd("command -nargs=+ ShellSend :lua BensonFloatTermSend(<q-args>)")
 vim.api.nvim_exec(
   [[
 augroup MakeFloatTermBufferVisible

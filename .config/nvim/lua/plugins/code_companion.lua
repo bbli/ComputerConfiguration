@@ -313,8 +313,6 @@ Run `<test_cmd>` to verify your fix. **ITERATE UNTIL THIS TEST PASSES**
               content = function(context)
                 -- Enable turbo mode!!!
                 vim.g.codecompanion_auto_tool_mode = true
-                local code = require("codecompanion.helpers.actions").get_code(context.start_line, context.end_line)
-
                 return string.format([[
 ### System Plan
 - You will be acting as an expert debugging expert with knowledge of logging best practices.
