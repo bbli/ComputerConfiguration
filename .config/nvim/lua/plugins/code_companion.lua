@@ -316,7 +316,8 @@ Run `<test_cmd>` to verify your fix. **ITERATE UNTIL THIS TEST PASSES**
                 return string.format([[
 ### System Plan
 - You will be acting as an expert debugging expert with knowledge of logging best practices.
-  - Given the User's Goal, first gather context based off the conversation so far make a plan. Your job is to instrument the content so the user can understand which callpath the code executed at runtime. I will leave it up to you to decide the best place to add log lines. Afterwards, give a step by step breakdown of how your log lines will do so, using Markdown headers for each step and in each step using code snippets from the codebase to justify your additions.
+  - Given the User's Goal, first gather context based off the conversation so far make a plan. Your job is to instrument the content so the user can understand which callpath the code executed at runtime. I will leave it up to you to decide the best place to add log lines. Afterwards, give a step by step breakdown of how your log lines will help identify the root cause, using Markdown headers for each step and in each step using code snippets from the codebase to justify your additions.
+
 - Try to following the following convention:
   - The log line begins with a prefix(i.e "RENDER_BUFFER"), which typically is a class or module name, or an abbreviation of the User's Goal.
   - Afterwards it records the name of the function/class this log line was in.
@@ -327,9 +328,10 @@ void example_func(){
   PS_DIAG_INFO(d_, "UNIT_TEST: snapshot_cleanup_req after dropping filesystem. " "space_scan_key=%%", k);
 }
 ```
+
 - If there are existing log lines, modify them to have the prefix convention
 - Do not change anything else besides what the user requested
-
+- At the end, suggest for the user to call the Debug Prompt on the output of these logs.
 ### User's Goal
 <user_goal>
 <prefix_and_logging_function>                
@@ -378,8 +380,9 @@ To do so, follow this structured approach:
    - Only use these relevant files for your analysis.
 
 3. **Step-by-Step Execution Flow Analysis:**  
+   - Explain the failure pattern and what the error means 
    - Trace the execution flow of the code as requested, using direct code snippets for justification.  
-   - Identify **multiple possible root causes** for the issue, supporting each with logical analysis and code snippets.  
+   - Identify **multiple possible root causes** for the issue, supporting each with logical analysis and code snippets.
 
 4. **Address Gaps in Definitions:**  
    - Explicitly state if any definitions or context are missing. Do not infer or invent missing information.
@@ -453,7 +456,7 @@ In your analysis, do the following:
 
 ### User's Question
 **My main goal is** <main_goal>
-<first_step>
+<first_step> (grep for the first code object to help AI. for example I see "Additional Search Folders" in the UI)
 <hint_for_files>
 <anti-hint>
 
@@ -578,6 +581,7 @@ You are expert software engineer that is trying to write a comprehensive test su
    - For each test, include a concise comment above the test summarizing its purpose.
    - Insert log statements after each logical block within the test to aid in debugging and traceability.
    - Use mocking only when absolutely necessary, preferring real implementations where possible.
+   - Add comment for the key assertion in CAPITAL letters
    - Test setup should be abstracted away into helper functions if possible
    - Adhere strictly to the existing conventions and patterns of the codebase.
    - Do not modify any code outside the scope of the requested tests.
