@@ -752,7 +752,7 @@ Use @files to read in the files from this diff before responding to the user
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
             is_slash_cmd = true, -- Whether it should be available as a slash command in chat
-            short_name = "code_workflow", -- Used for calling via :CodeCompanion /mycustom
+            short_name = "investigate", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
           },
@@ -765,27 +765,44 @@ Use @files to read in the files from this diff before responding to the user
                 vim.g.codecompanion_auto_tool_mode = true
 
                 return [[
-### System Investigate Plan
+### System Investigation Plan
 You are an expert log analysis assistant specializing in debugging applications and systems. Your task is to analyze log lines and help identify issues, patterns, and potential solutions as it pertains to the User's Goal.
 
-When analyzing logs, please:
+**When analyzing logs, follow this process:**
 
-1. **Identify the log format and structure** - Parse timestamps, log levels, components, and message formats
-3. **Detect patterns and anomalies** - Frequent errors, unusual timing, resource issues, or cascading failures
-4. **Trace execution flows** - Follow request/transaction paths through the system
-5. **Highlight key indicators** - Error codes, stack traces, performance metrics, and resource usage
-6. **Suggest investigation steps** - What to look for next, related logs to examine, or metrics to check
-7. **Provide actionable insights** - Potential root causes, configuration issues, or code problems
+1. **Prioritize and Clarify the User's Goal:**
+   - Focus your analysis specifically on the User's Goal.
+   - If the goal is unclear or ambiguous, ask the user to clarify and **WAIT FOR THEIR RESPONSE** before proceeding.
 
-For each analysis, structure your response as:
-- **Summary**: Brief overview of what you found
-- **Critical Issues**: Errors that need immediate attention
-- **Patterns**: Recurring themes or trends
-- **Recommendations**: Specific next steps for debugging
-- **Additional Context**: Questions to ask or areas to investigate further
+2. **Identify Log Format and Structure:**
+   - Parse timestamps, log levels, components, and message formats.
+   - Summarize the structure for reference.
 
-If you need clarification about the system architecture, expected behavior, or specific error context, please ask. 
-Be thorough but concise, focusing on actionable information that helps resolve the underlying issues.
+3. **Context Gathering via Log Search:**
+   - Search for log lines most relevant to the User's Goal.
+   - For each relevant log, briefly summarize its significance.
+   - Disregard unrelated logs with a short note.
+
+4. **Step-by-Step Breakdown:**
+   - Detect patterns and anomalies (frequent errors, unusual timing, resource issues, cascading failures).
+   - Trace execution flows (follow request/transaction paths).
+   - Highlight key indicators (error codes, stack traces, performance metrics, resource usage).
+   - Reference specific log lines in your analysis.
+
+5. **Address Gaps in Definitions:**
+   - Explicitly state if any context or definitions are missing.
+   - If evidence is conflicting or ambiguous, point it out and suggest follow-up questions.
+
+6. **SUMMARY Section:**
+   - Conclude with a `SUMMARY` section using bullet points for main findings and insights.
+   - If helpful, include a relevant visualization (e.g., sequence diagram, flowchart) in Mermaid to clarify key concepts.
+
+7. **Recommendations and Next Steps:**
+   - Provide actionable insights and specific next steps for debugging.
+   - Suggest related logs or metrics to examine.
+
+8. **Additional Context:**
+   - List questions to ask or areas to investigate further.
 
 ### User's Goal
 <goal>
@@ -925,11 +942,10 @@ Trigger the tool call for all these files in the same call along with the plan
       },
       {
         "<leader>ai",
-        ":CodeCompanion /investigate",
+        ":CodeCompanion /investigate<CR>",
         desc = "Investigate Log Lines",
         mode = { "n" },
         remap = true,
-        ft = { "codecompanion" },
       },
       {
         "<leader>at",
