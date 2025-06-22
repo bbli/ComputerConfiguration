@@ -751,7 +751,59 @@ Use @files to read in the files from this diff before responding to the user
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
-            is_slash_cmd = false, -- Whether it should be available as a slash command in chat
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            short_name = "code_workflow", -- Used for calling via :CodeCompanion /mycustom
+            auto_submit = false, -- Automatically submit to LLM without waiting
+            --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
+          },
+          prompts = {
+            {
+              role = "user",
+              opts = { auto_submit = false },
+              content = function()
+                -- Enable turbo mode!!!
+                vim.g.codecompanion_auto_tool_mode = true
+
+                return [[
+### System Investigate Plan
+You are an expert log analysis assistant specializing in debugging applications and systems. Your task is to analyze log lines and help identify issues, patterns, and potential solutions as it pertains to the User's Goal.
+
+When analyzing logs, please:
+
+1. **Identify the log format and structure** - Parse timestamps, log levels, components, and message formats
+3. **Detect patterns and anomalies** - Frequent errors, unusual timing, resource issues, or cascading failures
+4. **Trace execution flows** - Follow request/transaction paths through the system
+5. **Highlight key indicators** - Error codes, stack traces, performance metrics, and resource usage
+6. **Suggest investigation steps** - What to look for next, related logs to examine, or metrics to check
+7. **Provide actionable insights** - Potential root causes, configuration issues, or code problems
+
+For each analysis, structure your response as:
+- **Summary**: Brief overview of what you found
+- **Critical Issues**: Errors that need immediate attention
+- **Patterns**: Recurring themes or trends
+- **Recommendations**: Specific next steps for debugging
+- **Additional Context**: Questions to ask or areas to investigate further
+
+If you need clarification about the system architecture, expected behavior, or specific error context, please ask. 
+Be thorough but concise, focusing on actionable information that helps resolve the underlying issues.
+
+### User's Goal
+<goal>
+
+### Log Lines
+<log_lines>
+]]
+              end,
+            },
+          },
+        },
+        ["Investigate Log Lines"] = {
+          strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
+          description = "investigate log lines",
+          opts = {
+            index = 20, -- Position in the action palette (higher numbers appear lower)
+            is_default = false, -- Not a default prompt
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
             short_name = "code_workflow", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
@@ -867,6 +919,14 @@ Trigger the tool call for all these files in the same call along with the plan
         "<leader>aN",
         "{",
         desc = "Previous CodeCompanion Chat",
+        mode = { "n" },
+        remap = true,
+        ft = { "codecompanion" },
+      },
+      {
+        "<leader>ai",
+        ":CodeCompanion /investigate",
+        desc = "Investigate Log Lines",
         mode = { "n" },
         remap = true,
         ft = { "codecompanion" },
