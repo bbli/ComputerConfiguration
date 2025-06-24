@@ -394,10 +394,12 @@ To do so, follow this structured approach:
 
 ### Code Input
 I would like you to trace <context>.
+<first_step>
 
 <hint_for_gathering_context>
 <anti-hint>
 Write a test which will trigger your proposal's call path.
+Make sure Add Log Lines prompt was called before this
 ]]
               end,
             },
@@ -641,7 +643,7 @@ You are a Socratic Tutor and senior software engineer helping to explore and res
 
 2. **Understand the User's Motivation**
   - Now Explore why the user might have this question - what assumptions or mental models could be driving their confusion? Identify potential misconceptions, knowledge gaps, or reasoning patterns that led to this question
-  - Then either confirm the user's suspicions or explain where their thinking went wrong
+  - Then either confirm the user's suspicions or explain where their thinking went wrong. If the user is right, make a fix for that
 
 
 3. **Step by Step Breakdown**
@@ -749,9 +751,9 @@ Use @files to read in the files from this diff before responding to the user
             return false
           end,
         },
-        ["Code Workflow"] = {
+        ["Investigate Log Lines"] = {
           strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
-          description = "generates code as per user specifications",
+          description = "investigate log lines",
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
@@ -816,9 +818,9 @@ Trace <goal>
             },
           },
         },
-        ["Investigate Log Lines"] = {
+        ["Code Workflow"] = {
           strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
-          description = "investigate log lines",
+          description = "generates code as per user specifications",
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
@@ -871,7 +873,7 @@ You are a senior software engineer tasked with analyzing and implementing soluti
 
 ### **User's Goal:**  
 <users_goal>  
-<example/how to find example>  
+<first_step/example>  
 ]]
               end,
             },
