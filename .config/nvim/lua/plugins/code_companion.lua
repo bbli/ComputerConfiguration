@@ -315,19 +315,26 @@ Run `<test_cmd>` to verify your fix. **ITERATE UNTIL THIS TEST PASSES**
                 vim.g.codecompanion_auto_tool_mode = true
                 return string.format([[
 ### System Plan
-- You will be acting as an expert debugging expert with knowledge of logging best practices.
-  - Given the User's Goal, first gather context based off the conversation so far make a plan. Your job is to instrument the content so the user can understand which callpath the code executed at runtime. I will leave it up to you to decide the best place to add log lines. Afterwards, give a step by step breakdown of how your log lines will help identify the root cause, using Markdown headers for each step and in each step using code snippets from the codebase to justify your additions.
 
-- Try to following the following convention:
-  - The log line begins with a prefix(i.e "RENDER_BUFFER"), which typically is a class or module name, or an abbreviation of the User's Goal.
-  - Afterwards it records the name of the function/class this log line was in.
-  - Finally it has the actual semantic content we want to log
-Here is an example:
-```cpp
-void example_func(){
-  PS_DIAG_INFO(d_, "UNIT_TEST: snapshot_cleanup_req after dropping filesystem. " "space_scan_key=%%", k);
-}
-```
+1. **Prioritize and Clarify the User's Question:**
+  - Center all actions and explanations on the User's Goal.
+  - If the User's Goal or requirements are ambiguous, ask clarifying questions and WAIT for a response before proceeding.
+  - Try to understand the underlying motivation and, if appropriate, present a generalized version of the User's Goal for confirmation.
+
+2. **Context Gathering via Codebase Search:**
+  - Search the codebase for relevant context that directly informs the User's Goal.
+  - For each source found, summarize its relevance. Disregard and briefly note irrelevant sources.
+  - Perform this as a separate task to avoid cluttering the main context window. Return only the most applicable files.
+
+3. **Instrumentation Plan:**
+  - As an expert debugging specialist, plan where to add log lines to best illuminate the callpath and runtime behavior relevant to the User's Goal.
+  - Use the following log line convention:
+    - Prefix (e.g., class/module name or abbreviation of User's Goal)
+    - Function/class name
+    - Semantic log message
+  - Example:
+    ```cpp
+    PS_DIAG_INFO(d_, "RENDER_BUFFER: example_func - snapshot_cleanup_req after dropping filesystem. space_scan_key=%", k);
 
 - If there are existing log lines, modify them to have the prefix convention
 - Do not change anything else besides what the user requested
@@ -372,7 +379,9 @@ You are an expert software engineer tasked with debugging the Code Input.
 To do so, follow this structured approach:
 
 1. **Prioritize the User's Request:**  
-   - Focus your analysis specifically on the User's debugging question or the code path they wish to trace. Avoid unrelated information.
+   - Center your explanation specifically on the User's Question or the code path they wish to trace, avoiding unrelated information.
+   - If anything is unclear or could be interpreted in multiple ways, ask the user to clarify and **WAIT UNTIL THEY HAVE RESPONDED** before proceeding.
+   - Try to understand the user's motivation and, if appropriate, present a generalized version of their question to ensure their true goal is addressed.
 
 2. **Context Gathering via Codebase Search:**  
    - Systematically search the codebase for files and code relevant to the User's request.  
@@ -386,6 +395,7 @@ To do so, follow this structured approach:
 
 4. **Address Gaps in Definitions:**  
    - Explicitly state if any definitions or context are missing. Do not infer or invent missing information.
+   - If there is conflicting evidence, point it out and suggest follow-up questions to resolve ambiguity.
 
 5. **SUMMARY Section:**  
    - Conclude with a `SUMMARY` Markdown header.  
@@ -434,7 +444,7 @@ In your analysis, do the following:
 
 1. **Prioritize and Clarify the User's Question:**
   - Center your explanation specifically on the User's Question, avoiding general or unrelated information.
-  - If there is anything unclear or could be interpreted in multiple ways in the User's Question, ask the user to clarify this and **WAIT UNTIL THEY HAVE RESPONDED** before proceeding with the plan below
+  - If there is anything unclear or could be interpreted in multiple ways in the User's Question, ask the user to clarify this and **WAIT UNTIL THEY HAVE RESPONDED** before proceeding with the plan below. Furthermore, try to understand the user's motivation and present the user with a generalized version of their question, as they can often times have tunnel vision and ask questions that are not strictly necessary for their goal.
 
 2. **Context Gathering via Codebase Search:**
    - Conduct a targeted search of the codebase to collect relevant context that directly informs the User's Question.
@@ -577,7 +587,7 @@ You are expert software engineer that is trying to write a comprehensive test su
 2. **Test Planning and User Collaboration**:
    - Carefully consider both typical and edge-case scenarios that the code may encounter.
    - Focus on end-to-end workflows and integration points, rather than just isolated units.
-   - Brainstorm a list of possible test scenarios and present them to the user for feedback. Ask clarifying questions to ensure the tests align with user priorities and real-world usage.
+   - Brainstorm a list of possible test scenarios and present them to the user for feedback. **Ask clarifying questions to ensure the tests align with user priorities and real-world usage.**
 
 3. **Test Implementation**:
    - For each test, include a concise comment above the test summarizing its purpose.
