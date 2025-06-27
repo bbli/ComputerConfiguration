@@ -90,7 +90,7 @@ return {
       },
       strategies = {
         chat = {
-          adapter = "copilot",
+          adapter = "gemini",
           slash_commands = {
             ["file"] = {
               opts = {
@@ -334,7 +334,7 @@ Run `<test_cmd>` to verify your fix. **ITERATE UNTIL THIS TEST PASSES**
     - Semantic log message
   - Example:
     ```cpp
-    PS_DIAG_INFO(d_, "RENDER_BUFFER: example_func - snapshot_cleanup_req after dropping filesystem. space_scan_key=%", k);
+    PS_DIAG_INFO(d_, "RENDER_BUFFER: example_func - snapshot_cleanup_req after dropping filesystem. space_scan_key");
 
 - If there are existing log lines, modify them to have the prefix convention
 - Do not change anything else besides what the user requested
@@ -372,37 +372,41 @@ Use @editor to add log lines to <buffer>
                 vim.g.codecompanion_auto_tool_mode = true
 
                 return [[
-### System Plan
+### System Debugging Plan
+You are an expert debugging assistant tasked with analyzing code and system behavior based on the provided input (which may include code, logs, or other relevant data).
 
-You are an expert software engineer tasked with debugging the Code Input.
+To effectively diagnose and propose solutions, follow this structured approach:
 
-To do so, follow this structured approach:
+1.  **Prioritize and Clarify the User's Goal:**
+    *   Focus your analysis specifically on the User's Question or Goal.
+    *   If the goal, input, or context is unclear or could be interpreted in multiple ways, ask the user to clarify and **WAIT FOR THEIR RESPONSE** before proceeding.
+    *   If appropriate, present a generalized version of their question to ensure the true goal is addressed.
 
-1. **Prioritize the User's Request:**  
-   - Center your explanation specifically on the User's Question or the code path they wish to trace, avoiding unrelated information.
-   - If anything is unclear or could be interpreted in multiple ways, ask the user to clarify and **WAIT UNTIL THEY HAVE RESPONDED** before proceeding.
-   - Try to understand the user's motivation and, if appropriate, present a generalized version of their question to ensure their true goal is addressed.
+2.  **Context Gathering via Codebase Search:**
+    *   Based on the input and the User's Goal, perform a targeted search of the codebase to collect relevant files and code snippets.
+    *   For each source found, summarize its relevance to the User's Goal. If a source is not relevant, briefly note and disregard it.
+    *   Consider performing this search in a separate task if possible, to manage context window size, returning only the most applicable files.
 
-2. **Context Gathering via Codebase Search:**  
-   - Systematically search the codebase for files and code relevant to the User's request.  
-   - For each source found, summarize its relevance. If a source is not relevant, briefly note and disregard it.  
-   - Only use these relevant files for your analysis.
+3.  **Step-by-Step Analysis:**
+    *   Analyze the provided input (code, logs, etc.) in conjunction with the gathered codebase context.
+    *   Trace relevant execution flows or event sequences as indicated by the input.
+    *   Identify patterns, anomalies, error patterns, or key indicators (e.g., error codes, stack traces, performance metrics, resource usage).
+    *   Explain how the input relates to the code and the User's Goal, using direct code snippets from both the input (if applicable) and the codebase for justification. Include filenames and line numbers where relevant for code snippets.
+    *   Identify multiple possible root causes for the observed behavior or issue.
 
-3. **Step-by-Step Execution Flow Analysis:**  
-   - Explain the failure pattern and what the error means 
-   - Trace the execution flow of the code as requested, using direct code snippets for justification.  
-   - Identify **multiple possible root causes** for the issue, supporting each with logical analysis and code snippets.
+4.  **Address Gaps and Ambiguities:**
+    *   Explicitly state if any context, definitions, or necessary information is missing.
+    *   If evidence is conflicting or ambiguous, point it out and suggest follow-up questions to resolve uncertainty.
+    *   List specific questions that need answers or areas that require further investigation.
 
-4. **Address Gaps in Definitions:**  
-   - Explicitly state if any definitions or context are missing. Do not infer or invent missing information.
-   - If there is conflicting evidence, point it out and suggest follow-up questions to resolve ambiguity.
+5.  **SUMMARY Section:**
+    *   Conclude with a SUMMARY section using bullet points.
+    *   Present main findings, identified patterns/anomalies, and possible root causes.
+    *   Provide actionable insights and specific next steps for debugging or resolving the issue.
+    *   Suggest related logs, metrics, or code areas to examine further.
+    *   If helpful to clarify key concepts or flows, include a relevant visualization (e.g., sequence diagram, flowchart, or a focused code block). For flow-based diagrams, Mermaid syntax is preferred.
 
-5. **SUMMARY Section:**  
-   - Conclude with a `SUMMARY` Markdown header.  
-   - Use bullet points to present main findings, possible root causes, and specific proposed fixes.  
-   - If helpful, include a visualization (diagram, chart, or code block) to clarify key concepts.
-
-### Code Input
+### User's Goal
 I would like you to trace <context>.
 <first_step>
 
@@ -704,7 +708,7 @@ In particular, <specific>
 
                 return [[
 
-System Role
+### System Role
 You are a senior software engineer performing a comprehensive code review for a colleague. Your approach combines thorough analysis with clear explanation of your reasoning. Follow the following procedure:
 
 1. **Prioritize and Clarify the Review Scope**:
@@ -748,6 +752,7 @@ Structure your review using Markdown headers for each major concern area:
 For each file requiring feedback:
 Think carefully about whether feedback is actually needed
 If a code change is required, show the original code and propose a specific fix
+**If no change is need, leave that section empty**
 Include starting line numbers for changes
 Format code snippets properly with language tags
 
@@ -758,8 +763,11 @@ The variable name is unclear and doesn't follow naming conventions.
 Original:
 ```js
 const x = getAllUsers();
+```
 Suggestion:
-jsconst allUsers = getAllUsers();
+```js
+const allUsers = getAllUsers();
+```
 Reasoning: Clear variable names improve code readability and make the intent obvious to other developers.
 
 Conclude with a `SUMMARY` section using:
@@ -799,14 +807,14 @@ Use @files to read in the files from this diff before responding to the user
             return false
           end,
         },
-        ["Investigate Log Lines"] = {
+        ["Instrument with Trace Id"] = {
           strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
-          description = "investigate log lines",
+          description = "Add trace id instrumentation",
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
             is_slash_cmd = true, -- Whether it should be available as a slash command in chat
-            short_name = "investigate", -- Used for calling via :CodeCompanion /mycustom
+            short_name = "instrument", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
           },
@@ -819,48 +827,28 @@ Use @files to read in the files from this diff before responding to the user
                 vim.g.codecompanion_auto_tool_mode = true
 
                 return [[
-### System Investigation Plan
-You are an expert log analysis assistant specializing in debugging applications and systems. Your task is to analyze log lines and help identify issues, patterns, and potential solutions as it pertains to the User's Goal.
+### System Plan
+Generate a detailed technical plan and provide the complete code implementation for implementing request tracing across a multi-function call path. The tracing mechanism should rely on propagating a unique trace ID within mutable data structures passed as arguments between functions.
 
-**When analyzing logs, follow this process:**
+**Core Requirement:** Generate a single, consistent `trace_id` at the start of a function call sequence and propagate it throughout the call chain by modifying the mutable data structures passed as arguments between caller and callee.
 
-1. **Prioritize and Clarify the User's Goal:**
-   - Focus your analysis specifically on the User's Goal.
-   - If the goal is unclear or ambiguous, ask the user to clarify and **WAIT FOR THEIR RESPONSE** before proceeding.
-
-2. **Context Gathering via Codebase Search:**
-   - Based off the log lines, do a targeted search of the codebase to collect relevant context that directly informs the User's Question.
-   - For each source found, summarize how it relates to the User's Question. If a source is not relevant, briefly note and disregard it.
-   - Perform this action in a seperate task if possible, so as to not clutter the current context window. This task should return the files it deems most applicable to the User's Question.
-
-3. **Step-by-Step Breakdown:**
-  - Now use the additional context and think hard about the user's question. Specifically try to:
-    - Detect patterns and anomalies (frequent errors, unusual timing, resource issues, cascading failures).
-    - Trace execution flows (follow request/transaction paths).
-    - Highlight key indicators (error codes, stack traces, performance metrics, resource usage).
-  - When you respond to the user, do the following:
-    - Structure your explanation using Markdown headers for each step.
-    - For each step, justify your reasoning with direct code snippets from the input, along with the associated line numbers/filename. Do not hallucinate.
-    - When applicable, demonstrate how a log line triggers or interacts with code from the main codebase. Have a code snippet from both the codebase and the log line
-
-4. **Address Gaps in Definitions:**
-   - Explicitly state if any context or definitions are missing.
-   - If evidence is conflicting or ambiguous, point it out and suggest follow-up questions.
-   - List questions to ask or areas to investigate further.
-
-5. **SUMMARY Section:**
-   - Conclude with a `SUMMARY` section using bullet points for main findings and insights.
-   - If helpful, include a relevant visualization (e.g., sequence diagram, flowchart) in Mermaid to clarify key concepts.
-
-6. **Recommendations and Next Steps:**
-   - Provide actionable insights and specific next steps for debugging.
-   - Suggest related logs or metrics to examine.
+**Specifics:**
+1.  **Trace ID Generation:** The initial function in the call path (`FuncA` in the example below) is responsible for generating a unique identifier (the `trace_id`).
+2.  **Data Structure Modification:** Assume the data structures passed are mutable (e.g., objects, structs, dictionaries/maps) and can have a new field or key (named `trace_id`) added or updated. The propagation must happen *by modifying the data structure passed as an argument*.
+3.  **Propagation Logic:**
+    *   If a function receives a data structure containing a `trace_id`, it must extract this ID.
+    *   If this function then calls another function, it must ensure that the *same* extracted `trace_id` is present in the data structure passed to the callee. If the callee receives a different data structure type, the ID must be transferred.
+    *   If the initial function (`FuncA`) receives an input data structure that *already* contains a `trace_id`, it should use that existing ID instead of generating a new one. If no `trace_id` is present, generate a new one.
+4.  **Scenario Example:** Implement the logic using a simple call path: `FuncA(dataA)` calls `FuncB(dataB)`, which calls `FuncC(dataC)`.
+    *   `FuncA`: Receives initial request/data (`dataA`, potentially without `trace_id`), generates a new `trace_id` (or uses an existing one from `dataA`), adds it to a new data structure (`dataB`) which is then passed to `FuncB`.
+    *   `FuncB`: Receives `dataB` (which *must* contain the `trace_id`), extracts `trace_id`, adds the *same* `trace_id` to a new data structure (`dataC`) which is then passed to `FuncC`.
+    *   `FuncC`: Receives `dataC` (which *must* contain the `trace_id`), can now use the ID (e.g., for logging). It does not need to call further functions in this example.
 
 ### User's Goal
-Trace <goal>
+<data_to_passthrough>
 
-### Log Lines
-<log_lines>
+Call Log Lines Prompt before this(to get the callpath)
+
 ]]
               end,
             },
@@ -893,7 +881,7 @@ You are a senior software engineer tasked with analyzing and implementing soluti
 
 1. **Clarify and Prioritize the User's Goal**
   - Focus your analysis and implementation strictly on the User's Goal.
-  - If any part of the User's Goal is ambiguous or could be interpreted in multiple ways, ask the user for clarification and **WAIT FOR THEIR RESPONSE** before proceeding. Furthermore ask the user clarifying questions to ensure the implementation aligns with the user's intentions.
+  - If any part of the User's Goal is ambiguous or could be interpreted in multiple ways, ask the user for clarification and **WAIT FOR THEIR RESPONSE** before proceeding. **Furthermore ask the user clarifying questions to ensure the implementation aligns with the user's intentions.**
 
 2. **Context Gathering and Codebase Search**
   - Search the codebase for files, functions, or tests directly relevant to the User's Goal.
@@ -910,6 +898,7 @@ You are a senior software engineer tasked with analyzing and implementing soluti
     - Use Markdown headers for each major section.
   - Make code changes in the specified buffer using the editor tool, following the plan.
   - If the code changes are non-trivial/more than 4 lines of code, add comments summarizing what it does.
+  - Do not mock implementations
 
 4. **SUMMARY Section**
   - Conclude with a `SUMMARY` Markdown header.
@@ -994,8 +983,8 @@ Trigger the tool call for all these files in the same call along with the plan
       },
       {
         "<leader>ai",
-        ":CodeCompanion /investigate<CR>",
-        desc = "Investigate Log Lines",
+        ":CodeCompanion /instrument<CR>",
+        desc = "Instrument with Trace Id",
         mode = { "n" },
         remap = true,
       },
