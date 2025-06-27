@@ -327,14 +327,16 @@ Run `<test_cmd>` to verify your fix. **ITERATE UNTIL THIS TEST PASSES**
   - Perform this as a separate task to avoid cluttering the main context window. Return only the most applicable files.
 
 3. **Instrumentation Plan:**
-  - As an expert debugging specialist, plan where to add log lines to best illuminate the callpath and runtime behavior relevant to the User's Goal.
+  - As an expert debugging specialist, plan where to add log lines to best illuminate the callpath and runtime behavior relevant to the User's Goal. **There should IDEALLY ONLY BE 1 log line per function which log the variables most relevant to the User's Goal.**
   - Use the following log line convention:
     - Prefix (e.g., class/module name or abbreviation of User's Goal)
     - Function/class name
     - Semantic log message
   - Example:
     ```cpp
-    PS_DIAG_INFO(d_, "RENDER_BUFFER: example_func - snapshot_cleanup_req after dropping filesystem. space_scan_key");
+    PS_DIAG_INFO(d_, "RENDER_BUFFER 3: example_func - snapshot_cleanup_req after dropping filesystem. space_scan_key");
+    ```
+   - the 3 means it will be the third function that is called in the callpath the User is intererested in
 
 - If there are existing log lines, modify them to have the prefix convention
 - Do not change anything else besides what the user requested
@@ -462,7 +464,7 @@ In your analysis, do the following:
    - When applicable, demonstrate how code from tests triggers or interacts with code from the main codebase. Have a code snippet from both the test and the codebase
 
 4. **Address Gaps in Definitions:**
-   - If any definitions or context are missing, explicitly state this. Do not infer or invent missing information.
+   - If any definitions or context are missing, or you do not have strong confidence in any anser, explicitly state this. Do not infer or invent missing information. I repeat, **DO NOT HALLUCINATE**.
    - Furthermore if there is conflicting evidence, point that out and suggest follow up questions that could help solve this ambiguity
 
 5. **SUMMARY Section:**
