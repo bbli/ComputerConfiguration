@@ -581,36 +581,44 @@ Which commit <question>
 
 ### System Test Plan
 
-You are expert software engineer that is trying to write a comprehensive test suite as specified in the System Under Test section, following these instructions:
+You are an expert software engineer tasked with writing a comprehensive test suite as specified in the System Under Test section. Follow these instructions precisely:
 
-1. **Context Gathering via Codebase Search**:
-   - Conduct a targeted search of the codebase to collect relevant context for writing the tests
-   - For each source found, summarize how it relates to the System Under Test. If a source is not relevant, briefly note and disregard it.
-   - Perform this action in a seperate task if possible, so as to not clutter the current context window. This task should return the files it deems most applicable to the System Under Test
+1.  **Context Gathering via Codebase Search**:
+    *   Conduct a targeted search of the codebase to collect relevant context for writing the tests.
+    *   For each source found, summarize how it relates to the System Under Test. If a source is not relevant, briefly note and disregard it.
+    *   Perform this action in a separate task if possible, so as to not clutter the current context window. This task should return the files it deems most applicable to the System Under Test.
 
-2. **Test Planning and User Collaboration**:
-   - Carefully consider both typical and edge-case scenarios that the code may encounter.
-   - Focus on end-to-end workflows and integration points, rather than just isolated units.
-   - Brainstorm a list of possible test scenarios and present them to the user for feedback. **Ask clarifying questions to ensure the tests align with user priorities and real-world usage.**
+2.  **Test Planning and User Collaboration**:
+    *   **Create a DETAILED Test Plan**
+        *   Before writing any code, provide a comprehensive plan for the test suite. This plan should include:
+            *   **Problem Overview:** Briefly restate the system or feature being tested based on the user's request and the gathered context.
+            *   **Proposed Test Strategy Outline:** Describe the overall technical approach you will take to test the system (e.g., unit, integration, end-to-end tests; focus areas).
+            *   **Assumptions:** Clearly list any assumptions you are making about the system's behavior, dependencies, or the testing environment.
+            *   **Step-by-Step Test Implementation:** Break down the test suite creation into a sequence of smaller, manageable, and actionable tasks. For each step:
+                *   Describe the specific group of tests or scenario to be covered.
+                *   Identify the file(s) that will contain these tests.
+                *   Explain the specific test cases and logic you intend to implement within those files.
+            *   *(Optional but Recommended)* If possible, structure the initial steps to implement basic or core functionality tests first, verifying the main pathways before adding edge cases or complex scenarios.
+        *   Present this plan clearly to the user, formatted using Markdown.
+        *   **Crucially, ask the user for approval of this detailed plan before proceeding to the Implementation phase (Step 3). WAIT FOR THEIR RESPONSE.**
+    *   Carefully consider both typical and edge-case scenarios that the code may encounter.
+    *   Focus on end-to-end workflows and integration points, rather than just isolated units.
+    *   Brainstorm a list of possible test scenarios and present them to the user for feedback. **Ask clarifying questions to ensure the tests align with user priorities and real-world usage.** (This step can be integrated within or follow the detailed plan structure above).
 
-3. **Test Implementation**:
-   - For each test, include a concise comment above the test summarizing its purpose.
-   - Insert log statements after each logical block within the test to aid in debugging and traceability.
-   - Use mocking only when absolutely necessary, preferring real implementations where possible.
-   - Add comment for the key assertion in CAPITAL letters
-   - Test setup should be abstracted away into helper functions if possible
-   - Adhere strictly to the existing conventions and patterns of the codebase.
-   - Do not modify any code outside the scope of the requested tests.
+3.  **Test Implementation**:
+    *   For each planned test (corresponding to a step or test case in the plan), execute the task:
+        *   For each test, include a concise comment above the test summarizing its purpose.
+        *   Insert log statements after each logical block within the test to aid in debugging and traceability.
+        *   Use mocking only when absolutely necessary, preferring real implementations where possible.
+        *   Add comment for the key assertion in CAPITAL letters.
+        *   Test setup should be abstracted away into helper functions if possible.
+        *   Adhere strictly to the existing conventions and patterns of the codebase.
+        *   Do not modify any code outside the scope of the requested tests.
 
 **Formatting and Output Directives:**
 - Use clear, consistent formatting for all test code and comments.
 - Present the final test suite in a single, well-organized code block.
 - If applicable, use tables or bullet points to summarize test scenarios or results.
-
-**Example Output Structure:**
-- Summary of relevant files and their roles.
-- List of proposed test scenarios (with user input).
-- Final test code with comments and logs.
 
 ### System Under Test
 <system_under_test>
