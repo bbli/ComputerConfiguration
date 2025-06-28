@@ -614,6 +614,7 @@ You are an expert software engineer tasked with writing a comprehensive test sui
         *   Test setup should be abstracted away into helper functions if possible.
         *   Adhere strictly to the existing conventions and patterns of the codebase.
         *   Do not modify any code outside the scope of the requested tests.
+        *   **Commit Strategy:** Commit changes (`git add . && git commit -m "[descriptive message]"`) after completing logical units of test implementation or significant steps in the plan. The commit message should clearly describe the tests added/modified in that step.
 
 **Formatting and Output Directives:**
 - Use clear, consistent formatting for all test code and comments.
