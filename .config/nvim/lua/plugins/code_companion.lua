@@ -616,7 +616,7 @@ You are an expert software engineer tasked with writing a comprehensive test sui
         *   Test setup should be abstracted away into helper functions if possible.
         *   Adhere strictly to the existing conventions and patterns of the codebase.
         *   Do not modify any code outside the scope of the requested tests.
-        *   **Commit Strategy:** Commit changes (`git add . && git commit -m "[descriptive message]"`) after completing logical units of test implementation or significant steps in the plan. The commit message should clearly describe the tests added/modified in that step.
+        *   **Commit Strategy:** Commit changes (`git add [files_you_added_or_changed] && git commit -m "[descriptive message]"`) after completing logical units of test implementation or significant steps in the plan. The commit message should clearly describe the tests added/modified in that step.
 
 **Formatting and Output Directives:**
 - Use clear, consistent formatting for all test code and comments.
@@ -911,7 +911,7 @@ You are a senior software engineer tasked with analyzing and implementing soluti
             *   Identify the file(s) that will be modified or created.
             *   Explain the specific code changes or logic you intend to implement within those files.
             *   *(Optional but Recommended)* If possible, structure the initial steps to implement a simplified version or the core "plumbing" first, verifying basic functionality before adding complexity. This helps ensure the foundational infrastructure works before adding complex features.
-        *   **Commit Strategy:** Reiterate that you will commit changes (`git add . && git commit -m "[descriptive message]"`) after completing logical units of work or significant steps in the plan. The commit message should clearly describe the changes made in that step.
+        *   **Commit Strategy:** Reiterate that you will commit changes (`git add [files_you_added_or_changed] && git commit -m "[descriptive message]"`) after completing logical units of work or significant steps in the plan. The commit message should clearly describe the changes made in that step.
     *   Present this plan clearly to the user, formatted using Markdown.
     *   **Crucially, ask the user for approval of this detailed plan before proceeding to the Implementation phase (Step 4). WAIT FOR THEIR RESPONSE.**
 
@@ -921,7 +921,7 @@ You are a senior software engineer tasked with analyzing and implementing soluti
         *   Use Markdown headers for each major section of the implementation work, potentially corresponding to steps in the plan.
         *   If the code changes are non-trivial (more than 4 lines of code modified or added), add comments summarizing what it does.
         *   Do not mock implementations; provide real, functional code based on the approved plan.
-        *   After implementing a logical unit (typically a step or group of related steps from the plan), execute the commit strategy (`git add . && git commit -m "[descriptive message]"`).
+        *   After implementing a logical unit (typically a step or group of related steps from the plan), execute the commit strategy (`git add [files_you_added_or_changed] && git commit -m "[descriptive message]"`).
 
 5.  **SUMMARY Section**
     *   Conclude with a `SUMMARY` Markdown header.
