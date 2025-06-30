@@ -394,7 +394,7 @@ To effectively diagnose and propose solutions, follow this structured approach:
     *   Trace relevant execution flows or event sequences as indicated by the input.
     *   Identify patterns, anomalies, error patterns, or key indicators (e.g., error codes, stack traces, performance metrics, resource usage).
     *   Explain how the input relates to the code and the User's Goal, using direct code snippets from both the input (if applicable) and the codebase for justification. Include filenames and line numbers where relevant for code snippets.
-    *   Identify multiple possible root causes for the observed behavior or issue.
+    *   **Identify multiple possible root causes for the observed behavior or issue**
 
 4.  **Address Gaps and Ambiguities:**
     *   Explicitly state if any context, definitions, or necessary information is missing.
@@ -414,8 +414,7 @@ I would like you to trace <context>.
 
 <hint_for_gathering_context>
 <anti-hint>
-Write a test which will trigger your proposal's call path.
-Make sure Add Log Lines prompt was called before this
+After your analysis, suggest log lines to add to the codebase and explain the exact sequencing that would confirm your proposed root causes
 ]]
               end,
             },
@@ -478,7 +477,7 @@ In your analysis, do the following:
 <hint_for_files>
 <anti-hint>
 
-Try to find tests and/or references that support your reasoning, or even alternatively writing a test that will trigger your reasoning.
+After your analysis, suggest log lines to add to the codebase and explain the exact sequencing that would help the user understand your explanation.
 
 At the end, ask the user to call the Follow Up Question Prompt
 ### Code Input
@@ -895,7 +894,7 @@ You are a senior software engineer tasked with analyzing and implementing soluti
     *   If any part of the User's Goal is ambiguous or could be interpreted in multiple ways, ask the user for clarification and **WAIT FOR THEIR RESPONSE** before proceeding. **Furthermore ask the user clarifying questions to ensure the implementation aligns with the user's intentions.**
 
 2.  **Context Gathering and Codebase Search**
-    *   Search the codebase for files, functions, or tests directly relevant to the User's Goal.
+    *   Search the codebase for files, functions, references, or tests directly relevant to the User's Goal.
     *   For each source found:
         *   Summarize its relevance.
         *   If not relevant, briefly note and disregard.
