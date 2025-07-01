@@ -403,7 +403,7 @@ To effectively diagnose and propose solutions, follow this structured approach:
 
 5.  **SUMMARY Section:**
     *   Conclude with a SUMMARY section using bullet points.
-    *   Present main findings, identified patterns/anomalies, and possible root causes.
+    *   Present main findings(citing code snippets or log lines), identified patterns/anomalies, and possible root causes.
     *   Provide actionable insights and specific next steps for debugging or resolving the issue.
     *   Suggest related logs, metrics, or code areas to examine further.
     *   If helpful to clarify key concepts or flows, include a relevant visualization (e.g., sequence diagram, flowchart, or a focused code block). For flow-based diagrams, Mermaid syntax is preferred.
@@ -452,7 +452,7 @@ In your analysis, do the following:
   - If there is anything unclear or could be interpreted in multiple ways in the User's Question, ask the user to clarify this and **WAIT UNTIL THEY HAVE RESPONDED** before proceeding with the plan below. Furthermore, try to understand the user's motivation and present the user with a generalized version of their question, as they can often times have tunnel vision and ask questions that are not strictly necessary for their goal.
 
 2. **Context Gathering via Codebase Search:**
-   - Conduct a targeted search of the codebase to collect relevant context that directly informs the User's Question.
+   - Conduct a search of the codebase to collect relevant context that directly informs the User's Question.
    - For each source found, summarize how it relates to the User's Question. If a source is not relevant, briefly note and disregard it.
    - Perform this action in a seperate task if possible, so as to not clutter the current context window. This task should return the files it deems most applicable to the User's Question.
 
@@ -473,7 +473,7 @@ In your analysis, do the following:
 
 ### User's Question
 **My main goal is** <main_goal>
-<first_step> (grep for the first code object to help AI. for example I see "Additional Search Folders" in the UI)
+<first_step> (i.e "Additional Search Folders" in the UI)
 <hint_for_files>
 <anti-hint>
 
@@ -590,7 +590,7 @@ You are an expert software engineer tasked with writing a comprehensive test sui
     *   Perform this action in a separate task if possible, so as to not clutter the current context window. This task should return the files it deems most applicable to the System Under Test.
 
 2.  **Test Planning and User Collaboration**:
-    *   **Create a DETAILED Test Plan**
+    *   **Create a DETAILED TEST PLAN**
         *   Before writing any code, provide a comprehensive plan for the test suite. This plan should include:
             *   **Problem Overview:** Briefly restate the system or feature being tested based on the user's request and the gathered context.
             *   **Proposed Test Strategy Outline:** Describe the overall technical approach you will take to test the system (e.g., unit, integration, end-to-end tests; focus areas).
@@ -615,7 +615,7 @@ You are an expert software engineer tasked with writing a comprehensive test sui
         *   Test setup should be abstracted away into helper functions if possible.
         *   Adhere strictly to the existing conventions and patterns of the codebase.
         *   Do not modify any code outside the scope of the requested tests.
-        *   **Commit Strategy:** Commit changes (`git add [files_you_added_or_changed] && git commit -m "[descriptive message]"`) after completing logical units of test implementation or significant steps in the plan. The commit message should clearly describe the tests added/modified in that step.
+        *   **Commit Strategy:** Commit changes (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`) after completing logical units of test implementation or significant steps in the plan. The commit message should clearly describe the tests added/modified in that step.
 
 **Formatting and Output Directives:**
 - Use clear, consistent formatting for all test code and comments.
@@ -900,7 +900,7 @@ You are a senior software engineer tasked with analyzing and implementing soluti
         *   If not relevant, briefly note and disregard.
     *   Return a list of the most applicable files or code snippets for further analysis.
 
-3.  **Create a DETAILED Plan**
+3.  **Create a DETAILED PLAN**
     *   Before writing any code, provide a comprehensive plan. This plan should include:
         *   **Problem Overview:** Briefly restate the problem or goal based on the user's request and the gathered context.
         *   **Proposed Solution Outline:** Describe the overall technical approach you will take to address the problem.
@@ -910,7 +910,7 @@ You are a senior software engineer tasked with analyzing and implementing soluti
             *   Identify the file(s) that will be modified or created.
             *   Explain the specific code changes or logic you intend to implement within those files.
             *   *(Optional but Recommended)* If possible, structure the initial steps to implement a simplified version or the core "plumbing" first, verifying basic functionality before adding complexity. This helps ensure the foundational infrastructure works before adding complex features.
-        *   **Commit Strategy:** Reiterate that you will commit changes (`git add [files_you_added_or_changed] && git commit -m "[descriptive message]"`) after completing logical units of work or significant steps in the plan. The commit message should clearly describe the changes made in that step.
+        *   **Commit Strategy:** Reiterate that you will commit changes (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`) after completing logical units of work or significant steps in the plan. The commit message should clearly describe the changes made in that step.
     *   Present this plan clearly to the user, formatted using Markdown.
     *   **Crucially, ask the user for approval of this detailed plan before proceeding to the Implementation phase (Step 4). WAIT FOR THEIR RESPONSE.**
 
@@ -920,7 +920,7 @@ You are a senior software engineer tasked with analyzing and implementing soluti
         *   Use Markdown headers for each major section of the implementation work, potentially corresponding to steps in the plan.
         *   If the code changes are non-trivial (more than 4 lines of code modified or added), add comments summarizing what it does.
         *   Do not mock implementations; provide real, functional code based on the approved plan.
-        *   After implementing a logical unit (typically a step or group of related steps from the plan), execute the commit strategy (`git add [files_you_added_or_changed] && git commit -m "[descriptive message]"`).
+        *   After implementing a logical unit (typically a step or group of related steps from the plan), execute the commit strategy (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`).
 
 5.  **SUMMARY Section**
     *   Conclude with a `SUMMARY` Markdown header.
@@ -932,7 +932,7 @@ You are a senior software engineer tasked with analyzing and implementing soluti
 
 ### **User's Goal:**  
 <users_goal>  
-<first_step/example>  
+<Example/First_Step>  
 ]]
               end,
             },
