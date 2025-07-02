@@ -526,24 +526,19 @@ In your analysis, do the following:
 
 1. **Prioritize and Clarify the Architecture Question**:
   - Focus specifically on the architectural aspects the user wants to understand (e.g., overall structure, specific patterns, component interactions, data flow, etc.)
-  - If the scope is unclear (entire system vs. specific module), ask for clarification and WAIT FOR RESPONSE before proceeding
+  - **Ask clarifying questions and WAIT FOR RESPONSE before proceeding**
   - Understand whether they need:
     - High-level system overview
     - Detailed component relationships
     - Specific architectural patterns used
-    - Technology stack decisions
     - Module boundaries and responsibilities
 
 2. **Context Gathering via Codebase Search**:
-  - Search for key architectural indicators:
-    - Entry points (main files, bootstrap code)
-    - Configuration files (package.json, pom.xml, requirements.txt, etc.)
-    - Directory structure and module organization
-    - Interface definitions and contracts
+  - Search for key architectural indicators, such as but not limited to:
+    - **Entry points (main files, rpc handlers, interfaces)**
     - Core abstractions and base classes
     - Dependency injection or service registration
     - Router/controller definitions
-    - Database schemas or models
   - For each source found, explain its architectural significance
   - Focus on files that reveal structural decisions rather than implementation details
 
@@ -552,14 +547,17 @@ In your analysis, do the following:
   - Structure explanation using these Markdown headers:
     - System Overview
     - Core Components
-    - Data Flow
+    - **Data Flow**
     - Key Design Patterns
     - Module Dependencies
   - For each section:
-    - Include relevant code snippets showing architectural decisions
-    - Reference specific files/line numbers
+    - Include relevant code snippets and line numbers showing architectural decisions
     - Show how components interact through actual code examples
-    - Highlight boundary definitions between modules
+    - Use Mermaid diagram to help you illustrate:
+      - Component relationships
+      - Data flow directions
+      - System boundaries
+      - External dependencies
 
 4. **Address Architectural Gaps**:
   - Explicitly state any missing architectural elements:
@@ -569,17 +567,6 @@ In your analysis, do the following:
     - Conflicting patterns in different parts of the codebase
     - DO NOT HALLUCINATE architectural decisions not evident in code
     - Suggest specific files or areas to investigate for clarification
-
-5. **ARCHITECTURE SUMMARY Section**:
-  - Conclude with an ## ARCHITECTURE SUMMARY section containing:
-    - **Key Components**: Bullet list of major system components
-    - **Design Patterns**: Identified architectural patterns with examples
-    - **Strengths & Concerns**: Brief architectural assessment
-    - **Architecture Diagram**: Mermaid diagram showing:
-      - Component relationships
-      - Data flow directions
-      - System boundaries
-      - External dependencies
 
 ### User's Question
 <main_flow>
