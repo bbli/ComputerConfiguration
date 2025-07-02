@@ -409,8 +409,8 @@ To effectively diagnose and propose solutions, follow this structured approach:
     *   If helpful to clarify key concepts or flows, include a relevant visualization (e.g., sequence diagram, flowchart, or a focused code block). For flow-based diagrams, Mermaid syntax is preferred.
 
 ### User's Goal
-I would like you to trace <context>.
-<first_step>
+I am trying to debug <ISSUE>
+Trace from <START_FROM_TOP>, and tell me which log lines are supposed to be triggered by this workflow.
 
 <hint_for_gathering_context>
 <anti-hint>
