@@ -327,8 +327,8 @@ Run `<test_cmd>` to verify your fix. **ITERATE UNTIL THIS TEST PASSES**
   - Perform this as a separate task to avoid cluttering the main context window. Return only the most applicable files.
 
 3. **Instrumentation Plan:**
-  - As an expert debugging specialist, plan where to add log lines to best illuminate the callpath and runtime behavior relevant to the User's Goal. **There should IDEALLY ONLY BE 1 log line per function which log the variables most relevant to the User's Goal.**
   - Use the following log line convention:
+    - **There should ideally only be 1 log line per function which log the variables most relevant to the User's Goal.**
     - Prefix (e.g., class/module name or abbreviation of User's Goal)
     - Function/class name
     - Semantic log message
@@ -409,10 +409,11 @@ To effectively diagnose and propose solutions, follow this structured approach:
     *   If helpful to clarify key concepts or flows, include a relevant visualization (e.g., sequence diagram, flowchart, or a focused code block). For flow-based diagrams, Mermaid syntax is preferred.
 
 6. After your analysis, suggest log lines to add to the codebase and explain the exact sequencing that would confirm your proposed root causes. Your log lines should follow the follow conventions:
+    - **There should IDEALLY ONLY BE 1 log line per function which logs the variables most relevant to the User's Goal.**
     - Prefix (e.g., class/module name or abbreviation of User's Goal)
     - Function/class name
-    - Semantic log message
-    - Order in the Callpath
+    - Semantic Log Message
+    - Order in the Callpath(1,2,3...)
 Example:
 ```cpp
 PS_DIAG_INFO(d_, "RENDER_BUFFER 3: example_func - snapshot_cleanup_req after dropping filesystem. space_scan_key");
@@ -486,6 +487,102 @@ In your analysis, do the following:
 <first_step> (i.e "Additional Search Folders" in the UI)
 <hint_for_files>
 <anti-hint>
+
+After your analysis, suggest log lines to add to the codebase and explain the exact sequencing that would help the user understand your explanation.
+
+At the end, ask the user to call the Follow Up Question Prompt
+### Code Input
+<code_input>
+
+]]
+              end,
+            },
+          },
+        },
+        ["Explain Architecture"] = {
+          strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
+          description = "Explain the Architecture of the Codebase",
+          opts = {
+            index = 20, -- Position in the action palette (higher numbers appear lower)
+            is_default = false, -- Not a default prompt
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            short_name = "architecture", -- Used for calling via :CodeCompanion /mycustom
+            auto_submit = false, -- Automatically submit to LLM without waiting
+            --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
+            modes = { "n" },
+          },
+          prompts = {
+            {
+              role = "user",
+              opts = { auto_submit = false },
+              content = function()
+                -- Enable turbo mode!!!
+                vim.g.codecompanion_auto_tool_mode = true
+
+                return [[
+### System Plan - Codebase Architecture Analysis
+You are a senior software architect explaining the architecture of a codebase to a colleague.
+In your analysis, do the following:
+
+1. **Prioritize and Clarify the Architecture Question**:
+  - Focus specifically on the architectural aspects the user wants to understand (e.g., overall structure, specific patterns, component interactions, data flow, etc.)
+  - If the scope is unclear (entire system vs. specific module), ask for clarification and WAIT FOR RESPONSE before proceeding
+  - Understand whether they need:
+    - High-level system overview
+    - Detailed component relationships
+    - Specific architectural patterns used
+    - Technology stack decisions
+    - Module boundaries and responsibilities
+
+2. **Context Gathering via Codebase Search**:
+  - Search for key architectural indicators:
+    - Entry points (main files, bootstrap code)
+    - Configuration files (package.json, pom.xml, requirements.txt, etc.)
+    - Directory structure and module organization
+    - Interface definitions and contracts
+    - Core abstractions and base classes
+    - Dependency injection or service registration
+    - Router/controller definitions
+    - Database schemas or models
+  - For each source found, explain its architectural significance
+  - Focus on files that reveal structural decisions rather than implementation details
+
+
+3. **Step-by-Step Architectural Breakdown**:
+  - Structure explanation using these Markdown headers:
+    - System Overview
+    - Core Components
+    - Data Flow
+    - Key Design Patterns
+    - Module Dependencies
+  - For each section:
+    - Include relevant code snippets showing architectural decisions
+    - Reference specific files/line numbers
+    - Show how components interact through actual code examples
+    - Highlight boundary definitions between modules
+
+4. **Address Architectural Gaps**:
+  - Explicitly state any missing architectural elements:
+    - Unclear module boundaries
+    - Missing documentation for component interactions
+    - Ambiguous responsibility assignments
+    - Conflicting patterns in different parts of the codebase
+    - DO NOT HALLUCINATE architectural decisions not evident in code
+    - Suggest specific files or areas to investigate for clarification
+
+5. **ARCHITECTURE SUMMARY Section**:
+  - Conclude with an ## ARCHITECTURE SUMMARY section containing:
+    - **Key Components**: Bullet list of major system components
+    - **Design Patterns**: Identified architectural patterns with examples
+    - **Strengths & Concerns**: Brief architectural assessment
+    - **Architecture Diagram**: Mermaid diagram showing:
+      - Component relationships
+      - Data flow directions
+      - System boundaries
+      - External dependencies
+
+### User's Question
+<main_flow>
 
 After your analysis, suggest log lines to add to the codebase and explain the exact sequencing that would help the user understand your explanation.
 
@@ -929,6 +1026,7 @@ You are a senior software engineer tasked with analyzing and implementing soluti
         *   Reference relevant code snippets (with filenames/line numbers) to justify your approach or show context.
         *   Use Markdown headers for each major section of the implementation work, potentially corresponding to steps in the plan.
         *   If the code changes are non-trivial (more than 4 lines of code modified or added), add comments summarizing what it does.
+        *   Try to avoid silent failures in your implementation/use early returns
         *   Do not mock implementations; provide real, functional code based on the approved plan.
         *   After implementing a logical unit (typically a step or group of related steps from the plan), execute the commit strategy (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`).
 
@@ -940,9 +1038,18 @@ You are a senior software engineer tasked with analyzing and implementing soluti
     *   Include code blocks of the key workflow/callpath that was modified or implemented.
     *   If helpful, include a relevant visualization (e.g., Mermaid diagram) to clarify key concepts, system interactions, or data flow related to the changes.
 
+6.  **Verification of Implementation**
+    *   Explain how to verify that the implemented changes successfully address the User's Goal.
+    *   Suggest log lines to monitor/add and explain the exact sequencing that would confirm your implementation. Your log lines should follow the following conventions:
+      - **There should IDEALLY ONLY BE 1 log line per function which logs the variables most relevant to the User's Goal.**
+      - Prefix (e.g., class/module name or abbreviation of User's Goal)
+      - Function/class name
+      - Semantic Log Message
+      - Order in the Callpath(1,2,3...)
+
 ### **User's Goal:**  
 <users_goal>  
-<Example/First_Step>  
+<Example/First_Step/Base Implementation>  
 ]]
               end,
             },
