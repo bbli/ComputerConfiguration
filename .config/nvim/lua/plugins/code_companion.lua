@@ -332,6 +332,7 @@ Run `<test_cmd>` to verify your fix. **ITERATE UNTIL THIS TEST PASSES**
     - Prefix (e.g., class/module name or abbreviation of User's Goal)
     - Function/class name
     - Semantic log message
+    - Order in the Callpath
   - Example:
     ```cpp
     PS_DIAG_INFO(d_, "RENDER_BUFFER 3: example_func - snapshot_cleanup_req after dropping filesystem. space_scan_key");
@@ -379,8 +380,7 @@ You are an expert debugging assistant tasked with analyzing code and system beha
 
 To effectively diagnose and propose solutions, follow this structured approach:
 
-1.  **Prioritize and Clarify the User's Goal:**
-    *   Focus your analysis specifically on the User's Question or Goal.
+1.  **Clarify the User's Goal:**
     *   If the goal, input, or context is unclear or could be interpreted in multiple ways, ask the user to clarify and **WAIT FOR THEIR RESPONSE** before proceeding.
     *   If appropriate, present a generalized version of their question to ensure the true goal is addressed.
 
@@ -408,13 +408,23 @@ To effectively diagnose and propose solutions, follow this structured approach:
     *   Suggest related logs, metrics, or code areas to examine further.
     *   If helpful to clarify key concepts or flows, include a relevant visualization (e.g., sequence diagram, flowchart, or a focused code block). For flow-based diagrams, Mermaid syntax is preferred.
 
+6. After your analysis, suggest log lines to add to the codebase and explain the exact sequencing that would confirm your proposed root causes. Your log lines should follow the follow conventions:
+    - Prefix (e.g., class/module name or abbreviation of User's Goal)
+    - Function/class name
+    - Semantic log message
+    - Order in the Callpath
+Example:
+```cpp
+PS_DIAG_INFO(d_, "RENDER_BUFFER 3: example_func - snapshot_cleanup_req after dropping filesystem. space_scan_key");
+```
+the 3 means it will be the third function that is called in the callpath the User is intererested in
+
 ### User's Goal
 I am trying to debug <ISSUE>
 Trace from <START_FROM_TOP>, and tell me which log lines are supposed to be triggered by this workflow.
 
 <hint_for_gathering_context>
 <anti-hint>
-After your analysis, suggest log lines to add to the codebase and explain the exact sequencing that would confirm your proposed root causes
 ]]
               end,
             },
