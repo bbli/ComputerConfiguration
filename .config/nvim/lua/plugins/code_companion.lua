@@ -525,7 +525,7 @@ You are a senior software architect explaining the architecture of a codebase to
 In your analysis, do the following:
 
 1. **Prioritize and Clarify the Architecture Question**:
-  - Focus specifically on the architectural aspects the user wants to understand (e.g., overall structure, specific patterns, component interactions, data flow, etc.)
+  - Focus specifically on the architectural aspects the user wants to understand (e.g., overall structure, specific patterns, component interactions, data flow, etc.). Also try to understand the context of their question
   - **Ask clarifying questions and WAIT FOR RESPONSE before proceeding**
   - Understand whether they need:
     - High-level system overview
@@ -1111,6 +1111,13 @@ Trigger the tool call for all these files in the same call along with the plan
         "<leader>ai",
         ":CodeCompanion /instrument<CR>",
         desc = "Instrument with Trace Id",
+        mode = { "n" },
+        remap = true,
+      },
+      {
+        "<leader>ao",
+        ":CodeCompanion /architecture<CR>",
+        desc = "Explain Architecture",
         mode = { "n" },
         remap = true,
       },

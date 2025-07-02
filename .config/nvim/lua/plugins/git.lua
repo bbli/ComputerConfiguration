@@ -72,6 +72,13 @@ return {
       { "<leader>gs", "<cmd>Gitsigns stage_hunk<CR>", desc = "Stage git hunk" },
       { "<leader>gu", "<cmd>Gitsigns reset_hunk<CR>", desc = "Undo git hunk" },
       { "<leader>tb", ":ChangeGitBase ", desc = "Change Git Base" },
+      {
+        "<leader>th",
+        function()
+          require("gitsigns").change_base("HEAD~1")
+        end,
+        desc = "Change Git Base",
+      },
       { "<leader>gq", ":lua require('gitsigns').setqflist()<CR>", desc = "Load hunks into Quickfix List" },
     },
   },
