@@ -908,13 +908,13 @@ Use @files to read in the files from this diff before responding to the user
         },
         ["Summarizing Conversation"] = {
           strategy = "chat",
-          description = "Review Code before Submitting as a PR",
+          description = "Summarize Conversation",
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             modes = { "n" },
             is_default = false, -- Not a default prompt
             is_slash_cmd = true, -- Whether it should be available as a slash command in chat
-            short_name = "pr", -- Used for calling via :CodeCompanion /mycustom
+            short_name = "summarize", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             user_prompt = false, -- Whether to ask for user input before submitting
           },
@@ -1253,7 +1253,7 @@ Trigger the tool call for all these files in the same call along with the plan
       },
       {
         "<leader>am",
-        ":CodeCompanion /metaprompt<CR>",
+        ":CodeCompanion /summarize<CR>",
         desc = "Generate a prompt",
         mode = { "n" },
       },
