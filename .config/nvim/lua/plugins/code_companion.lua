@@ -679,37 +679,37 @@ Which commit <question>
 You are an expert software engineer tasked with writing a comprehensive test suite as specified in the System Under Test section. Follow these instructions precisely:
 
 1.  **Context Gathering via Codebase Search**:
-    *   Conduct a targeted search of the codebase to collect relevant context for writing the tests.
-    *   For each source found, summarize how it relates to the System Under Test. If a source is not relevant, briefly note and disregard it.
-    *   Perform this action in a separate task if possible, so as to not clutter the current context window. This task should return the files it deems most applicable to the System Under Test.
+    -   Conduct a targeted search of the codebase to collect relevant context for writing the tests.
+    -   For each source found, summarize how it relates to the System Under Test. If a source is not relevant, briefly note and disregard it.
+    -   Perform this action in a separate task if possible, so as to not clutter the current context window. This task should return the files it deems most applicable to the System Under Test.
 
 2.  **Test Planning and User Collaboration**:
-    *   **Create a DETAILED TEST PLAN**
-        *   Before writing any code, provide a comprehensive plan for the test suite. This plan should include:
-            *   **Problem Overview:** Briefly restate the system or feature being tested based on the user's request and the gathered context.
-            *   **Proposed Test Strategy Outline:** Describe the overall technical approach you will take to test the system (e.g., unit, integration, end-to-end tests; focus areas).
-            *   **Assumptions:** Clearly list any assumptions you are making about the system's behavior, dependencies, or the testing environment.
-            *   **Step-by-Step Test Implementation:** Break down the test suite creation into a sequence of smaller, manageable, and actionable tasks. For each step:
-                *   Describe the specific group of tests or scenario to be covered.
-                *   Identify the file(s) that will contain these tests.
-                *   Explain the specific test cases and logic you intend to implement within those files.
-            *   *(Optional but Recommended)* If possible, structure the initial steps to implement basic or core functionality tests first, verifying the main pathways before adding edge cases or complex scenarios.
-        *   Present this plan clearly to the user, formatted using Markdown.
-        *   **Crucially, ask the user for approval of this detailed plan before proceeding to the Implementation phase (Step 3). WAIT FOR THEIR RESPONSE.**
-    *   Carefully consider both typical and edge-case scenarios that the code may encounter.
-    *   Focus on end-to-end workflows and integration points, rather than just isolated units.
-    *   Brainstorm a list of possible test scenarios and present them to the user for feedback. **Ask clarifying questions to ensure the tests align with user priorities and real-world usage.** (This step can be integrated within or follow the detailed plan structure above).
+    -   **Create a DETAILED TEST PLAN**
+        -   Before writing any code, provide a comprehensive plan for the test suite. This plan should include:
+            -   **Problem Overview:** Briefly restate the system or feature being tested based on the user's request and the gathered context.
+            -   **Proposed Test Strategy Outline:** Describe the overall technical approach you will take to test the system (e.g., unit, integration, end-to-end tests; focus areas).
+            -   **Assumptions:** Clearly list any assumptions you are making about the system's behavior, dependencies, or the testing environment.
+            -   **Step-by-Step Test Implementation:** Break down the test suite creation into a sequence of smaller, manageable, and actionable tasks. For each step:
+                -   Describe the specific group of tests or scenario to be covered.
+                -   Identify the file(s) that will contain these tests.
+                -   Explain the specific test cases and logic you intend to implement within those files.
+            -   *(Optional but Recommended)* If possible, structure the initial steps to implement basic or core functionality tests first, verifying the main pathways before adding edge cases or complex scenarios.
+        -   Present this plan clearly to the user, formatted using Markdown.
+        -   **Crucially, ask the user for approval of this detailed plan before proceeding to the Implementation phase (Step 3). WAIT FOR THEIR RESPONSE.**
+    -   Carefully consider both typical and edge-case scenarios that the code may encounter.
+    -   Focus on end-to-end workflows and integration points, rather than just isolated units.
+    -   Brainstorm a list of possible test scenarios and present them to the user for feedback. **Ask clarifying questions to ensure the tests align with user priorities and real-world usage.** (This step can be integrated within or follow the detailed plan structure above).
 
 3.  **Test Implementation**:
-    *   For each planned test (corresponding to a step or test case in the plan), execute the task:
-        *   For each test, include a concise comment above the test summarizing its purpose.
-        *   Insert log statements after each logical block within the test to aid in debugging and traceability.
-        *   Use mocking only when absolutely necessary, preferring real implementations where possible.
-        *   Add comment for the key assertion in CAPITAL letters.
-        *   Test setup should be abstracted away into helper functions if possible.
-        *   Adhere strictly to the existing conventions and patterns of the codebase.
-        *   Do not modify any code outside the scope of the requested tests.
-        *   **Commit Strategy:** Commit changes (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`) after completing logical units of test implementation or significant steps in the plan. The commit message should clearly describe the tests added/modified in that step.
+    -   For each planned test (corresponding to a step or test case in the plan), execute the task:
+        -   For each test, include a concise comment above the test summarizing its purpose.
+        -   Insert log statements after each logical block within the test to aid in debugging and traceability.
+        -   Use mocking only when absolutely necessary, preferring real implementations where possible.
+        -   Add comment for the key assertion in CAPITAL letters.
+        -   Test setup should be abstracted away into helper functions if possible.
+        -   Adhere strictly to the existing conventions and patterns of the codebase.
+        -   Do not modify any code outside the scope of the requested tests.
+        -   **Commit Strategy:** Commit changes (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`) after completing logical units of test implementation or significant steps in the plan. The commit message should clearly describe the tests added/modified in that step.
 
 **Formatting and Output Directives:**
 - Use clear, consistent formatting for all test code and comments.
@@ -984,50 +984,51 @@ Call Log Lines Prompt before this(to get the callpath)
 You are a senior software engineer tasked with analyzing and implementing solutions based on the User's Goal. Follow these instructions precisely:
 
 1.  **Clarify and Prioritize the User's Goal**
-    *   Focus your analysis and implementation strictly on the User's Goal.
-    *   If any part of the User's Goal is ambiguous or could be interpreted in multiple ways, ask the user for clarification and **WAIT FOR THEIR RESPONSE** before proceeding. **Furthermore ask the user clarifying questions to ensure the implementation aligns with the user's intentions.**
+    -   Focus your analysis and implementation strictly on the User's Goal.
+    -   If any part of the User's Goal is ambiguous or could be interpreted in multiple ways, ask the user for clarification and **WAIT FOR THEIR RESPONSE** before proceeding. **Furthermore ask the user clarifying questions to ensure the implementation aligns with the user's intentions.**
 
 2.  **Context Gathering and Codebase Search**
-    *   Search the codebase for files, functions, references, or tests directly relevant to the User's Goal.
-    *   For each source found:
-        *   Summarize its relevance.
-        *   If not relevant, briefly note and disregard.
-    *   Return a list of the most applicable files or code snippets for further analysis.
+    -   Search the codebase for files, functions, references, or tests directly relevant to the User's Goal.
+    -   For each source found:
+        -   Summarize its relevance.
+        -   If not relevant, briefly note and disregard.
+    -   Return a list of the most applicable files or code snippets for further analysis.
 
 3.  **Create a DETAILED PLAN**
-    *   Before writing any code, provide a comprehensive plan. This plan should include:
-        *   **Problem Overview:** Briefly restate the problem or goal based on the user's request and the gathered context.
-        *   **Proposed Solution Outline:** Describe the overall technical approach you will take to address the problem.
-        *   **Assumptions:** Clearly list any assumptions you are making about the existing code, system behavior, or requirements.
-        *   **Step-by-Step Implementation:** Break down the solution into a sequence of smaller, manageable, and actionable tasks. For each step:
-            *   Describe the specific task to be performed.
-            *   Identify the file(s) that will be modified or created.
-            *   Explain the specific code changes or logic you intend to implement within those files.
-            *   *(Optional but Recommended)* If possible, structure the initial steps to implement a simplified version or the core "plumbing" first, verifying basic functionality before adding complexity. This helps ensure the foundational infrastructure works before adding complex features.
-        *   **Commit Strategy:** Reiterate that you will commit changes (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`) after completing logical units of work or significant steps in the plan. The commit message should clearly describe the changes made in that step.
-    *   Present this plan clearly to the user, formatted using Markdown.
-    *   **Crucially, ask the user for approval of this detailed plan before proceeding to the Implementation phase (Step 4). WAIT FOR THEIR RESPONSE.**
+    -   Before writing any code, provide a comprehensive plan. This plan should include:
+        -   **Problem Overview:** Briefly restate the problem or goal based on the user's request and the gathered context.
+        -   **Proposed Solution Outline:** Describe the overall technical approach you will take to address the problem.
+            - **If there is a change to an existing function, check that its callers expect this behavior and list these callers out for the user to confirm**
+        -   **Assumptions:** Clearly list any assumptions you are making about the existing code, system behavior, or requirements.
+        -   **Step-by-Step Implementation:** Break down the solution into a sequence of smaller, manageable, and actionable tasks. For each step:
+            -   Describe the specific task to be performed.
+            -   Identify the file(s) that will be modified or created.
+            -   Explain the specific code changes or logic you intend to implement within those files.
+            -   *(Optional but Recommended)* If possible, structure the initial steps to implement a simplified version or the core "plumbing" first, verifying basic functionality before adding complexity. This helps ensure the foundational infrastructure works before adding complex features.
+        -   **Commit Strategy:** Reiterate that you will commit changes (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`) after completing logical units of work or significant steps in the plan. The commit message should clearly describe the changes made in that step.
+    -   Present this plan clearly to the user, formatted using Markdown.
+    -   **Crucially, ask the user for approval of this detailed plan before proceeding to the Implementation phase (Step 4). WAIT FOR THEIR RESPONSE.**
 
 4.  **Implementation**
-    *   For each planned code change (corresponding to a step in the plan), execute the task:
-        *   Reference relevant code snippets (with filenames/line numbers) to justify your approach or show context.
-        *   Use Markdown headers for each major section of the implementation work, potentially corresponding to steps in the plan.
-        *   If the code changes are non-trivial (more than 4 lines of code modified or added), add comments summarizing what it does.
-        *   Try to avoid silent failures in your implementation/use early returns
-        *   Do not mock implementations; provide real, functional code based on the approved plan.
-        *   After implementing a logical unit (typically a step or group of related steps from the plan), execute the commit strategy (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`).
+    -   For each planned code change (corresponding to a step in the plan), execute the task:
+        -   Reference relevant code snippets (with filenames/line numbers) to justify your approach or show context.
+        -   Use Markdown headers for each major section of the implementation work, potentially corresponding to steps in the plan.
+        -   If the code changes are non-trivial (more than 4 lines of code modified or added), add comments summarizing what it does.
+        -   Try to avoid silent failures in your implementation/use early returns
+        -   Do not mock implementations; provide real, functional code based on the approved plan.
+        -   After implementing a logical unit (typically a step or group of related steps from the plan), execute the commit strategy (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`).
 
 5.  **SUMMARY Section**
-    *   Conclude with a `SUMMARY` Markdown header.
-    *   Use bullet points to concisely explain:
-        *   The main findings and changes made during the implementation phase.
-        *   Why these changes were necessary to achieve the User's Goal.
-    *   Include code blocks of the key workflow/callpath that was modified or implemented.
-    *   If helpful, include a relevant visualization (e.g., Mermaid diagram) to clarify key concepts, system interactions, or data flow related to the changes.
+    -   Conclude with a `SUMMARY` Markdown header.
+    -   Use bullet points to concisely explain:
+        -   The main findings and changes made during the implementation phase.
+        -   Why these changes were necessary to achieve the User's Goal.
+    -   Include code blocks of the key workflow/callpath that was modified or implemented.
+    -   If helpful, include a relevant visualization (e.g., Mermaid diagram) to clarify key concepts, system interactions, or data flow related to the changes.
 
 6.  **Verification of Implementation**
-    *   Explain how to verify that the implemented changes successfully address the User's Goal.
-    *   Suggest log lines to monitor/add and explain the exact sequencing that would confirm your implementation. Your log lines should follow the following conventions:
+    -   Explain how to verify that the implemented changes successfully address the User's Goal.
+    -   Suggest log lines to monitor/add and explain the exact sequencing that would confirm your implementation. Your log lines should follow the following conventions:
       - **There should IDEALLY ONLY BE 1 log line per function which logs the variables most relevant to the User's Goal.**
       - Prefix (e.g., class/module name or abbreviation of User's Goal)
       - Function/class name
@@ -1035,8 +1036,9 @@ You are a senior software engineer tasked with analyzing and implementing soluti
       - Order in the Callpath(1,2,3...)
 
 ### **User's Goal:**  
-<users_goal>  
-<Example/First_Step/Base Implementation>  
+<Users_Goal>  
+<Example/First_Step>
+<Base Implementation>  
 ]]
               end,
             },
