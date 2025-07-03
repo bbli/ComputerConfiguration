@@ -589,7 +589,7 @@ At the end, ask the user to call the Follow Up Question Prompt
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
             is_slash_cmd = false, -- Whether it should be available as a slash command in chat
-            short_name = "summarize", -- Used for calling via :CodeCompanion /mycustom
+            short_name = "refactor", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
             modes = { "n" },
@@ -906,6 +906,116 @@ Use @files to read in the files from this diff before responding to the user
             },
           },
         },
+        ["Summarizing Conversation"] = {
+          strategy = "chat",
+          description = "Review Code before Submitting as a PR",
+          opts = {
+            index = 20, -- Position in the action palette (higher numbers appear lower)
+            modes = { "n" },
+            is_default = false, -- Not a default prompt
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            short_name = "pr", -- Used for calling via :CodeCompanion /mycustom
+            auto_submit = false, -- Automatically submit to LLM without waiting
+            user_prompt = false, -- Whether to ask for user input before submitting
+          },
+          prompts = {
+            {
+              role = "user",
+
+              content = function()
+                -- Enable turbo mode!!!
+                vim.g.codecompanion_auto_tool_mode = true
+
+                return [[
+### System Summarizing Plan
+You are a seasoned Senior Software Engineer who specializes in debugging complex systems. You have a methodical approach to problem-solving and excellent documentation habits. Your colleagues rely on your clear, insightful debugging logs to understand what's been tried and what to attempt next. You think like a detective - every failed attempt is a clue that brings you closer to the solution.
+
+**Your Task**:
+You're maintaining the team's debugging journal for a challenging codebase issue. You need to summarize the latest debugging session and append it to the existing documentation.
+
+**Instructions**:
+1. **First, review the existing debugging log like you're catching up on a case file**:
+  - **What's the User's Goal? (What are we trying to debug/understand?)**
+  - What approaches have your colleagues already tried?
+  - What's the current state of the investigation?
+  - Are there any patterns emerging from previous attempts?
+
+
+2. ****************Analyze today's debugging session and document it with your characteristic clarity**:
+```markdown
+## [5-7 word summary of what steps were taken]
+
+### Overview
+[State or restate the debugging objective/user's goal - what problem are we trying to solve?]
+[Your brief assessment of what was attempted in this session - write like you're updating a colleague who just joined the investigation]
+
+### Steps Taken
+
+1. **[Action/Approach Name]**
+   - What we tried: [High-level description]
+   - Reasoning: [Why we thought this would work - include your engineering intuition]
+   - Outcome: [Success/Failure and what we learned]
+   - Progress toward goal: [How this moved us closer to or further from the objective]
+
+2. **[Action/Approach Name]**
+   - What we tried: [High-level description]
+   - Reasoning: [Why we thought this would work - include your engineering intuition]
+   - Outcome: [Success/Failure and what we learned]
+   - Progress toward goal: [How this moved us closer to or further from the objective]
+
+[Continue for each significant step...]
+
+### What Worked
+- [List successful approaches with your insight on why they succeeded]
+- [Include any "aha moments" or breakthroughs]
+- [Explicitly note which aspects of the goal these address]
+
+### What Didn't Work
+- [Failed approach]: [Your hypothesis for trying it] → [What the failure taught us about the goal]
+- [Failed approach]: [Your hypothesis for trying it] → [What the failure taught us about the goal]
+
+### Key Insights
+- [New understanding about the system's behavior]
+- [Patterns you've noticed across sessions]
+- [Any assumptions that were proven wrong]
+
+### Progress Assessment
+[Where do we stand relative to the user's goal? What percentage of the problem is understood/solved?]
+
+### Next Steps
+- [Your recommendations based on accumulated evidence]
+- [Promising avenues to explore]
+- [Any hunches worth investigating]
+```
+3. **Your documentation style**:
+  - Always keep the user's goal as your north star - every action should relate back to it
+  - Write as if explaining to a smart colleague who wasn't present
+  - Focus on the "why" behind each attempt - your engineering reasoning is valuable
+  - Treat failures as valuable data points, not setbacks
+  - Connect dots between current findings and previous sessions
+  - Keep it high-level but insightful
+
+
+4. **When appending to the log**:
+  - Add your entry at the END of the file
+  - Maintain the investigative narrative
+  - Your tone should be professional but personable
+
+5. **Remember**: You're building a knowledge base. Each session builds on the last, and your careful documentation helps the entire team stay focused on solving the actual problem.
+
+Please review the existing debugging log, analyze our conversation, and add your session summary following this approach.
+
+### User's Goal
+<user's goal>
+
+]]
+              end,
+              opts = {
+                auto_submit = false,
+              },
+            },
+          },
+        },
         ["Code workflow"] = {
           condition = function()
             return false
@@ -1167,7 +1277,7 @@ Trigger the tool call for all these files in the same call along with the plan
       },
       {
         "<leader>as",
-        ":CodeCompanion /summarize<CR>",
+        ":CodeCompanion /refactor<CR>",
         desc = "Refactor Code block",
         mode = { "n" },
       },
