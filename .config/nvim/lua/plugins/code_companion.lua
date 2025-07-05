@@ -535,7 +535,7 @@ In your analysis, do the following:
 
 2. **Context Gathering via Codebase Search**:
   - Search for key architectural indicators, such as but not limited to:
-    - **Entry points (main files, rpc handlers, interfaces)**
+    - **Entry and Exit points (main files, rpc handlers, interfaces)**
     - Core abstractions and base classes
     - Dependency injection or service registration
     - Router/controller definitions
@@ -547,9 +547,10 @@ In your analysis, do the following:
   - Structure explanation using these Markdown headers:
     - System Overview
     - Core Components
-    - **Data Flow**
+    - **Data Flow(especially for "handoff points" between layers**
     - Key Design Patterns
     - Module Dependencies
+    - Lifecycle of Services
   - For each section:
     - Include relevant code snippets and line numbers showing architectural decisions
     - Show how components interact through actual code examples
@@ -955,13 +956,11 @@ You're maintaining the team's debugging journal for a challenging codebase issue
    - What we tried: [High-level description]
    - Reasoning: [Why we thought this would work - include your engineering intuition]
    - Outcome: [Success/Failure and what we learned]
-   - Progress toward goal: [How this moved us closer to or further from the objective]
 
 2. **[Action/Approach Name]**
    - What we tried: [High-level description]
    - Reasoning: [Why we thought this would work - include your engineering intuition]
    - Outcome: [Success/Failure and what we learned]
-   - Progress toward goal: [How this moved us closer to or further from the objective]
 
 [Continue for each significant step...]
 
@@ -1004,6 +1003,7 @@ You're maintaining the team's debugging journal for a challenging codebase issue
 5. **Remember**: You're building a knowledge base. Each session builds on the last, and your careful documentation helps the entire team stay focused on solving the actual problem.
 
 Please review the existing debugging log, analyze our conversation, and add your session summary following this approach.
+
 
 ### User's Goal
 <user's goal>
@@ -1109,11 +1109,11 @@ You are a senior software engineer tasked with analyzing and implementing soluti
         -   **Problem Overview:** Briefly restate the problem or goal based on the user's request and the gathered context.
         -   **Proposed Solution Outline:** Describe the overall technical approach you will take to address the problem.
             - **If there is a change to an existing function, check that its callers expect this behavior and list these callers out for the user to confirm**
-        -   **Assumptions:** Clearly list any assumptions you are making about the existing code, system behavior, or requirements.
+            - If there are multiple implementation options or approaches, present them for the user to decide.
         -   **Step-by-Step Implementation:** Break down the solution into a sequence of smaller, manageable, and actionable tasks. For each step:
             -   Describe the specific task to be performed.
             -   Identify the file(s) that will be modified or created.
-            -   Explain the specific code changes or logic you intend to implement within those files.
+            -   Explain the specific code changes or logic you intend to implement within those files -> and **how they contribute to the overall goal**
             -   *(Optional but Recommended)* If possible, structure the initial steps to implement a simplified version or the core "plumbing" first, verifying basic functionality before adding complexity. This helps ensure the foundational infrastructure works before adding complex features.
         -   **Commit Strategy:** Reiterate that you will commit changes (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`) after completing logical units of work or significant steps in the plan. The commit message should clearly describe the changes made in that step.
     -   Present this plan clearly to the user, formatted using Markdown.
@@ -1124,6 +1124,7 @@ You are a senior software engineer tasked with analyzing and implementing soluti
         -   Reference relevant code snippets (with filenames/line numbers) to justify your approach or show context.
         -   Use Markdown headers for each major section of the implementation work, potentially corresponding to steps in the plan.
         -   If the code changes are non-trivial (more than 4 lines of code modified or added), add comments summarizing what it does.
+        -   Add top level documentation to any new function or class you define describing its purpose in relation to the task or goal.
         -   Try to avoid silent failures in your implementation/use early returns
         -   Do not mock implementations; provide real, functional code based on the approved plan.
         -   After implementing a logical unit (typically a step or group of related steps from the plan), execute the commit strategy (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`).
