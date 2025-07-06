@@ -589,7 +589,7 @@ At the end, ask the user to call the Follow Up Question Prompt
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
-            is_slash_cmd = false, -- Whether it should be available as a slash command in chat
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
             short_name = "refactor", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
@@ -1095,8 +1095,10 @@ You are a senior software engineer tasked with analyzing and implementing soluti
 
 1.  **Clarify and Prioritize the User's Goal**
     -   Focus your analysis and implementation strictly on the User's Goal.
-    -   If any part of the User's Goal is ambiguous or could be interpreted in multiple ways, ask the user for clarification and **WAIT FOR THEIR RESPONSE** before proceeding. **Furthermore ask the user clarifying questions to ensure the implementation aligns with the user's intentions.**
-
+    -   If any part of the User's Goal is ambiguous or could be interpreted in multiple ways, ask the user for clarification and **WAIT FOR THEIR RESPONSE** before proceeding. **Furthermore ask the user clarifying questions to ensure the implementation aligns with the user's intentions.**, such as but not limited to:
+     - Architecture: microservices vs monolith, sync vs async, stateful vs stateless
+     - Communication: events vs direct calls, choreography vs orchestration
+     - Data flow: where state lives, caching strategy, consistency requirements, layer placement
 2.  **Context Gathering and Codebase Search**
     -   Search the codebase for files, functions, references, or tests directly relevant to the User's Goal.
     -   For each source found:
@@ -1277,7 +1279,7 @@ Trigger the tool call for all these files in the same call along with the plan
         mode = { "n" },
       },
       {
-        "<leader>as",
+        "<leader>ar",
         ":CodeCompanion /refactor<CR>",
         desc = "Refactor Code block",
         mode = { "n" },
