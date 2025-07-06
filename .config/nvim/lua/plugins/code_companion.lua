@@ -471,7 +471,7 @@ In your analysis, do the following:
 4. **SUMMARY Section:**
    - Conclude your response with a `SUMMARY` section, formatted as a Markdown header.
    - Use bullet points to concisely present the main findings and insights.
-   - If helpful, include a relevant visualization (such sequence, state, component diagrams, flowchart, etc) in Mermaid to clarify **key concepts**.
+   - If helpful, include a relevant visualization (such sequence, state, component diagrams, flowchart, **free form ASCII text diagrams**) to clarify KEY CONCEPTS
 
 After your analysis, suggest log lines to add to the codebase. For each log line, show:
 - The simplified code location (function/method name with minimal context)
