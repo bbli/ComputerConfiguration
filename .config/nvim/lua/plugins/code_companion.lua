@@ -488,7 +488,10 @@ In your analysis, do the following:
 <hint_for_files>
 <anti-hint>
 
-After your analysis, suggest log lines to add to the codebase and explain the exact sequencing that would help the user understand your explanation.
+After your analysis, suggest log lines to add to the codebase. For each log line, show:
+- The simplified code location (function/method name with minimal context)
+- The log message itself
+- The execution sequence to help the user understand your explanation
 
 At the end, ask the user to call the Follow Up Question Prompt
 ### Code Input
@@ -572,7 +575,10 @@ In your analysis, do the following:
 ### User's Question
 <main_flow>
 
-After your analysis, suggest log lines to add to the codebase and explain the exact sequencing that would help the user understand your explanation.
+After your analysis, suggest log lines to add to the codebase. For each log line, show:
+- The simplified code location (function/method name with minimal context)
+- The log message itself
+- The execution sequence to help the user understand your explanation
 
 At the end, ask the user to call the Follow Up Question Prompt
 ### Code Input
@@ -1141,7 +1147,7 @@ You are a senior software engineer tasked with analyzing and implementing soluti
 
 6.  **Verification of Implementation**
     -   Explain how to verify that the implemented changes successfully address the User's Goal.
-    -   Suggest log lines to monitor/add and explain the exact sequencing that would confirm your implementation. Your log lines should follow the following conventions:
+    -   Suggest log lines to monitor(along with a simplified code location) and explain the exact sequencing that would confirm your implementation. Your log lines should follow the following conventions:
       - **There should IDEALLY ONLY BE 1 log line per function which logs the variables most relevant to the User's Goal.**
       - Prefix (e.g., class/module name or abbreviation of User's Goal)
       - Function/class name
