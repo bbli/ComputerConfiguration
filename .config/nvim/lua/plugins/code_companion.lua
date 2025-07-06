@@ -394,31 +394,25 @@ To effectively diagnose and propose solutions, follow this structured approach:
     *   Trace relevant execution flows or event sequences as indicated by the input.
     *   Identify patterns, anomalies, error patterns, or key indicators (e.g., error codes, stack traces, performance metrics, resource usage).
     *   Explain how the input relates to the code and the User's Goal, using direct code snippets from both the input (if applicable) and the codebase for justification. Include filenames and line numbers where relevant for code snippets.
-    *   **Identify multiple possible root causes for the observed behavior or issue**
+    *   **Identify multiple possible root causes for the observed behavior or issue**. Then suggest log lines to add to the codebase and explain the exact sequencing that would confirm your proposed root causes. Your log lines should follow the follow conventions:
+      - **There should IDEALLY ONLY BE 1 log line per function which logs the variables most relevant to the User's Goal.**
+      - Prefix (e.g., class/module name or abbreviation of User's Goal)
+      - Function/class name
+      - Semantic Log Message
+      - Order in the Callpath(1,2,3...)
+      Example:
+      ```cpp
+      PS_DIAG_INFO(d_, "RENDER_BUFFER 3: example_func - snapshot_cleanup_req after dropping filesystem. space_scan_key");
+      ```
+      the 3 means it will be the third function that is called in the callpath the User is intererested in
 
-4.  **Address Gaps and Ambiguities:**
-    *   Explicitly state if any context, definitions, or necessary information is missing.
-    *   If evidence is conflicting or ambiguous, point it out and suggest follow-up questions to resolve uncertainty.
-    *   List specific questions that need answers or areas that require further investigation.
-
-5.  **SUMMARY Section:**
+4.  **SUMMARY Section:**
     *   Conclude with a SUMMARY section using bullet points.
     *   Present main findings(citing code snippets or log lines), identified patterns/anomalies, and possible root causes.
     *   Provide actionable insights and specific next steps for debugging or resolving the issue.
-    *   Suggest related logs, metrics, or code areas to examine further.
+    *   List specific questions that need answers or areas that require further investigation.
     *   If helpful to clarify key concepts or flows, include a relevant visualization (e.g., sequence diagram, flowchart, or a focused code block). For flow-based diagrams, Mermaid syntax is preferred.
 
-6. After your analysis, suggest log lines to add to the codebase and explain the exact sequencing that would confirm your proposed root causes. Your log lines should follow the follow conventions:
-    - **There should IDEALLY ONLY BE 1 log line per function which logs the variables most relevant to the User's Goal.**
-    - Prefix (e.g., class/module name or abbreviation of User's Goal)
-    - Function/class name
-    - Semantic Log Message
-    - Order in the Callpath(1,2,3...)
-Example:
-```cpp
-PS_DIAG_INFO(d_, "RENDER_BUFFER 3: example_func - snapshot_cleanup_req after dropping filesystem. space_scan_key");
-```
-the 3 means it will be the third function that is called in the callpath the User is intererested in
 
 ### User's Goal
 I am trying to debug <ISSUE>
@@ -472,15 +466,19 @@ In your analysis, do the following:
    - Structure your explanation using Markdown headers for each step.
    - For each step, justify your reasoning with direct code snippets from the input, along with the associated line numbers/filename. Do not hallucinate.
    - When applicable, demonstrate how code from tests triggers or interacts with code from the main codebase. Have a code snippet from both the test and the codebase
-
-4. **Address Gaps in Definitions:**
    - If any definitions or context are missing, or you do not have strong confidence in any anser, explicitly state this. Do not infer or invent missing information. I repeat, **DO NOT HALLUCINATE**.
-   - Furthermore if there is conflicting evidence, point that out and suggest follow up questions that could help solve this ambiguity
 
-5. **SUMMARY Section:**
+4. **SUMMARY Section:**
    - Conclude your response with a `SUMMARY` section, formatted as a Markdown header.
    - Use bullet points to concisely present the main findings and insights.
    - If helpful, include a relevant visualization (such sequence, state, component diagrams, flowchart, etc) in Mermaid to clarify **key concepts**.
+
+After your analysis, suggest log lines to add to the codebase. For each log line, show:
+- The simplified code location (function/method name with minimal context)
+- The log message itself
+- The exact execution sequence to help the user understand your explanation
+
+Also suggest follow up questions that would help deepen the user's understanding, especially if there were ambiguities above. 
 
 ### User's Question
 **My main goal is** <main_goal>
@@ -488,12 +486,7 @@ In your analysis, do the following:
 <hint_for_files>
 <anti-hint>
 
-After your analysis, suggest log lines to add to the codebase. For each log line, show:
-- The simplified code location (function/method name with minimal context)
-- The log message itself
-- The execution sequence to help the user understand your explanation
 
-At the end, ask the user to call the Follow Up Question Prompt
 ### Code Input
 <code_input>
 
@@ -578,7 +571,7 @@ In your analysis, do the following:
 After your analysis, suggest log lines to add to the codebase. For each log line, show:
 - The simplified code location (function/method name with minimal context)
 - The log message itself
-- The execution sequence to help the user understand your explanation
+- The exact execution sequence to help the user understand your explanation
 
 At the end, ask the user to call the Follow Up Question Prompt
 ### Code Input
@@ -959,12 +952,12 @@ You're maintaining the team's debugging journal for a challenging codebase issue
 ### Steps Taken
 
 1. **[Action/Approach Name]**
-   - What we tried: [High-level description]
+   - What we tried: [High-level description] + [Simplified Code Snippet]
    - Reasoning: [Why we thought this would work - include your engineering intuition]
    - Outcome: [Success/Failure and what we learned]
 
 2. **[Action/Approach Name]**
-   - What we tried: [High-level description]
+   - What we tried: [High-level description] + [Simplified Code Snippet]
    - Reasoning: [Why we thought this would work - include your engineering intuition]
    - Outcome: [Success/Failure and what we learned]
 
@@ -1104,7 +1097,9 @@ You are a senior software engineer tasked with analyzing and implementing soluti
     -   If any part of the User's Goal is ambiguous or could be interpreted in multiple ways, ask the user for clarification and **WAIT FOR THEIR RESPONSE** before proceeding. **Furthermore ask the user clarifying questions to ensure the implementation aligns with the user's intentions.**, such as but not limited to:
      - Architecture: microservices vs monolith, sync vs async, stateful vs stateless
      - Communication: events vs direct calls, choreography vs orchestration
+     - State management: local vs shared state, immutable vs mutable, event sourcing vs current state only
      - Data flow: where state lives, caching strategy, consistency requirements, layer placement
+
 2.  **Context Gathering and Codebase Search**
     -   Search the codebase for files, functions, references, or tests directly relevant to the User's Goal.
     -   For each source found:
@@ -1122,7 +1117,7 @@ You are a senior software engineer tasked with analyzing and implementing soluti
             -   Describe the specific task to be performed.
             -   Identify the file(s) that will be modified or created.
             -   Explain the specific code changes or logic you intend to implement within those files -> and **how they contribute to the overall goal**
-            -   *(Optional but Recommended)* If possible, structure the initial steps to implement a simplified version or the core "plumbing" first, verifying basic functionality before adding complexity. This helps ensure the foundational infrastructure works before adding complex features.
+            -   If possible, structure the initial steps to implement a simplified version or the core "plumbing" first, verifying basic functionality before adding complexity. This helps ensure the foundational infrastructure works before adding complex features.
         -   **Commit Strategy:** Reiterate that you will commit changes (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`) after completing logical units of work or significant steps in the plan. The commit message should clearly describe the changes made in that step.
     -   Present this plan clearly to the user, formatted using Markdown.
     -   **Crucially, ask the user for approval of this detailed plan before proceeding to the Implementation phase (Step 4). WAIT FOR THEIR RESPONSE.**
@@ -1135,6 +1130,7 @@ You are a senior software engineer tasked with analyzing and implementing soluti
         -   Add top level documentation to any new function or class you define describing its purpose in relation to the task or goal.
         -   Try to avoid silent failures in your implementation/use early returns
         -   Do not mock implementations; provide real, functional code based on the approved plan.
+        -   **If implementation decisions arise that weren't covered in the plan, pause and ask the user for guidance by presenting the available options with their trade-offs. WAIT FOR THEIR RESPONSE before continuing.**
         -   After implementing a logical unit (typically a step or group of related steps from the plan), execute the commit strategy (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`).
 
 5.  **SUMMARY Section**
@@ -1142,8 +1138,7 @@ You are a senior software engineer tasked with analyzing and implementing soluti
     -   Use bullet points to concisely explain:
         -   The main findings and changes made during the implementation phase.
         -   Why these changes were necessary to achieve the User's Goal.
-    -   Include code blocks of the key workflow/callpath that was modified or implemented.
-    -   If helpful, include a relevant visualization (e.g., Mermaid diagram) to clarify key concepts, system interactions, or data flow related to the changes.
+    -   Use visualizations (e.g., Mermaid diagram) to clarify key concepts, system interactions, or data flow related to the changes.
 
 6.  **Verification of Implementation**
     -   Explain how to verify that the implemented changes successfully address the User's Goal.
