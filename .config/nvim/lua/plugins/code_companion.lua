@@ -296,64 +296,6 @@ Run `<test_cmd>` to verify your fix. **ITERATE UNTIL THIS TEST PASSES**
             },
           },
         },
-        ["Add Log Lines"] = {
-          strategy = "chat",
-          description = "generates a prompt to tell the llm to apply the generated code to the file",
-          opts = {
-            index = 20, -- Position in the action palette (higher numbers appear lower)
-            is_default = false, -- Not a default prompt
-            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
-            short_name = "log", -- Used for calling via :CodeCompanion /mycustom
-            auto_submit = false, -- Automatically submit to LLM without waiting
-            user_prompt = false, -- Whether to ask for user input before submitting
-          },
-          prompts = {
-            {
-              role = "user",
-              content = function(context)
-                -- Enable turbo mode!!!
-                vim.g.codecompanion_auto_tool_mode = true
-                return string.format([[
-### System Plan
-
-1. **Prioritize and Clarify the User's Question:**
-  - Center all actions and explanations on the User's Goal.
-  - If the User's Goal or requirements are ambiguous, ask clarifying questions and WAIT for a response before proceeding.
-  - Try to understand the underlying motivation and, if appropriate, present a generalized version of the User's Goal for confirmation.
-
-2. **Context Gathering via Codebase Search:**
-  - Search the codebase for relevant context that directly informs the User's Goal.
-  - For each source found, summarize its relevance. Disregard and briefly note irrelevant sources.
-  - Perform this as a separate task to avoid cluttering the main context window. Return only the most applicable files.
-
-3. **Instrumentation Plan:**
-  - Use the following log line convention:
-    - **There should ideally only be 1 log line per function which log the variables most relevant to the User's Goal.**
-    - Prefix (e.g., class/module name or abbreviation of User's Goal)
-    - Function/class name
-    - Semantic log message
-    - Order in the Callpath
-  - Example:
-    ```cpp
-    PS_DIAG_INFO(d_, "RENDER_BUFFER 3: example_func - snapshot_cleanup_req after dropping filesystem. space_scan_key");
-    ```
-   - the 3 means it will be the third function that is called in the callpath the User is intererested in
-
-- If there are existing log lines, modify them to have the prefix convention
-- Do not change anything else besides what the user requested
-- At the end, suggest for the user to call the Debug Prompt on the output of these logs.
-### User's Goal
-<user_goal>
-<prefix_and_logging_function>                
-Use @editor to add log lines to <buffer>
-]])
-              end,
-              opts = {
-                contains_code = true,
-              },
-            },
-          },
-        },
         ["Debug Code"] = {
           strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
           description = "AI assisted Debugging",
@@ -411,7 +353,7 @@ To effectively diagnose and propose solutions, follow this structured approach:
     *   Present main findings(citing code snippets or log lines), identified patterns/anomalies, and possible root causes.
     *   Provide actionable insights and specific next steps for debugging or resolving the issue.
     *   List specific questions that need answers or areas that require further investigation.
-    *   If helpful to clarify key concepts or flows, include a relevant visualization (such sequence, state, component diagrams, flowchart, **free form ASCII text diagrams**). For flow-based diagrams, Mermaid syntax is preferred.
+    *   To clarify key concepts or flows, include a relevant visualization (such sequence, state, component diagrams, flowchart, free form ASCII text diagrams). For flow-based diagrams, Mermaid syntax is preferred.
 
 
 ### User's Goal
@@ -466,20 +408,20 @@ In your analysis, do the following:
    - Structure your explanation using Markdown headers for each step.
    - For each step, justify your reasoning with direct code snippets from the input, along with the associated line numbers/filename. Do not hallucinate.
    - When applicable, demonstrate how code from tests triggers or interacts with code from the main codebase. Have a code snippet from both the test and the codebase
-   - Provide concrete examples/documentation of typical use cases and how data flows through them
+   - **Provide concrete examples/documentation/tutorials of typical use cases and how data flows through them.** Examples can be simplified, as long as they get the main idea across.
    - If any definitions or context are missing, or you do not have strong confidence in any anser, explicitly state this. Do not infer or invent missing information. I repeat, **DO NOT HALLUCINATE**.
 
 4. **SUMMARY Section:**
    - Conclude your response with a `SUMMARY` section, formatted as a Markdown header.
    - Use bullet points to concisely present the main findings and insights.
-   - If helpful, include a relevant visualization (such sequence, state, component diagrams, flowchart, **free form ASCII text diagrams**) to clarify KEY CONCEPTS
+   - Include a relevant visualization (such sequence, state, component diagrams, flowchart, **free form ASCII text diagrams) to clarify KEY CONCEPTS
 
 After your analysis, suggest log lines to add to the codebase. For each log line, show:
 - The simplified code location (function/method name with minimal context)
 - The log message itself
 - The exact execution sequence to help the user understand your explanation
 
-Also suggest follow up questions that would help deepen the user's understanding, especially if there were ambiguities above. 
+Also suggest specific follow up questions that would help deepen the user's understanding, especially if there were ambiguities above. 
 
 ### User's Question
 **My main goal is** <main_goal>
@@ -552,8 +494,8 @@ In your analysis, do the following:
   - For each section:
     - Include relevant code snippets and line numbers showing architectural decisions
     - Show how components interact through actual code examples
-    - Provide concrete examples/documentation of typical use cases and how data flows through them
-    - Use visualizations(such sequence, state, component diagrams, flowchart, **free form ASCII text diagrams**) to help you illustrate:
+    - Provide concrete examples/documentation/tutorials of typical use cases and how data flows through them
+    - Use visualizations(such sequence, state, component diagrams, flowchart, free form ASCII text diagrams) to help you illustrate:
       - Component relationships
       - Data flow directions
       - System boundaries
@@ -562,7 +504,6 @@ In your analysis, do the following:
 4. **Address Architectural Gaps**:
   - Explicitly state any missing architectural elements:
     - Unclear module boundaries
-    - Missing documentation for component interactions
     - Ambiguous responsibility assignments
     - Conflicting patterns in different parts of the codebase
     - DO NOT HALLUCINATE architectural decisions not evident in code
@@ -576,7 +517,7 @@ After your analysis, suggest log lines to add to the codebase. For each log line
 - The log message itself
 - The exact execution sequence to help the user understand your explanation
 
-At the end, ask the user to call the Follow Up Question Prompt
+Also suggest specific follow up questions that would help deepen the user's understanding, especially if there were ambiguities above. 
 ### Code Input
 <code_input>
 
@@ -764,6 +705,7 @@ You are a Socratic Tutor and senior software engineer helping to explore and res
 
 2. **Understand the User's Motivation**
   - Now Explore why the user might have this question - what assumptions or mental models could be driving their confusion? Identify potential misconceptions, knowledge gaps, or reasoning patterns that led to this question
+  -   If any part of the User's Goal is ambiguous or could be interpreted in multiple ways, ask the user for clarification and **WAIT FOR THEIR RESPONSE** before proceeding. **Furthermore ask the user clarifying questions to ensure the implementation aligns with the user's intentions.**, such as but not limited to:
   - Then either confirm the user's suspicions or explain where their thinking went wrong. If the user is right, make a fix for that
 
 
@@ -771,7 +713,7 @@ You are a Socratic Tutor and senior software engineer helping to explore and res
   - Structure your explanation using Markdown headers for each step
   - For each step, justify your reasoning with direct code snippets from the input rather than line numbers, noting the filename. If any definitions or context is missing, explicitly state this. Do not infer or invent missing information.
   - When applicable, demonstrate how different parts of the codebase interact, using code snippets from both
-  - Add relevant visualizations(such sequence, state, component diagrams, flowchart, **free form ASCII text diagrams**) if helpful to clarify key concepts
+  - Add relevant visualizations(such sequence, state, component diagrams, flowchart, free form ASCII text diagrams) to clarify key concepts
 
 Throughout our conversation, if follow-up questions start:
 Going down rabbit holes unrelated to the MAIN GOAL
@@ -1116,6 +1058,7 @@ You are a senior software engineer tasked with analyzing and implementing soluti
         -   **Proposed Solution Outline:** Describe the overall technical approach you will take to address the problem.
             - **If there is a change to an existing function, check that its callers expect this behavior and list these callers out for the user to confirm**
             - If there are multiple implementation options or approaches, present them for the user to decide.
+          -   Use visualizations(such sequence, state, component diagrams, flowchart, free form ASCII text diagrams) to clarify key concepts, system interactions, or data flow related to the changes.
         -   **Step-by-Step Implementation:** Break down the solution into a sequence of smaller, manageable, and actionable tasks. For each step:
             -   Describe the specific task to be performed.
             -   Identify the file(s) that will be modified or created.
@@ -1136,21 +1079,15 @@ You are a senior software engineer tasked with analyzing and implementing soluti
         -   **If implementation decisions arise that weren't covered in the plan, pause and ask the user for guidance by presenting the available options with their trade-offs. WAIT FOR THEIR RESPONSE before continuing.**
         -   After implementing a logical unit (typically a step or group of related steps from the plan), execute the commit strategy (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`).
 
-5.  **SUMMARY Section**
-    -   Conclude with a `SUMMARY` Markdown header.
-    -   Use bullet points to concisely explain:
-        -   The main findings and changes made during the implementation phase.
-        -   Why these changes were necessary to achieve the User's Goal.
-    -   Use visualizations(such sequence, state, component diagrams, flowchart, **free form ASCII text diagrams**) to clarify key concepts, system interactions, or data flow related to the changes.
-
-6.  **Verification of Implementation**
-    -   Explain how to verify that the implemented changes successfully address the User's Goal.
+5.  **Verification of Implementation**
+    -   Document how to verify that the implemented changes successfully address the User's Goal in Markdown format.
     -   Suggest log lines to monitor(along with a simplified code location) and explain the exact sequencing that would confirm your implementation. Your log lines should follow the following conventions:
       - **There should IDEALLY ONLY BE 1 log line per function which logs the variables most relevant to the User's Goal.**
       - Prefix (e.g., class/module name or abbreviation of User's Goal)
       - Function/class name
       - Semantic Log Message
       - Order in the Callpath(1,2,3...)
+    -   Use visualizations(such sequence, state, component diagrams, flowchart, free form ASCII text diagrams) to explain each sequencing that you give.
 
 ### **User's Goal:**  
 <Users_Goal>  
@@ -1290,7 +1227,7 @@ Trigger the tool call for all these files in the same call along with the plan
       },
       {
         "<leader>al",
-        ":CodeCompanion /log<CR>",
+        ":CodeCompanion /code_workflow<CR>",
         desc = "Add Log Lines",
         mode = { "n" },
       },
