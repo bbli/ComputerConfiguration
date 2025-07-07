@@ -90,7 +90,7 @@ return {
       },
       strategies = {
         chat = {
-          adapter = "gemini",
+          adapter = "copilot",
           slash_commands = {
             ["file"] = {
               opts = {
@@ -407,13 +407,21 @@ In your analysis, do the following:
    - Now use the additional context and think hard about the user's question.
    - Structure your explanation using Markdown headers for each step.
    - For each step, justify your reasoning with direct code snippets from the input, along with the associated line numbers/filename. Do not hallucinate.
-   - When applicable, demonstrate how code from tests triggers or interacts with code from the main codebase. Have a code snippet from both the test and the codebase
+   - Demonstrate how code from tests/upstream caller triggers or interacts with code from the main codebase. Use the format below to show the connection:
+        ```
+        Production Code Exercised:
+        // Simplified description of the action
+        // Relevant code snippet from test or caller
+        What this triggers in production:
+        // From [filename] (the actual code being executed)
+        // Relevant code snippet from the triggered function/method
+        ```
    - **Provide concrete examples/documentation/tutorials of typical use cases and how data flows through them.** Examples can be simplified, as long as they get the main idea across.
    - If any definitions or context are missing, or you do not have strong confidence in any anser, explicitly state this. Do not infer or invent missing information. I repeat, **DO NOT HALLUCINATE**.
 
 4. **SUMMARY Section:**
    - Conclude your response with a `SUMMARY` section, formatted as a Markdown header.
-   - Use bullet points to concisely present the main findings and insights.
+   - Use bullet points to concisely present the main findings and insights, using analogies if you find that helpful.
    - Include a relevant visualization (such sequence, state, component diagrams, flowchart, **free form ASCII text diagrams) to clarify KEY CONCEPTS
 
 After your analysis, suggest log lines to add to the codebase. For each log line, show:
@@ -422,6 +430,7 @@ After your analysis, suggest log lines to add to the codebase. For each log line
 - The exact execution sequence to help the user understand your explanation
 
 Also suggest specific follow up questions that would help deepen the user's understanding, especially if there were ambiguities above. 
+**Finally, ask the user if they would like to add this newfound understanding to LEARNINGS.md**
 
 ### User's Question
 **My main goal is** <main_goal>
@@ -501,23 +510,18 @@ In your analysis, do the following:
       - System boundaries
       - External dependencies
 
-4. **Address Architectural Gaps**:
-  - Explicitly state any missing architectural elements:
-    - Unclear module boundaries
-    - Ambiguous responsibility assignments
-    - Conflicting patterns in different parts of the codebase
-    - DO NOT HALLUCINATE architectural decisions not evident in code
-    - Suggest specific files or areas to investigate for clarification
-
+4. **Summary/Further Investigation**:
+  - Give a critique of the architecture
+  - Use bullet points to concisely present the main findings and insights, using analogies if you find that helpful.
+  - After your analysis, suggest log lines to add to the codebase. For each log line, show:
+    - The simplified code location (function/method name with minimal context)
+    - The log message itself
+    - The exact execution sequence to help the user understand your explanation
+  - Also suggest specific follow up questions that would help deepen the user's understanding, especially if there were ambiguities above. 
+  - **Finally, ask the user if they would like to add this newfound understanding to LEARNINGS.md**
 ### User's Question
 <main_flow>
 
-After your analysis, suggest log lines to add to the codebase. For each log line, show:
-- The simplified code location (function/method name with minimal context)
-- The log message itself
-- The exact execution sequence to help the user understand your explanation
-
-Also suggest specific follow up questions that would help deepen the user's understanding, especially if there were ambiguities above. 
 ### Code Input
 <code_input>
 
