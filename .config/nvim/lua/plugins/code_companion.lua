@@ -466,7 +466,7 @@ In your analysis, do the following:
    - Structure your explanation using Markdown headers for each step.
    - For each step, justify your reasoning with direct code snippets from the input, along with the associated line numbers/filename. Do not hallucinate.
    - When applicable, demonstrate how code from tests triggers or interacts with code from the main codebase. Have a code snippet from both the test and the codebase
-   - Provide concrete examples of typical use cases and how data flows through them
+   - Provide concrete examples/documentation of typical use cases and how data flows through them
    - If any definitions or context are missing, or you do not have strong confidence in any anser, explicitly state this. Do not infer or invent missing information. I repeat, **DO NOT HALLUCINATE**.
 
 4. **SUMMARY Section:**
@@ -552,7 +552,7 @@ In your analysis, do the following:
   - For each section:
     - Include relevant code snippets and line numbers showing architectural decisions
     - Show how components interact through actual code examples
-    - Provide concrete examples of typical use cases and how data flows through them
+    - Provide concrete examples/documentation of typical use cases and how data flows through them
     - Use visualizations(such sequence, state, component diagrams, flowchart, **free form ASCII text diagrams**) to help you illustrate:
       - Component relationships
       - Data flow directions
