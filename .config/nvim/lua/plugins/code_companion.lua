@@ -396,7 +396,7 @@ In your analysis, do the following:
 
 1. **Prioritize and Clarify the User's Question:**
   - Center your explanation specifically on the User's Question, avoiding general or unrelated information.
-  - If there is anything unclear or could be interpreted in multiple ways in the User's Question, ask the user to clarify this and **WAIT UNTIL THEY HAVE RESPONDED** before proceeding with the plan below. Furthermore, try to understand the user's motivation and present the user with a generalized version of their question, as they can often times have tunnel vision and ask questions that are not strictly necessary for their goal.
+  - Try to understand the user's motivation and present the user with a generalized version of their question, as they can often times have tunnel vision and ask questions that are not strictly necessary for their goal. To do so, ask the user clarifying questions, especially if there is anything unclear or could be interpreted in multiple ways in the User's Question. **WAIT UNTIL THEY HAVE RESPONDED** before proceeding with the plan below.
 
 2. **Context Gathering via Codebase Search:**
    - Conduct a search of the codebase to collect relevant context that directly informs the User's Question.
@@ -496,7 +496,7 @@ In your analysis, do the following:
   - Structure explanation using these Markdown headers:
     - System Overview
     - Core Components
-    - **Data Flow(especially for "handoff points" between layers**
+    - **Data Flow(especially for "handoff points" between layers)**
     - Key Design Patterns
     - Module Dependencies
     - Lifecycle of Services
@@ -530,14 +530,14 @@ In your analysis, do the following:
             },
           },
         },
-        ["Refactor Code Block"] = {
+        ["Summarize Code Block"] = {
           strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
-          description = "Refactor the code block",
+          description = "Summarize the code block",
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
             is_slash_cmd = true, -- Whether it should be available as a slash command in chat
-            short_name = "refactor", -- Used for calling via :CodeCompanion /mycustom
+            short_name = "summarize", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
             modes = { "n" },
@@ -855,15 +855,15 @@ Use @files to read in the files from this diff before responding to the user
             },
           },
         },
-        ["Summarizing Conversation"] = {
+        ["Gather Findings"] = {
           strategy = "chat",
-          description = "Summarize Conversation",
+          description = "Gather Findings for the Curent Conversation",
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             modes = { "n" },
             is_default = false, -- Not a default prompt
             is_slash_cmd = true, -- Whether it should be available as a slash command in chat
-            short_name = "summarize", -- Used for calling via :CodeCompanion /mycustom
+            short_name = "gather", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             user_prompt = false, -- Whether to ask for user input before submitting
           },
@@ -913,26 +913,35 @@ You're maintaining the team's debugging journal for a challenging codebase issue
 [Continue for each significant step...]
 
 ### What Worked
-- [List successful approaches with your insight on why they succeeded]
-- [Include any "aha moments" or breakthroughs]
-- [Explicitly note which aspects of the goal these address]
+**Only include items that directly relate to the User's Goal. If nothing worked toward the goal, leave this section empty.**
+- [Successful approach]: [Why we tried it] → [How it advanced our goal]
+- [Successful approach]: [Why we tried it] → [How it advanced our goal]
 
 ### What Didn't Work
+**Only include failed attempts that were aimed at solving the User's Goal. Omit any unrelated failures.**
 - [Failed approach]: [Your hypothesis for trying it] → [What the failure taught us about the goal]
 - [Failed approach]: [Your hypothesis for trying it] → [What the failure taught us about the goal]
 
 ### Key Insights
-- [New understanding about the system's behavior]
+**Only document insights that directly relate to understanding or solving the User's Goal. Skip any tangential learnings.**
+- [New understanding about the system's behavior related to the goal]
 - [Patterns you've noticed across sessions]
 - [Any assumptions that were proven wrong]
 
-### Progress Assessment
-[Where do we stand relative to the user's goal? What percentage of the problem is understood/solved?]
+### TODO List
+**This should be the complete, aggregated TODO list from all sessions. Copy all items from the most recent TODO list in the file, update their status, and add new items below the separator.**
+* [x] [Items completed in this session - mark with x]
+* [x] [Previously completed items - keep marked with x]
+* [ ] [Existing incomplete items that still need attention]
+* [ ] [Items from previous sessions that remain incomplete]
+----
+* [ ] [New proposed action based on today's findings]
+* [ ] [Another proposed action with rationale from insights gained]
+* [ ] [Additional items to investigate]
 
-### Next Steps
-- [Your recommendations based on accumulated evidence]
-- [Promising avenues to explore]
-- [Any hunches worth investigating]
+### Overview and Next Steps
+[Your assessment of where we stand now, combining what was attempted today with recommended next moves. Write this as a brief narrative that ties together the session's outcomes with the proposed TODO items above, explaining why these next steps make sense given what we've learned.]
+
 ```
 3. **Your documentation style**:
   - Always keep the user's goal as your north star - every action should relate back to it
@@ -946,7 +955,7 @@ You're maintaining the team's debugging journal for a challenging codebase issue
 4. **When appending to the log**:
   - Add your entry at the END of the file
   - Maintain the investigative narrative
-  - Your tone should be professional but personable
+  - If the goal has evolved or changed during debugging, note this explicitly
 
 5. **Remember**: You're building a knowledge base. Each session builds on the last, and your careful documentation helps the entire team stay focused on solving the actual problem.
 
@@ -1200,9 +1209,9 @@ Trigger the tool call for all these files in the same call along with the plan
         mode = { "n" },
       },
       {
-        "<leader>am",
-        ":CodeCompanion /summarize<CR>",
-        desc = "Generate a prompt",
+        "<leader>ag",
+        ":CodeCompanion /gather<CR>",
+        desc = "Gather Findings from the Conversation",
         mode = { "n" },
       },
       {
@@ -1212,21 +1221,15 @@ Trigger the tool call for all these files in the same call along with the plan
         mode = { "n" },
       },
       {
-        "<leader>aq",
-        ":CodeCompanion /question<CR>",
-        desc = "Prompt to Address Follow Up Questions",
-        mode = { "n" },
-      },
-      {
         "<leader>ad",
         ":CodeCompanion /debug<CR>",
         desc = "Debug Code",
         mode = { "n" },
       },
       {
-        "<leader>ar",
-        ":CodeCompanion /refactor<CR>",
-        desc = "Refactor Code block",
+        "<leader>as",
+        ":CodeCompanion /summarize<CR>",
+        desc = "Summarize Code block",
         mode = { "n" },
       },
       {
