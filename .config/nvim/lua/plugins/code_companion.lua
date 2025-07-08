@@ -317,44 +317,96 @@ Run `<test_cmd>` to verify your fix. **ITERATE UNTIL THIS TEST PASSES**
                 vim.g.codecompanion_auto_tool_mode = true
 
                 return [[
-### System Debugging Plan
-You are an expert debugging assistant tasked with analyzing code and system behavior based on the provided input (which may include code, logs, or other relevant data).
+### System Code Debugging Plan
+You are a senior software engineer tasked with debugging and fixing issues based on the User's Problem. Follow these instructions precisely to understand the problem deeply before implementing any fixes:
 
-To effectively diagnose and propose solutions, follow this structured approach:
+1. **Clarify and Prioritize the User's Problem**:
+  - Focus your analysis strictly on the User's Problem/Bug Report.
+  - If any part of the problem description is ambiguous or could be interpreted in multiple ways, ask the user for clarification and WAIT FOR THEIR RESPONSE before proceeding.
+  - Ask specific questions about:
+    - Expected vs actual behavior
+    - Steps to reproduce the issue
+    - When the problem started occurring
+    - Any recent changes that might be related
 
-1.  **Clarify the User's Goal:**
-    *   If the goal, input, or context is unclear or could be interpreted in multiple ways, ask the user to clarify and **WAIT FOR THEIR RESPONSE** before proceeding.
-    *   If appropriate, present a generalized version of their question to ensure the true goal is addressed.
 
-2.  **Context Gathering via Codebase Search:**
-    *   Based on the input and the User's Goal, perform a targeted search of the codebase to collect relevant files and code snippets.
-    *   For each source found, summarize its relevance to the User's Goal. If a source is not relevant, briefly note and disregard it.
-    *   Consider performing this search in a separate task if possible, to manage context window size, returning only the most applicable files.
+2. **Context Gathering and Codebase Search**:
+  - Search the codebase for files, functions, references, or tests directly relevant to the User's Problem.
+  - For each source found:
+    - Summarize its relevance to the bug
+    - Identify potential entry points and code paths that could be involved
+  - Return a list of the most applicable files or code snippets for debugging investigation.
 
-3.  **Step-by-Step Analysis:**
-    *   Analyze the provided input (code, logs, etc.) in conjunction with the gathered codebase context.
-    *   Trace relevant execution flows or event sequences as indicated by the input.
-    *   Identify patterns, anomalies, error patterns, or key indicators (e.g., error codes, stack traces, performance metrics, resource usage).
-    *   Explain how the input relates to the code and the User's Goal, using direct code snippets from both the input (if applicable) and the codebase for justification. Include filenames and line numbers where relevant for code snippets.
-    *   **Identify multiple possible root causes for the observed behavior or issue**. Then suggest log lines to add to the codebase and explain the exact sequencing that would confirm your proposed root causes. Your log lines should follow the follow conventions:
-      - **There should IDEALLY ONLY BE 1 log line per function which logs the variables most relevant to the User's Goal.**
+
+3. **DEBUGGING INVESTIGATION PLAN**:
+  - Create a comprehensive debugging plan. This plan should include:
+  - **Problem Analysis**: Restate the problem and your initial hypothesis about potential root causes.
+  - **Step-by-Step Investigation Strategy**: Break down your systematic approach into actionable tasks:
+    - **Add Strategic Logging**: Identify where to add temporary debug logs to trace execution flow and variable states. The log lines should follow the following format:
+      - There should IDEALLY ONLY BE 1 log line per function which logs the variables most relevant to the User's Goal.
       - Prefix (e.g., class/module name or abbreviation of User's Goal)
       - Function/class name
       - Semantic Log Message
-      - Order in the Callpath(1,2,3...)
-      Example:
-      ```cpp
-      PS_DIAG_INFO(d_, "RENDER_BUFFER 3: example_func - snapshot_cleanup_req after dropping filesystem. space_scan_key");
-      ```
-      the 3 means it will be the third function that is called in the callpath the User is intererested in
+      -Order in the Callpath(1,2,3...)
+    - **Verify Setup**: Check dependencies, configurations, and environmental factors
+    - **Controlled Experimentation**: Intentionally modify code to confirm understanding of the system
+    - **Isolate Components**: Test individual parts to narrow down the problem scope
+    - **Hypothesis Testing**: Test specific theories about what might be causing the issue
+    - **For each task, use visualizations (such as sequence, state, component diagrams, flowchart, free form ASCII text diagrams) to explain each sequencing/hypothesis that you give**
+  - **Build/Run Commands**: Based on the user's instructions, specify the exact commands you'll use to:
+    - Build the project
+    - Run tests
+    - Start the application
+    - Reproduce the issue
+  - **Commit Strategy**: Commit debugging changes separately from fixes using descriptive messages like git commit -m "DEBUG: Add logging to trace issue X"
+  - Present this plan clearly to the user, formatted using Markdown.
+  - Crucially, ask the user for approval of this debugging plan before proceeding to the Investigation phase (Step 4). **WAIT FOR THEIR RESPONSE.**
 
-4.  **SUMMARY Section:**
-    *   Conclude with a SUMMARY section using bullet points.
-    *   Present main findings(citing code snippets or log lines), identified patterns/anomalies, and possible root causes.
-    *   Provide actionable insights and specific next steps for debugging or resolving the issue.
-    *   List specific questions that need answers or areas that require further investigation.
-    *   To clarify key concepts or flows, include a relevant visualization (such sequence, state, component diagrams, flowchart, free form ASCII text diagrams). For flow-based diagrams, Mermaid syntax is preferred.
+4. **RUNTIME EXECUTION INSTRUCTIONS**:
+  - **Code Modification Strategy**: For controlled experimentation, plan to:
+    - Comment out suspected problematic code blocks with clear markers (e.g., // DEBUG: Commented out for testing - [reason])
+    - Add temporary debug assertions and logging
+    - Create backup branches before major modifications
+    - Document all changes for easy reversal
+    - **After each task, comment out any attempted code changes with explanatory comments (e.g., // DEBUG ATTEMPT: Tried to fix X by doing Y, but abandoned due to complexity)**
+  - **Fall back Strategy**:
+    - Document findings in Debug_[Name_of_Task].md if you need to abandon an investigation due to build/run issues.
 
+
+
+
+  - **Documentation Strategy**: As you work through the plan document your findings into a Markdown file with the following:
+  ```markdown
+Hypothesis 1: [Description of first potential root cause]
+Execution Sequence: Step-by-step explanation of how this issue would manifest in the system
+Confirmation Log Lines: Specific log lines that would confirm this hypothesis (following the convention: Prefix_FunctionName: Semantic message with relevant variables [order])
+Test Strategy: How you would test this specific hypothesis
+
+
+Hypothesis 2: [Description of second potential root cause]
+Execution Sequence: Step-by-step explanation of how this issue would manifest
+Confirmation Log Lines: Specific log lines that would confirm this hypothesis
+Test Strategy: How you would test this specific hypothesis
+
+
+[Additional hypotheses as needed]
+
+Investigation Priority: Rank the hypotheses by likelihood and ease of testing
+Visualization: Include a relevant diagram (Mermaid flowchart, sequence diagram, or architecture diagram) showing:
+
+The normal expected flow vs. the suspected problematic flow(s)
+Where each hypothesis would cause the system to deviate from expected behavior
+Key decision points and data flow relevant to the debugging investigation
+  ```
+
+Important Notes:
+
+- Don't assume anything - verify your understanding through testing
+- Be willing to be wrong about your initial hypothesis
+- Document unexpected findings even if they don't lead to the fix
+- Sometimes the "obvious" fix isn't the right one - dig deeper
+- Use the debugging process to improve your understanding of the system
+- The primary purpose is planning how to learn about the system and the bug
 
 ### User's Goal
 I am trying to debug <ISSUE>
@@ -632,32 +684,30 @@ You are an expert software engineer tasked with writing a comprehensive test sui
     -   Perform this action in a separate task if possible, so as to not clutter the current context window. This task should return the files it deems most applicable to the System Under Test.
 
 2.  **Test Planning and User Collaboration**:
-    -   **Create a DETAILED TEST PLAN**
-        -   Before writing any code, provide a comprehensive plan for the test suite. This plan should include:
-            -   **Problem Overview:** Briefly restate the system or feature being tested based on the user's request and the gathered context.
-            -   **Proposed Test Strategy Outline:** Describe the overall technical approach you will take to test the system (e.g., unit, integration, end-to-end tests; focus areas).
-            -   **Assumptions:** Clearly list any assumptions you are making about the system's behavior, dependencies, or the testing environment.
-            -   **Step-by-Step Test Implementation:** Break down the test suite creation into a sequence of smaller, manageable, and actionable tasks. For each step:
-                -   Describe the specific group of tests or scenario to be covered.
-                -   Identify the file(s) that will contain these tests.
-                -   Explain the specific test cases and logic you intend to implement within those files.
-            -   *(Optional but Recommended)* If possible, structure the initial steps to implement basic or core functionality tests first, verifying the main pathways before adding edge cases or complex scenarios.
-        -   Present this plan clearly to the user, formatted using Markdown.
-        -   **Crucially, ask the user for approval of this detailed plan before proceeding to the Implementation phase (Step 3). WAIT FOR THEIR RESPONSE.**
+    - **First ask clarifying questions to ensure the tests align with user priorities and real-world usage**
+    - Then create a DETAILED TEST PLAN. It should include:
+        -   **Problem Overview:** Briefly restate the system or feature being tested based on the user's request and the gathered context.
+        -   **Proposed Test Strategy Outline:** Describe the overall technical approach you will take to test the system (e.g., unit, integration, end-to-end tests; focus areas).
+        -   **Step-by-Step Test Implementation:** Break down the test suite creation into a sequence of smaller, manageable, and actionable tasks. For each step:
+            -   Describe the specific group of tests or scenario to be covered.
+            -   Identify the file(s) that will contain these tests.
+            -   Explain the specific test cases and logic you intend to implement within those files.
+            -   **Commit Strategy:** Commit changes (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`) after completing logical units of test implementation or significant steps in the plan. The commit message should clearly describe the tests added/modified in that step.
+        -   If possible, structure the initial steps to implement basic or core functionality tests first, verifying the main pathways before adding edge cases or complex scenarios.
+    -   Present this plan clearly to the user, formatted using Markdown.
     -   Carefully consider both typical and edge-case scenarios that the code may encounter.
     -   Focus on end-to-end workflows and integration points, rather than just isolated units.
-    -   Brainstorm a list of possible test scenarios and present them to the user for feedback. **Ask clarifying questions to ensure the tests align with user priorities and real-world usage.** (This step can be integrated within or follow the detailed plan structure above).
-
+    -   Brainstorm a list of possible test scenarios and present them to the user for feedback. 
+    -   **Crucially, ask the user for approval of this detailed plan before proceeding to the Implementation phase (Step 3). WAIT FOR THEIR RESPONSE.**
 3.  **Test Implementation**:
     -   For each planned test (corresponding to a step or test case in the plan), execute the task:
         -   For each test, include a concise comment above the test summarizing its purpose.
         -   Insert log statements after each logical block within the test to aid in debugging and traceability.
-        -   Use mocking only when absolutely necessary, preferring real implementations where possible.
+        -   Use mocking only when absolutely necessary, preferring real implementations where possible. If you do mock, please be explicit and point this out to the user
         -   Add comment for the key assertion in CAPITAL letters.
         -   Test setup should be abstracted away into helper functions if possible.
         -   Adhere strictly to the existing conventions and patterns of the codebase.
         -   Do not modify any code outside the scope of the requested tests.
-        -   **Commit Strategy:** Commit changes (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`) after completing logical units of test implementation or significant steps in the plan. The commit message should clearly describe the tests added/modified in that step.
 
 **Formatting and Output Directives:**
 - Use clear, consistent formatting for all test code and comments.
