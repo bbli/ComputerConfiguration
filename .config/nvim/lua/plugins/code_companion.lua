@@ -347,12 +347,44 @@ You are a senior software engineer tasked with debugging and fixing issues based
       - Prefix (e.g., class/module name or abbreviation of User's Goal)
       - Function/class name
       - Semantic Log Message
-      -Order in the Callpath(1,2,3...)
+      - Order in the Callpath(1,2,3...)
     - **Verify Setup**: Check dependencies, configurations, and environmental factors
     - **Controlled Experimentation**: Intentionally modify code to confirm understanding of the system
     - **Isolate Components**: Test individual parts to narrow down the problem scope
     - **Hypothesis Testing**: Test specific theories about what might be causing the issue
-    - **For each task, use visualizations (such as sequence, state, component diagrams, flowchart, free form ASCII text diagrams) to explain each sequencing/hypothesis that you give**
+    - **For each task you create, explain all the different Sequencing of these Log Lines that could be possible outcomes. Your explaination should take the following form:**
+```markdown
+## Expected Diagnostic Outcomes
+
+### If Hypothesis 3 is Correct (Most Likely)
+**After snapshot restore**:
+```
+HYPO3_REPORT_positive_est: Added estimated_deleted_shared_logical=5120 to sum, running total=5120
+HYPO3_REPORT_positive_est: Added estimated_deleted_shared_logical=3072 to sum, running total=8192
+```
+
+**After dedup cleanup**:
+```
+HYPO3_REPORT_negative_est: Ignoring negative estimated_deleted_shared_logical=-5120 for segment_id=100, medium_id=50
+HYPO3_REPORT_negative_est: Ignoring negative estimated_deleted_shared_logical=-3072 for segment_id=101, medium_id=50
+HYPO3_REPORT_final: Final filesystem_space_query result cold_usable_capacity=8192
+```
+
+**Result**: Shared space stays at 8192 instead of going to 0 because negative decrements are ignored!
+
+### If Hypothesis 1 is Correct
+```
+HYPO1_DEDUP_no_extents: No extents found for processing
+HYPO2_TIMING_batch_complete: Processed 0 dedup_cleanup tuples in batch
+```
+
+### If Hypothesis 2 is Correct
+```
+HYPO2_TIMING_batch_complete: Processed 10 dedup_cleanup tuples in batch
+HYPO2_TIMING_extents_tombstoned: Tombstoned 8 extents in this batch
+[Multiple batches over time showing ongoing work]
+```
+```
   - **Build/Run Commands**: Based on the user's instructions, specify the exact commands you'll use to:
     - Build the project
     - Run tests
@@ -916,11 +948,7 @@ Guidelines:
 <pr_intention>
 
 ### Content
-Here is the git diff:
-```diff
-
-```
-Use @files to read in the files from this diff before responding to the user
+Use @cmd to run `git show <commit>` to get the diff. Then use @files to read in the files from this diff at once before responding to the user. Trigger all necessary tool calls together
 
 
 ]]
