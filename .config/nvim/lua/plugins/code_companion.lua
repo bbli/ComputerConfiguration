@@ -340,14 +340,15 @@ You are a senior software engineer tasked with debugging and fixing issues based
 
 3. **DEBUGGING INVESTIGATION PLAN**:
   - Create a comprehensive debugging plan. This plan should include:
-  - **Problem Analysis**: Restate the problem and your initial hypothesis about potential root causes.
-  - **Step-by-Step Investigation Strategy**: Break down your systematic approach into actionable tasks:
+  - **Problem Analysis**: Restate the problem and your initial hypothesis on potential root causes.
+  - **Step-by-Step Investigation Strategy**: Break down your systematic approach into actionable tasks/hypotheses:
     - **Add Strategic Logging**: Identify where to add temporary debug logs to trace execution flow and variable states. The log lines should follow the following format:
       - There should IDEALLY ONLY BE 1 log line per function which logs the variables most relevant to the User's Goal.
-      - Prefix (e.g., class/module name or abbreviation of User's Goal)
+      - Prefix/Abbreviation of the Hypothesis(e.g ZERO_FILESYSTEM_ID)
       - Function/class name
       - Semantic Log Message
       - Order in the Callpath(1,2,3...)
+      - Present the log lines you plan to add to the user in the form of simplified code snippets
     - **Verify Setup**: Check dependencies, configurations, and environmental factors
     - **Controlled Experimentation**: Intentionally modify code to confirm understanding of the system
     - **Isolate Components**: Test individual parts to narrow down the problem scope
@@ -390,7 +391,7 @@ HYPO2_TIMING_extents_tombstoned: Tombstoned 8 extents in this batch
     - Run tests
     - Start the application
     - Reproduce the issue
-  - **Commit Strategy**: Commit debugging changes separately from fixes using descriptive messages like git commit -m "DEBUG: Add logging to trace issue X"
+  - **Commit Strategy**: The code modifications for each task should be in a seperate git commit. If changes requires more than just adding log lines, create new git branches so each hypothesis can start from a base state
   - Present this plan clearly to the user, formatted using Markdown.
   - Crucially, ask the user for approval of this debugging plan before proceeding to the Investigation phase (Step 4). **WAIT FOR THEIR RESPONSE.**
 
@@ -469,9 +470,8 @@ Important Notes:
 ### User's Goal
 I am trying to debug <ISSUE>
 Trace from <START_FROM_TOP>, and tell me which log lines are supposed to be triggered by this workflow.
+Before you create your plan, outline what you think the issue is and present a sequence diagram to the user to confirm your understanding.
 
-<hint_for_gathering_context>
-<anti-hint>
 ]]
               end,
             },
@@ -514,7 +514,7 @@ In your analysis, do the following:
    - Perform this action in a seperate task if possible, so as to not clutter the current context window. This task should return the files it deems most applicable to the User's Question.
 
 3. **Step-by-Step Breakdown:**
-   - Now use the additional context and think hard about the user's question.
+   - Now use the additional context and think hard about the user's question. Decide if there could be multiple possible explainations and if so present both to the user.
    - Structure your explanation using Markdown headers for each step.
    - For each step, justify your reasoning with direct code snippets from the input, along with the associated line numbers/filename. Do not hallucinate.
    - Demonstrate how code from tests/upstream caller triggers or interacts with code from the main codebase. Use the format below to show the connection:
@@ -736,13 +736,25 @@ Which commit <question>
 
 You are an expert software engineer tasked with writing a comprehensive test suite as specified in the System Under Test section. Follow these instructions precisely:
 
-1.  **Context Gathering via Codebase Search**:
+1. **Prioritize and Clarify the Testing Requirements**:
+   - Focus specifically on understanding what aspects of the system the user wants to test (e.g., unit tests, integration tests, end-to-end tests, specific edge cases, performance tests, etc.).
+   - If there is anything unclear or could be interpreted in multiple ways in the User's testing request, ask the user to clarify this and **WAIT UNTIL THEY HAVE RESPONDED** before proceeding with the plan below. Furthermore, try to understand the user's motivation and present the user with a generalized version of their question, as they can often times have tunnel vision and ask questions that are not strictly necessary for their goal.
+   - **Ask clarifying questions and WAIT FOR RESPONSE before proceeding**
+   - Consider asking about:
+     - The scope of testing needed (unit vs integration vs end-to-end)
+     - Critical paths and high-risk areas that need thorough testing
+     - Performance or load testing requirements
+     - Specific edge cases or failure scenarios they're concerned about
+   - Carefully consider both typical and edge-case scenarios that the code may encounter.
+   - Focus on end-to-end workflows and integration points, rather than just isolated units.
+   - Brainstorm a list of possible test scenarios and present them to the user for fee
+
+2.  **Context Gathering via Codebase Search**:
     -   Conduct a targeted search of the codebase to collect relevant context for writing the tests.
     -   For each source found, summarize how it relates to the System Under Test. If a source is not relevant, briefly note and disregard it.
     -   Perform this action in a separate task if possible, so as to not clutter the current context window. This task should return the files it deems most applicable to the System Under Test.
 
-2.  **Test Planning and User Collaboration**:
-    - **First ask clarifying questions to ensure the tests align with user priorities and real-world usage**
+3.  **Test Planning and User Collaboration**:
     - Then create a DETAILED TEST PLAN. It should include:
         -   **Problem Overview:** Briefly restate the system or feature being tested based on the user's request and the gathered context.
         -   **Proposed Test Strategy Outline:** Describe the overall technical approach you will take to test the system (e.g., unit, integration, end-to-end tests; focus areas).
@@ -757,7 +769,8 @@ You are an expert software engineer tasked with writing a comprehensive test sui
     -   Focus on end-to-end workflows and integration points, rather than just isolated units.
     -   Brainstorm a list of possible test scenarios and present them to the user for feedback. 
     -   **Crucially, ask the user for approval of this detailed plan before proceeding to the Implementation phase (Step 3). WAIT FOR THEIR RESPONSE.**
-3.  **Test Implementation**:
+
+4.  **Test Implementation**:
     -   For each planned test (corresponding to a step or test case in the plan), execute the task:
         -   For each test, include a concise comment above the test summarizing its purpose.
         -   Insert log statements after each logical block within the test to aid in debugging and traceability.
