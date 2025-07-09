@@ -386,77 +386,9 @@ HYPO2_TIMING_extents_tombstoned: Tombstoned 8 extents in this batch
 [Multiple batches over time showing ongoing work]
 ```
 ```
-  - **Build/Run Commands**: Based on the user's instructions, specify the exact commands you'll use to:
-    - Build the project
-    - Run tests
-    - Start the application
-    - Reproduce the issue
-  - **Commit Strategy**: The code modifications for each task should be in a seperate git commit. If changes requires more than just adding log lines, create new git branches so each hypothesis can start from a base state
-  - Present this plan clearly to the user, formatted using Markdown.
-  - Crucially, ask the user for approval of this debugging plan before proceeding to the Investigation phase (Step 4). **WAIT FOR THEIR RESPONSE.**
+  -   **Commit Strategy:** Commit changes (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`) after completing significant steps in the plan. The commit message should clearly describe the tests added/modified in that step.
+  - Present this plan clearly to the user, formatted using Markdown. Crucially, **ASK THE USER FOR APPROVAL** of this debugging plan before proceeding to implement.
 
-4. **RUNTIME EXECUTION INSTRUCTIONS**:
-  - **Code Modification Strategy**: For controlled experimentation, plan to:
-    - Comment out suspected problematic code blocks with clear markers (e.g., // DEBUG: Commented out for testing - [reason])
-    - Add temporary debug assertions and logging
-    - Create backup branches before major modifications
-    - Document all changes for easy reversal
-    - **After each task, comment out any attempted code changes with explanatory comments (e.g., // DEBUG ATTEMPT: Tried to fix X by doing Y, but abandoned due to complexity)** and create a git commit
-  - **Execution Phase Help Protocol**: When encountering issues during execution that prevent progress, STOP and ask the user for help by:
-    1. Providing a clear summary of:
-      - What you were attempting to do
-      - What specific step failed
-      - What error or unexpected behavior occurred
-    2. Creating an ASCII diagram to illustrate the issue, such as:
-    ```markdown
-    CURRENT DEBUGGING STATE:
-    =====================
-
-    [Component A] ---> [Component B] ---> [Component C]
-        |                 |                   |
-        OK              STUCK               ???
-                          HERE
-
-    Expected Flow:
-    A sends data -> B processes -> C outputs result
-
-    Actual Issue:
-    A sends data -> B throws error: "undefined property 'x'"
-                    |
-                    +-- Need help understanding why 'x' is missing
-
-    Attempted Solutions:
-    1. ✗ Added logging - showed 'x' exists in A but not in B
-    2. ✗ Checked data transformation - seems correct
-    3. ? Need guidance on next debugging step
-    ```
-    3. Ask specific questions like:
-      - "Should I investigate the data serialization between A and B?"
-      - "Is there a known issue with this component's initialization?"
-      - "Would you like me to try a different debugging approach?"
-  - **Documentation Strategy**: As you work through the plan document your findings into a Markdown file with the following:
-  ```markdown
-Hypothesis 1: [Description of first potential root cause]
-Execution Sequence: Step-by-step explanation of how this issue would manifest in the system
-Confirmation Log Lines: Specific log lines that would confirm this hypothesis (following the convention: Prefix_FunctionName: Semantic message with relevant variables [order])
-Test Strategy: How you would test this specific hypothesis
-
-
-Hypothesis 2: [Description of second potential root cause]
-Execution Sequence: Step-by-step explanation of how this issue would manifest
-Confirmation Log Lines: Specific log lines that would confirm this hypothesis
-Test Strategy: How you would test this specific hypothesis
-
-
-[Additional hypotheses as needed]
-
-Investigation Priority: Rank the hypotheses by likelihood and ease of testing
-Visualization: Include a relevant diagram (Mermaid flowchart, sequence diagram, or architecture diagram) showing:
-
-The normal expected flow vs. the suspected problematic flow(s)
-Where each hypothesis would cause the system to deviate from expected behavior
-Key decision points and data flow relevant to the debugging investigation
-  ```
 
 Important Notes:
 
