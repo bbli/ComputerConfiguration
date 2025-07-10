@@ -187,63 +187,6 @@ return {
             auto_submit = false, -- false so I can give a hint before submitting
           },
         },
-        ["Next"] = {
-          condition = function()
-            return false
-          end,
-          strategy = "chat",
-          description = "tell the LLM to proceed to the next step",
-          opts = {
-            is_default = false, -- Not a default prompt
-            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
-            short_name = "next", -- Used for calling via :CodeCompanion /mycustom
-            auto_submit = true, -- Automatically submit to LLM without waiting
-            user_prompt = false, -- Whether to ask for user input before submitting
-          },
-          prompts = {
-            {
-              role = "user",
-              content = "@cmd_runner Do the next step in the plan OR @editor fix the error from the output OR @editor apply the edit",
-            },
-          },
-        },
-        ["Fix Compile Errors"] = {
-          strategy = "workflow",
-          description = "fix compile errors",
-          opts = {
-            index = 5,
-            is_default = false,
-            short_name = "fix_compile_errors",
-            is_slash_cmd = true,
-          },
-          prompts = {
-            {
-              {
-                name = "Setup Test",
-                role = "user",
-                opts = { auto_submit = false },
-                content = function()
-                  -- Enable turbo mode!!!
-                  vim.g.codecompanion_auto_tool_mode = true
-
-                  return [[### Instructions
-1. **Identify the Issues**: Carefully read the Error Backtrace and use @files to gather context from the codebase to help in your diagnosis. Do not hallucinate
-2. **Plan the Fix**: Explain the execution flow for the error. Then give step by step reasoning along with code snippets from the codebase of what you plan to change
-3. **Implement the Fix**: Use @editor to implement the fix
-4. **Test the Fix**: Use @cmd_runner to run the Test Command in a shell.(Trigger in same call as implementing the fix)
-
-Ensure no deviations from these steps. At the end, have a SUMMARY markdown header which concisely explains the changes that were made and why.
-
-### Error Backtrace(Optional)
-
-### Test Command
-Run `<test_cmd>` to verify your fix. **ITERATE UNTIL THIS TEST PASSES**
-]]
-                end,
-              },
-            },
-          },
-        },
         ["MetaPrompt"] = {
           strategy = "chat",
           description = "Generate a prompt for the task at hand",
@@ -276,26 +219,6 @@ Run `<test_cmd>` to verify your fix. **ITERATE UNTIL THIS TEST PASSES**
             },
           },
         },
-        ["Reflect"] = {
-          condition = function()
-            return false
-          end,
-          strategy = "chat",
-          description = "Encourage the LLM to pursue another path",
-          opts = {
-            is_default = false, -- Not a default prompt
-            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
-            short_name = "reflect", -- Used for calling via :CodeCompanion /mycustom
-            auto_submit = true, -- Automatically submit to LLM without waiting
-            user_prompt = false, -- Whether to ask for user input before submitting
-          },
-          prompts = {
-            {
-              role = "user",
-              content = "Consider if there could be alternative viewpoints. <user_proposal>",
-            },
-          },
-        },
         ["Debug Code"] = {
           strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
           description = "AI assisted Debugging",
@@ -320,14 +243,13 @@ Run `<test_cmd>` to verify your fix. **ITERATE UNTIL THIS TEST PASSES**
 ### System Code Debugging Plan
 You are a senior software engineer tasked with debugging and fixing issues based on the User's Problem. Follow these instructions precisely to understand the problem deeply before implementing any fixes:
 
-1. **Clarify and Prioritize the User's Problem**:
-  - Focus your analysis strictly on the User's Problem/Bug Report.
-  - If any part of the problem description is ambiguous or could be interpreted in multiple ways, ask the user for clarification and WAIT FOR THEIR RESPONSE before proceeding.
+1. **Clarify the User's Problem**:
   - Ask specific questions about:
     - Expected vs actual behavior
     - Steps to reproduce the issue
     - When the problem started occurring
     - Any recent changes that might be related
+  - Try to understand the user's motivation and present the user with a generalized version of their question, as they can often times have tunnel vision and ask questions that are not strictly necessary for their goal. To do so, ask the user clarifying questions, especially if there is anything unclear or could be interpreted in multiple ways in the User's Question. **WAIT UNTIL THEY HAVE RESPONDED** before proceeding with the plan below.
 
 
 2. **Context Gathering and Codebase Search**:
@@ -340,7 +262,7 @@ You are a senior software engineer tasked with debugging and fixing issues based
 
 3. **DEBUGGING INVESTIGATION PLAN**:
   - Create a comprehensive debugging plan. This plan should include:
-  - **Problem Analysis**: Restate the problem and your initial hypothesis on potential root causes.
+  - **Problem Analysis**: Restate the problem and your initial hypothesis on potential root causes. Think broadly but at the same time the hypothesis needs to have a clear chain of reasoning
   - **Step-by-Step Investigation Strategy**: Break down your systematic approach into actionable tasks/hypotheses:
     - **Add Strategic Logging**: Identify where to add temporary debug logs to trace execution flow and variable states. The log lines should follow the following format:
       - There should IDEALLY ONLY BE 1 log line per function which logs the variables most relevant to the User's Goal.
@@ -349,10 +271,8 @@ You are a senior software engineer tasked with debugging and fixing issues based
       - Semantic Log Message
       - Order in the Callpath(1,2,3...)
       - Present the log lines you plan to add to the user in the form of simplified code snippets
-    - **Verify Setup**: Check dependencies, configurations, and environmental factors
+    - **Verify Setup**: Check dependencies, configurations, and environmental factors. **This is often the reason for bugs, so please include some checks for this. If unclear what to check, ask the user for guidance.**
     - **Controlled Experimentation**: Intentionally modify code to confirm understanding of the system
-    - **Isolate Components**: Test individual parts to narrow down the problem scope
-    - **Hypothesis Testing**: Test specific theories about what might be causing the issue
     - **For each task you create, explain all the different Sequencing of these Log Lines that could be possible outcomes. Your explaination should take the following form:**
 ```markdown
 ## Expected Diagnostic Outcomes
@@ -450,12 +370,13 @@ In your analysis, do the following:
    - Structure your explanation using Markdown headers for each step.
    - For each step, justify your reasoning with direct code snippets from the input, along with the associated line numbers/filename. Do not hallucinate.
    - Demonstrate how code from tests/upstream caller triggers or interacts with code from the main codebase. Use the format below to show the connection:
-        ```
         Production Code Exercised:
-        // Simplified description of the action
+        - Simplified description of the action
+        ```
         // Relevant code snippet from test or caller
         What this triggers in production:
-        // From [filename] (the actual code being executed)
+        - From [filename] (the actual code being executed)
+        ```
         // Relevant code snippet from the triggered function/method
         ```
    - **Provide concrete examples/documentation/tutorials of typical use cases and how data flows through them.** Examples can be simplified, as long as they get the main idea across.
@@ -471,7 +392,7 @@ After your analysis, suggest log lines to add to the codebase. For each log line
 - The log message itself
 - The exact execution sequence to help the user understand your explanation
 
-Also suggest specific follow up questions that would help deepen the user's understanding, especially if there were ambiguities above. 
+Also suggest specific follow up topics/questions and explain how they would help deepen the user's understanding, especially if there were ambiguities above. 
 **Finally, ask the user if they would like to add this newfound understanding to LEARNINGS.md**
 
 ### User's Question
@@ -559,7 +480,7 @@ In your analysis, do the following:
     - The simplified code location (function/method name with minimal context)
     - The log message itself
     - The exact execution sequence to help the user understand your explanation
-  - Also suggest specific follow up questions that would help deepen the user's understanding, especially if there were ambiguities above. 
+  - Also suggest specific follow up topics/questions and explain how they would help deepen the user's understanding, especially if there were ambiguities above. 
   - **Finally, ask the user if they would like to add this newfound understanding to LEARNINGS.md**
 ### User's Question
 <main_flow>
@@ -1119,7 +1040,7 @@ You are a senior software engineer tasked with analyzing and implementing soluti
         -   **Problem Overview:** Briefly restate the problem or goal based on the user's request and the gathered context.
         -   **Proposed Solution Outline:** Describe the overall technical approach you will take to address the problem.
             - **If there is a change to an existing function, check that its callers expect this behavior and list these callers out for the user to confirm**
-            - If there are multiple implementation options or approaches, present them for the user to decide.
+            - **If there are multiple implementation options or approaches, present them for the user to decide.**
           -   Use visualizations(such sequence, state, component diagrams, flowchart, free form ASCII text diagrams) to clarify key concepts, system interactions, or data flow related to the changes.
         -   **Step-by-Step Implementation:** Break down the solution into a sequence of smaller, manageable, and actionable tasks. For each step:
             -   Describe the specific task to be performed.
