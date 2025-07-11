@@ -405,8 +405,8 @@ In your analysis, do the following:
 After your analysis, suggest log lines to add to the codebase. For each log line, show:
 - The simplified code location (function/method name with minimal context)
 - The log message itself
-- The exact execution sequence to help the user understand your explanation
-Ask the user to verify this behavior experimentally.
+- **The exact, step by step execution sequence of these log lines to help the user understand your explanation**
+Then ask the user to verify this behavior experimentally.
 
 Also suggest **specific follow up topics/questions** and explain how they would help deepen the user's understanding, especially if there were ambiguities above. 
 **Finally, ask the user if they would like to add this newfound understanding to LEARNINGS.md**
@@ -1083,13 +1083,13 @@ You are a senior software engineer tasked with analyzing and implementing soluti
 
 5.  **Verification of Implementation**
     -   Document how to verify that the implemented changes successfully address the User's Goal in Markdown format.
-    -   Suggest log lines to monitor(along with a simplified code location) and explain the exact sequencing that would confirm your implementation. Your log lines should follow the following conventions:
+    -   Suggest log lines to monitor(along with a simplified code location) and explain the exact sequencing/ordering of these log lines that would confirm your implementation. Your log lines should follow the following conventions:
       - **There should IDEALLY ONLY BE 1 log line per function which logs the variables most relevant to the User's Goal.**
       - Prefix (e.g., class/module name or abbreviation of User's Goal)
       - Function/class name
       - Semantic Log Message
       - Order in the Callpath(1,2,3...)
-    -   Use visualizations(such sequence, state, component diagrams, flowchart, free form ASCII text diagrams) to explain each sequencing that you give.
+    -   Use visualizations(such sequence, state, component diagrams, flowchart, free form ASCII text diagrams) in your explanation
 
 ### **User's Goal:**  
 <Users_Goal>  
