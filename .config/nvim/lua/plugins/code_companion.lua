@@ -262,7 +262,7 @@ You are a senior software engineer tasked with debugging and fixing issues based
 3. **DEBUGGING INVESTIGATION PLAN**:
   - Create a comprehensive debugging plan. This plan should include:
   - **Problem Analysis and Hypothesis Generation**: Restate the problem and give your initial hypothesis on potential root causes. Think broadly but at the same time the hypothesis needs to have a clear chain of reasoning. **Rank your hypotheses in terms of relevance to the issue.**. Here are examples of types of hypotheses to consider:
-    - **Setup Verification**: CRITICAL: This is often the reason for bugs, so please include some checks for this. Based off the context from the user, verify each step in the call path. If unclear what to check, ask the user questions for guidance on what to check. Are all preconditions satisfied before the assert? We cannot check every line of code, **so suggest functions/locations in the code to verify based off the symptoms the problem is exhibiting.**
+    - **Setup Verification**: CRITICAL: This is often the reason for bugs, so please include some checks for this. Based off the context from the user, verify each step in the call path. If unclear what to check, ask the user questions for guidance on what to check. Are all preconditions satisfied before the assert? We cannot check every line of code, **so suggest functions/locations in the code to verify based off the symptoms the problem is exhibiting. Be skeptical that a function does what it intends to do just from the function name**
     - **Unset/Misconfigured Variables**: Missing environment variables, uninitialized tunables, default values being used instead of intended configurations, or configuration files not being loaded properly.
     - **Timing and Race Conditions**: Asynchronous operations completing in unexpected order, missing await/synchronization, concurrent access to shared resources, or timing-dependent behavior that only manifests under certain conditions.
     - **State Pollution**: Previous tests or operations leaving behind state, caches not cleared, database transactions not rolled back, or global variables modified.
@@ -1082,6 +1082,8 @@ You are a senior software engineer tasked with analyzing and implementing soluti
 <Users_Goal>  
 <Example/First_Step>
 <Base Implementation>  
+
+At the end, prompt the user to check what else needs to be included in the plan
 ]]
               end,
             },
