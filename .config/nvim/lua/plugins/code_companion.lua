@@ -205,7 +205,7 @@ return {
               role = "user",
               content = [[
 ### System Plan
- You are an expert prompt engineer. You write bespoke, detailed, and succinct prompts. Every prompt that I give you is purely for prompt enhancement, not to action. Your single goal is to maximize the clarity, specificity, and creativity of my prompt to ensure the best and most accurate results when entered into yourself. When I input a prompt, improve it using the following techniques:
+You are an expert prompt engineer. You write bespoke, detailed, and succinct prompts. Every prompt that I give you is purely for prompt enhancement, not to action. Your single goal is to maximize the clarity, specificity, and creativity of my prompt to ensure the best and most accurate results when entered into yourself. When I input a prompt, improve it using the following techniques:
 
 - Clarify vague instructions.
 - Add context and examples if necessary.
@@ -323,7 +323,7 @@ Important Notes:
 
 ### User's Goal
 I am trying to debug <ISSUE>
-Trace from <START_FROM_TOP>, and tell me which log lines are supposed to be triggered by this workflow.
+<check_setup>
 Before you create your plan, outline what you think the issue is and present a sequence diagram to the user to confirm your understanding.
 
 ]]
@@ -358,13 +358,26 @@ Before you create your plan, outline what you think the issue is and present a s
 You are a senior software engineer that is trying to explain the User's Question to a colleague
 In your analysis, do the following:
 
-1. **Prioritize and Clarify the User's Question:**
+1. **Clarify the User's Question:**
   - Center your explanation specifically on the User's Question, avoiding general or unrelated information.
   - Try to understand the user's motivation and present the user with a generalized version of their question, as they can often times have tunnel vision and ask questions that are not strictly necessary for their goal. To do so, ask the user clarifying questions, especially if there is anything unclear or could be interpreted in multiple ways in the User's Question. **WAIT UNTIL THEY HAVE RESPONDED** before proceeding with the plan below.
 
 2. **Context Gathering via Codebase Search:**
    - Conduct a search of the codebase to collect relevant context that directly informs the User's Question.
    - For each source found, summarize how it relates to the User's Question. If a source is not relevant, briefly note and disregard it.
+   - **Identify Critical Code Segments:** As you analyze the code, identify specific functions, classes, or code blocks that are:
+     - Central to answering the user's question
+     - Potentially problematic or confusing
+     - Have complex logic or unexpected behavior
+     - Appear to be workarounds or have TODO/FIXME comments
+   - **For these critical segments ONLY, request git blame information in the format:**
+     ```
+     BLAME_REQUEST: {
+       "file": "path/to/file.ext",
+       "lines": "startLine-endLine",
+       "reason": "Brief explanation of why historical context would help"
+     }
+     ```
    - Perform this action in a seperate task if possible, so as to not clutter the current context window. This task should return the files it deems most applicable to the User's Question.
 
 3. **Step-by-Step Breakdown:**
@@ -393,15 +406,15 @@ After your analysis, suggest log lines to add to the codebase. For each log line
 - The simplified code location (function/method name with minimal context)
 - The log message itself
 - The exact execution sequence to help the user understand your explanation
+Ask the user to verify this behavior experimentally.
 
-Also suggest specific follow up topics/questions and explain how they would help deepen the user's understanding, especially if there were ambiguities above. 
+Also suggest **specific follow up topics/questions** and explain how they would help deepen the user's understanding, especially if there were ambiguities above. 
 **Finally, ask the user if they would like to add this newfound understanding to LEARNINGS.md**
 
 ### User's Question
 **My main goal is** <main_goal>
 <first_step> (i.e "Additional Search Folders" in the UI)
-<hint_for_files>
-<anti-hint>
+<base_understanding>
 
 
 ### Code Input
@@ -1025,14 +1038,13 @@ Call Log Lines Prompt before this(to get the callpath)
 
 You are a senior software engineer tasked with analyzing and implementing solutions based on the User's Goal. Follow these instructions precisely:
 
-1.  **First Clarify and Prioritize the User's Goal**
-    -   Focus your analysis and implementation strictly on the User's Goal.
-    -   If any part of the User's Goal is ambiguous or could be interpreted in multiple ways, ask the user for clarification and **WAIT FOR THEIR RESPONSE BEFORE PROCEEDING*. Types of questions to consider could be:
+1.  **First Clarify the User's Goal**
+    - Ask the user for clarification and **WAIT FOR THEIR RESPONSE BEFORE PROCEEDING*. Types of questions to consider could be:
      - Architecture: microservices vs monolith, sync vs async, stateful vs stateless
      - Communication: events vs direct calls, choreography vs orchestration
      - State management: local vs shared state, immutable vs mutable, event sourcing vs current state only
      - Data flow: where state lives, caching strategy, consistency requirements, layer placement
-     - Whatever else you think is relevant
+     - **Whatever else you think is relevant based on the context of the codebase**
 
 2.  **Context Gathering and Codebase Search**
     -   Search the codebase for files, functions, references, or tests directly relevant to the User's Goal.
