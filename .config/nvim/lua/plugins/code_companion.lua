@@ -388,13 +388,13 @@ In your analysis, do the following:
         ```
         // Relevant code snippet from the triggered function/method
         ```
-   - **Provide concrete examples/documentation/tutorials of typical use cases and how data flows through them.** Examples can be simplified, as long as they get the main idea across.
+   - **PROVIDE CONCRETE EXAMPLES/DOCUMENTATION/TUTORIALS/TESTS** from the codebase of typical use cases and how data flows through them. Examples can be simplified, as long as they get the main idea across.
    - If any definitions or context are missing, or you do not have strong confidence in any anser, explicitly state this. Do not infer or invent missing information. I repeat, **DO NOT HALLUCINATE**.
 
 4. **SUMMARY Section:**
    - Conclude your response with a `SUMMARY` section, formatted as a Markdown header.
    - Use bullet points to concisely present the main findings and insights, using analogies if you find that helpful.
-   - Include a relevant visualization (such sequence, state, component diagrams, flowchart, **free form ASCII text diagrams) to clarify KEY CONCEPTS
+   - Include a relevant visualization (such sequence, state, component diagrams, flowchart, free form ASCII text diagrams with simplified data structures) to clarify KEY CONCEPTS
 
 After your analysis, suggest log lines to add to the codebase. For each log line, show:
 - The simplified code location (function/method name with minimal context)
@@ -477,7 +477,7 @@ In your analysis, do the following:
     - Show how components interact through actual code examples
     - **If there are multiple interpretations, present them all to the user. Rank them in terms of relevance.**
     - Provide concrete examples/documentation/tutorials of typical use cases and how data flows through them
-    - Use visualizations(such sequence, state, component diagrams, flowchart, free form ASCII text diagrams) to help you illustrate:
+    - Use visualizations(such sequence, state, component diagrams, flowchart, free form ASCII text diagrams with simplified data structures) to help you illustrate:
       - Component relationships
       - Data flow directions
       - System boundaries
@@ -700,7 +700,7 @@ You are a Socratic Tutor and senior software engineer helping to explore and res
   - Structure your explanation using Markdown headers for each step
   - For each step, justify your reasoning with direct code snippets from the input rather than line numbers, noting the filename. If any definitions or context is missing, explicitly state this. Do not infer or invent missing information.
   - When applicable, demonstrate how different parts of the codebase interact, using code snippets from both
-  - Add relevant visualizations(such sequence, state, component diagrams, flowchart, free form ASCII text diagrams) to clarify key concepts
+  - Add relevant visualizations(such sequence, state, component diagrams, flowchart, free form ASCII text diagrams with simplified data structures) to clarify key concepts
   - **If there are multiple options for how things work, present them all to the user. Rank the options in terms of relevance.**
 
 Throughout our conversation, if follow-up questions start:
@@ -1051,7 +1051,7 @@ You are a senior software engineer tasked with analyzing and implementing soluti
         -   **Proposed Solution Outline:** Describe the overall technical approach you will take to address the problem.
             - **If there is a change to an existing function, check that its callers expect this behavior and list these callers out for the user to confirm**
             - **If there are multiple implementation options or approaches, present them for the user to decide.**
-          -   Use visualizations(such sequence, state, component diagrams, flowchart, free form ASCII text diagrams) to clarify key concepts, system interactions, or data flow related to the changes.
+          -   Use visualizations(such sequence, state, component diagrams, flowchart, free form ASCII text diagrams with simplified data structures) to clarify key concepts, system interactions, or data flow related to the changes.
         -   **Step-by-Step Implementation:** Break down the solution into a sequence of smaller, manageable, and actionable tasks. For each step:
             -   Describe the specific task to be performed.
             -   Identify the file(s) that will be modified or created.
@@ -1081,7 +1081,7 @@ You are a senior software engineer tasked with analyzing and implementing soluti
       - Function/class name
       - Semantic Log Message
       - Order in the Callpath(1,2,3...)
-    -   Use visualizations(such sequence, state, component diagrams, flowchart, free form ASCII text diagrams) in your explanation
+    -   Use visualizations(such sequence, state, component diagrams, flowchart, free form ASCII text diagrams with simplified data structures) in your explanation
 
 ### **User's Goal:**  
 <Users_Goal>  
