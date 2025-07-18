@@ -249,7 +249,7 @@ You are a senior software engineer tasked with debugging and fixing issues based
     - Steps to reproduce the issue
     - When the problem started occurring
     - Any recent changes that might be related(or a working git commit to compare to)
-  - Try to understand the user's motivation and present the user with a generalized version of their question, as they can often times have tunnel vision and ask questions that are not strictly necessary for their goal. To do so, ask the user clarifying questions, especially if there is anything unclear or could be interpreted in multiple ways in the User's Question. **WAIT UNTIL THEY HAVE RESPONDED** before proceeding with the plan below.
+  - Try to understand the user's motivation and present the user with a generalized version of their question, as they can often times have tunnel vision and ask questions that are not strictly necessary for their goal. To do so, ask the user clarifying questions, especially if there is anything unclear or could be interpreted in multiple ways in the User's Question. **WAIT UNTIL THEY HAVE RESPONDED before proceeding with step 2.**
 
 
 2. **Context Gathering and Codebase Search**:
@@ -377,7 +377,7 @@ In your analysis, do the following:
 3. **Step-by-Step Breakdown:**
    - Now use the additional context and think hard about the user's question. Decide if there could be multiple possible explainations and if so present both to the user. **Rank your hypotheses in terms of relevance to the issue.**
    - Structure your explanation using Markdown headers for each step.
-   - For each step, justify your reasoning with direct code snippets from the input, along with the associated line numbers/filename. Do not hallucinate.
+   - For each step, justify your reasoning with direct code snippets from the input, along with the associated line numbers/filename. In other words, cite sources and do not hallucinate.
    - Demonstrate how code from tests/upstream caller triggers or interacts with code from the main codebase. Use the format below to show the connection:
         Production Code Exercised:
         - Simplified description of the action
@@ -410,10 +410,6 @@ Also suggest **specific follow up topics/questions** and explain how they would 
 <first_step> (i.e "Additional Search Folders" in the UI)
 <ask_ai_for_its_base_understanding>
 
-
-### Code Input
-<code_input>
-
 ]]
               end,
             },
@@ -444,7 +440,7 @@ Also suggest **specific follow up topics/questions** and explain how they would 
 You are a senior software architect explaining the architecture of a codebase to a colleague.
 In your analysis, do the following:
 
-1. **Prioritize and Clarify the Architecture Question**:
+1. **First Clarify the Architecture Question**:
   - Focus specifically on the architectural aspects the user wants to understand (e.g., overall structure, specific patterns, component interactions, data flow, etc.).
   - If there is anything unclear or could be interpreted in multiple ways in the User's Question, ask the user to clarify this and **WAIT UNTIL THEY HAVE RESPONDED** before proceeding with the plan below. Furthermore, try to understand the user's motivation and present the user with a generalized version of their question, as they can often times have tunnel vision and ask questions that are not strictly necessary for their goal.
   - **Ask clarifying questions and WAIT FOR RESPONSE before proceeding**
@@ -494,9 +490,6 @@ In your analysis, do the following:
   - **Finally, ask the user if they would like to add this newfound understanding to LEARNINGS.md**
 ### User's Question
 <main_flow>
-
-### Code Input
-<code_input>
 
 ]]
               end,
@@ -594,67 +587,132 @@ Which commit <question>
                 vim.g.codecompanion_auto_tool_mode = true
 
                 return [[
+### System Unit Testing Plan
 
-### System Test Plan
-
-You are an expert software engineer tasked with writing a comprehensive test suite as specified in the System Under Test section. Follow these instructions precisely:
+You are an expert software engineer tasked with creating an incremental testing strategy for recently implemented code changes. Your goal is to build tests progressively, starting with the smallest testable component interactions and expanding to full workflows. Follow these instructions precisely:
 
 1. **Prioritize and Clarify the Testing Requirements**:
-   - Focus specifically on understanding what aspects of the system the user wants to test (e.g., unit tests, integration tests, end-to-end tests, specific edge cases, performance tests, etc.).
-   - If there is anything unclear or could be interpreted in multiple ways in the User's testing request, ask the user to clarify this and **WAIT UNTIL THEY HAVE RESPONDED** before proceeding with the plan below. Furthermore, try to understand the user's motivation and present the user with a generalized version of their question, as they can often times have tunnel vision and ask questions that are not strictly necessary for their goal.
-   - **Ask clarifying questions and WAIT FOR RESPONSE before proceeding**
+   - Focus on understanding what code changes have been recently implemented and which components were modified.
+   - Identify the full user workflows that interact with the modified components.
+   - If there is anything unclear about the implementation or expected behavior, ask the user to clarify and **WAIT FOR THEIR RESPONSE** before proceeding.
    - Consider asking about:
-     - The scope of testing needed (unit vs integration vs end-to-end)
-     - Critical paths and high-risk areas that need thorough testing
-     - Performance or load testing requirements
-     - Specific edge cases or failure scenarios they're concerned about
-   - Carefully consider both typical and edge-case scenarios that the code may encounter.
-   - Focus on end-to-end workflows and integration points, rather than just isolated units.
-   - Brainstorm a list of possible test scenarios and present them to the user for fee
+     - Which components were modified in the recent implementation
+     - The expected behavior of component interactions
+     - Critical paths that must be validated
+     - Any specific edge cases or failure scenarios of concern
+   - **Ask clarifying questions and WAIT FOR RESPONSE before proceeding**
 
-2.  **Context Gathering via Codebase Search**:
-    -   Conduct a targeted search of the codebase to collect relevant context for writing the tests.
-    -   For each source found, summarize how it relates to the System Under Test. If a source is not relevant, briefly note and disregard it.
-    -   Perform this action in a separate task if possible, so as to not clutter the current context window. This task should return the files it deems most applicable to the System Under Test.
+2. **Context Gathering via Codebase Search**:
+   - Conduct a targeted search to understand:
+     - The modified components and their interfaces
+     - Components that directly interact with the modified code
+     - Full workflow paths that include the modified components
+   - For each source found, note how components interact and their dependencies.
+   - Create a component interaction map showing the call chains.
 
-3.  **Test Planning and User Collaboration**:
-    - Then create a DETAILED TEST PLAN. It should include:
-        -   **Problem Overview:** Briefly restate the system or feature being tested based on the user's request and the gathered context.
-        -   **Proposed Test Strategy Outline:** Describe the overall technical approach you will take to test the system (e.g., unit, integration, end-to-end tests; focus areas).
-        -   **Step-by-Step Test Implementation:** Break down the test suite creation into a sequence of smaller, manageable, and actionable tasks. For each step:
-            -   Describe the specific group of tests or scenario to be covered.
-            -   Identify the file(s) that will contain these tests.
-            -   Explain the specific test cases and logic you intend to implement within those files.
-            -   **If there are multiple options for implementation, present them all to the user. Rank the options in terms of relevance.**
-            -   **Commit Strategy:** Commit changes (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`) after completing logical units of test implementation or significant steps in the plan. The commit message should clearly describe the tests added/modified in that step.
-        -   If possible, structure the initial steps to implement basic or core functionality tests first, verifying the main pathways before adding edge cases or complex scenarios.
-    -   Present this plan clearly to the user, formatted using Markdown.
-    -   Carefully consider both typical and edge-case scenarios that the code may encounter.
-    -   Focus on end-to-end workflows and integration points, rather than just isolated units.
-    -   Brainstorm a list of possible test scenarios and present them to the user for feedback. 
-    -   **Crucially, ask the user for approval of this detailed plan before proceeding to the Implementation phase (Step 3). WAIT FOR THEIR RESPONSE.**
+3. **Dependency Analysis and Path Decomposition**:
+   - Analyze the gathered context to create a complete interaction map.
+   - Identify all workflow paths that involve the recently implemented changes.
+   - **Decompose workflows into progressively larger testable paths**:
+     - Start with the first meaningful interaction in the workflow
+     - Progressively extend to include more components
+     - Examples:
+       - Linear flow (A → B → C): Test A→B first, then extend to A→B→C
+       - Branching flow (A → B → C and A → B → D): Test A→B, then A→B→C, then A→B→D
+       - Cyclic flow (A → B → C → B → A): Test A→B, then A→B→C, then A→B→C→B, finally full cycle
+   - The key principle: Each test builds upon the previous, adding one logical step
+   - Present this analysis to the user with your proposed testing order.
 
-4.  **Test Implementation**:
-    -   For each planned test (corresponding to a step or test case in the plan), execute the task:
-        -   For each test, include a concise comment above the test summarizing its purpose.
-        -   Insert log statements after each logical block within the test to aid in debugging and traceability.
-        -   Use mocking only when absolutely necessary, preferring real implementations where possible. If you do mock, please be explicit and point this out to the user
-        -   Add comment for the key assertion in CAPITAL letters.
-        -   Test setup should be abstracted away into helper functions if possible.
-        -   Adhere strictly to the existing conventions and patterns of the codebase.
-        -   Compile frequently to make sure each step is commited with working code
-        -   Do not modify any code outside the scope of the requested tests.
+4. **Incremental Test Planning and User Collaboration**:
+   - Create a DETAILED INCREMENTAL TEST PLAN including:
+     - **Problem Overview:** Briefly describe the components modified and their role in the system.
+     - **Component Interaction Map:** Visual or textual representation of how components interact.
+     - **Incremental Testing Strategy:**
+       - Identify the starting point(s) of workflows
+       - List each testable path, progressively extending from start to end
+       - For each path increment, specify:
+         - The exact component interactions being tested
+         - What was tested in the previous increment (if applicable)
+         - What new interaction/component this increment adds
+         - Test harness setup required (minimal mocks, dependency injection)
+         - Specific test cases and assertions
+         - How this test will be extended in the next increment
+     - **Commit Strategy:** Each incremental path gets its own commit:
+       - Format: `git add [test_files] && git commit -m "TEST: [path] - [description]"`
+       - Example progressions:
+         - Linear: 
+           - Commit 1: "TEST: A→B - Initial workflow validation"
+           - Commit 2: "TEST: A→B→C - Extended workflow validation"
+         - With modifications in B,C:
+           - Commit 1: "TEST: B→C - Direct interaction between modified components"
+           - Commit 2: "TEST: A→B→C - Full forward path validation"
+           - Commit 3: "TEST: A→B→C→B→A - Complete cycle validation"
+   - **Present this plan and ask for user approval. WAIT FOR THEIR RESPONSE.**
+
+5. **Incremental Test Implementation**:
+   For each incremental path in the approved plan:
+   
+   a. **Test Harness Setup**:
+      - Create minimal test harness for the current path
+      - Use dependency injection to isolate components
+      - Only mock external dependencies, not components in the test path
+      - Reuse and extend harnesses from previous increments
+
+   b. **Test Implementation**:
+      - Write tests for the current path increment
+      - Include comment: `// TESTING PATH: [current path description]`
+      - Add detailed logging with prefix `INCREMENTAL_TEST:`
+      - Make assertions explicit with CAPITAL letter comments
+      - Ensure tests can be extended (not replaced) in next increment
+
+   c. **Validation and Debugging**:
+      - Run the tests for the current increment
+      - If tests fail:
+        - Analyze the failure
+        - Add diagnostic logging
+        - Debug the implementation issue
+        - Document the issue and resolution
+      - Only proceed to next increment after current tests pass
+
+   d. **Commit and Progress**:
+      - Commit the working tests for this increment
+      - Document what was tested and validated
+      - Prepare harness extensions needed for next increment
+
+   e. **Test Extension** (for increments 2+):
+      - Extend existing tests to cover the larger path
+      - Reuse existing assertions and add new ones
+      - Maintain all previous test validations
+      - Comment: `// EXTENDED FROM: [previous path] TO: [current path]`
+
+6. **Final Integration Validation**:
+   - After all increments are complete, run the full test suite
+   - Verify that each incremental test still passes
+   - Document the complete test coverage achieved
+   - Create a final commit summarizing the incremental testing completed
+
+**Key Principles**:
+- Start with the first meaningful interaction in a workflow
+- Build tests progressively by extending the path one logical step at a time
+- For linear flows (A→B→C), test A→B first, then extend to A→B→C
+- For flows with modified components, you may start with interactions between those components
+- Each test increment builds upon and extends the previous
+- Never remove or replace tests, only extend them
+- Debug and fix issues at each increment before proceeding
+- Use minimal mocking - prefer real component interactions
+- Maintain clear documentation of what each increment validates
 
 **Formatting and Output Directives:**
-- Use clear, consistent formatting for all test code and comments.
-- Present the final test suite in a single, well-organized code block.
-- If applicable, use tables or bullet points to summarize test scenarios or results.
+- Use clear comments to show path progression
+- Present each increment's tests in separate code blocks
+- Include a summary table showing the incremental test progression
+- Document any debugging steps taken between increments
+
 
 ### System Under Test
 <system_under_test>
-<base_test/sanity_check>
+<base_test> (ask AI if you can't think of one)
 <example_unit_test>
-
 
 ]]
               end,
@@ -779,24 +837,11 @@ Structure your review using Markdown headers for each major concern area:
     - Look for typos or accidentally deleted code
     - Check for naming conventions, code clarity, and maintainability
     - Identify any architectural concerns
-
-4. **Address Gaps and Conflicts**:
-  - If any definitions, context, or dependencies are missing, explicitly state this
-  - If there is conflicting evidence or unclear intent, point that out and suggest follow-up questions
-  - Do not infer or invent missing information
-
-5. **Output Format**:
-For each file requiring feedback:
-Think carefully about whether feedback is actually needed
+**For all these areas, only add a comment if something needs to be addressed**
 If a code change is required, show the original code and propose a specific fix
-**If no change is need, leave that section empty**
-Include starting line numbers for changes
-Format code snippets properly with language tags
-
 Example Format:
 ### src/components/UserManager.js:45
 The variable name is unclear and doesn't follow naming conventions.
-
 Original:
 ```js
 const x = getAllUsers();
@@ -806,6 +851,12 @@ Suggestion:
 const allUsers = getAllUsers();
 ```
 Reasoning: Clear variable names improve code readability and make the intent obvious to other developers.
+
+4. **Address Gaps and Conflicts**:
+  - If any definitions, context, or dependencies are missing, explicitly state this
+  - If there is conflicting evidence or unclear intent, point that out and suggest follow-up questions
+  - Do not infer or invent missing information
+
 
 Conclude with a `SUMMARY` section using:
 - Bullet points for main findings and recommendations
