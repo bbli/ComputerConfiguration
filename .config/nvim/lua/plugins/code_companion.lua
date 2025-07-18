@@ -587,20 +587,38 @@ Which commit <question>
                 vim.g.codecompanion_auto_tool_mode = true
 
                 return [[
-### System Unit Testing Plan
+### Incremental Test Development Plan
 
-You are an expert software engineer tasked with creating an incremental testing strategy for recently implemented code changes. Your goal is to build tests progressively, starting with the smallest testable component interactions and expanding to full workflows. Follow these instructions precisely:
+**⚠️ IMPORTANT: This is an INTERACTIVE, MULTI-PHASE process. You MUST wait for user responses at designated checkpoints. DO NOT proceed past any STOP checkpoint without explicit user approval.**
+
+You are an expert software engineer tasked with creating an incremental testing strategy for recently implemented code changes. Your goal is to build tests progressively, starting with the smallest testable component interactions and expanding to full workflows. 
+
+**This process has THREE distinct phases with MANDATORY stops:**
+- **PHASE 1:** Requirements Clarification (STOP - await response)
+- **PHASE 2:** Analysis and Planning (STOP - await approval)  
+- **PHASE 3:** Implementation (only after explicit approval)
+
+## PHASE 1: Requirements Clarification
 
 1. **Prioritize and Clarify the Testing Requirements**:
    - Focus on understanding what code changes have been recently implemented and which components were modified.
    - Identify the full user workflows that interact with the modified components.
-   - If there is anything unclear about the implementation or expected behavior, ask the user to clarify and **WAIT FOR THEIR RESPONSE** before proceeding.
+   - If there is anything unclear about the implementation or expected behavior, ask the user to clarify.
    - Consider asking about:
      - Which components were modified in the recent implementation
      - The expected behavior of component interactions
      - Critical paths that must be validated
      - Any specific edge cases or failure scenarios of concern
-   - **Ask clarifying questions and WAIT FOR RESPONSE before proceeding**
+   
+**🛑 STOP HERE - PHASE 1 CHECKPOINT**
+- Present your clarifying questions to the user
+- DO NOT PROCEED to Phase 2 until you receive responses
+- DO NOT start any analysis or implementation
+- WAIT for the user to answer your questions
+
+---
+
+## PHASE 2: Analysis and Planning (Only proceed after Phase 1 response)
 
 2. **Context Gathering via Codebase Search**:
    - Conduct a targeted search to understand:
@@ -648,6 +666,21 @@ You are an expert software engineer tasked with creating an incremental testing 
            - Commit 2: "TEST: A→B→C - Full forward path validation"
            - Commit 3: "TEST: A→B→C→B→A - Complete cycle validation"
    - **Present this plan and ask for user approval. WAIT FOR THEIR RESPONSE.**
+
+**🛑 STOP HERE - PHASE 2 CHECKPOINT**
+- You have now presented the complete incremental test plan
+- DO NOT PROCEED to implementation without explicit approval
+- The user may want to:
+  - Adjust the testing order
+  - Add or remove test cases
+  - Modify the incremental approach
+- WAIT for explicit approval like "looks good", "proceed", or "go ahead"
+
+---
+
+## PHASE 3: Implementation (Only proceed after explicit Phase 2 approval)
+
+**⚠️ VERIFY: Have you received explicit approval for the test plan? If not, STOP and wait for approval.**
 
 5. **Incremental Test Implementation**:
    For each incremental path in the approved plan:
@@ -708,6 +741,12 @@ You are an expert software engineer tasked with creating an incremental testing 
 - Include a summary table showing the incremental test progression
 - Document any debugging steps taken between increments
 
+**🚨 CRITICAL REMINDER: This is a THREE-PHASE process with mandatory stops:**
+1. **Phase 1**: Ask clarifying questions → STOP and wait for answers
+2. **Phase 2**: Present analysis and test plan → STOP and wait for approval  
+3. **Phase 3**: Implement tests → Only after explicit approval
+
+**Never skip ahead or assume approval. Each phase requires explicit user interaction.**
 
 ### System Under Test
 <system_under_test>
