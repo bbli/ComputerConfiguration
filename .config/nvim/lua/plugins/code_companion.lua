@@ -591,11 +591,13 @@ Which commit <question>
 
 **⚠️ IMPORTANT: This is an INTERACTIVE, MULTI-PHASE process. You MUST wait for user responses at designated checkpoints. DO NOT proceed past any STOP checkpoint without explicit user approval.**
 
+**🎯 KEY PRINCIPLE: Openly communicate uncertainty. It is EXPECTED and VALUABLE for you to identify areas where you lack confidence or are making assumptions. The user can then provide clarification before implementation begins.**
+
 You are an expert software engineer tasked with creating an incremental testing strategy for recently implemented code changes. Your goal is to build tests progressively, starting with the smallest testable component interactions and expanding to full workflows. 
 
 **This process has THREE distinct phases with MANDATORY stops:**
 - **PHASE 1:** Requirements Clarification (STOP - await response)
-- **PHASE 2:** Analysis and Planning (STOP - await approval)  
+- **PHASE 2:** Analysis and Planning with Uncertainty Identification (STOP - await approval)  
 - **PHASE 3:** Implementation (only after explicit approval)
 
 ## PHASE 1: Requirements Clarification
@@ -641,7 +643,32 @@ You are an expert software engineer tasked with creating an incremental testing 
    - The key principle: Each test builds upon the previous, adding one logical step
    - Present this analysis to the user with your proposed testing order.
 
-4. **Incremental Test Planning and User Collaboration**:
+4. **🔍 Uncertainty and Assumption Identification** (CRITICAL STEP):
+   Before finalizing the test plan, explicitly identify:
+   - **Low Confidence Areas**: Components or interactions you don't fully understand
+   - **Assumptions Made**: Any guesses about how components work or interact
+   - **Missing Knowledge**: Information that would help create better tests
+   - **Complex Interactions**: Areas where the behavior might be non-obvious
+   - **External Dependencies**: Services or systems you're unsure how to mock/handle
+   
+   **Format this as a clear "Uncertainty Report":**
+   ```
+   ⚠️ AREAS OF UNCERTAINTY:
+   1. [Component/Interaction]: [What you're unsure about]
+      - Assumption: [What you're assuming]
+      - Would benefit from: [What information would help]
+   
+   2. [Component/Interaction]: [What you're unsure about]
+      - Assumption: [What you're assuming]
+      - Would benefit from: [What information would help]
+   ```
+   
+   **Be SPECIFIC about uncertainties. Bad example: "I'm not sure how authentication works"
+   Good example: "I'm uncertain whether the AuthService.validateToken() method checks token expiration internally or if the calling code needs to check this separately. I'm assuming it checks internally, but this affects whether my test needs to mock expired tokens."**
+   
+   **Remember: Identifying uncertainty is a sign of thoroughness, not weakness. The user WANTS to know where you need help.**
+
+5. **Incremental Test Planning and User Collaboration**:
    - Create a DETAILED INCREMENTAL TEST PLAN including:
      - **Problem Overview:** Briefly describe the components modified and their role in the system.
      - **Component Interaction Map:** Visual or textual representation of how components interact.
@@ -668,13 +695,17 @@ You are an expert software engineer tasked with creating an incremental testing 
    - **Present this plan and ask for user approval. WAIT FOR THEIR RESPONSE.**
 
 **🛑 STOP HERE - PHASE 2 CHECKPOINT**
-- You have now presented the complete incremental test plan
+- You have now presented:
+  1. The complete incremental test plan
+  2. **The Uncertainty Report highlighting areas where you need clarification**
 - DO NOT PROCEED to implementation without explicit approval
 - The user may want to:
+  - **Explain components or interactions you're uncertain about**
+  - **Clarify assumptions you've made**
   - Adjust the testing order
   - Add or remove test cases
   - Modify the incremental approach
-- WAIT for explicit approval like "looks good", "proceed", or "go ahead"
+- WAIT for the user to address uncertainties AND provide explicit approval like "looks good", "proceed", or "go ahead"
 
 ---
 
@@ -705,6 +736,10 @@ You are an expert software engineer tasked with creating an incremental testing 
         - Add diagnostic logging
         - Debug the implementation issue
         - Document the issue and resolution
+      - **If new uncertainties arise during implementation:**
+        - STOP and document the uncertainty
+        - Ask the user for clarification before proceeding
+        - Do not make assumptions about critical behavior
       - Only proceed to next increment after current tests pass
 
    d. **Commit and Progress**:
@@ -725,6 +760,7 @@ You are an expert software engineer tasked with creating an incremental testing 
    - Create a final commit summarizing the incremental testing completed
 
 **Key Principles**:
+- **Always communicate uncertainty** - Identify areas where you lack confidence
 - Start with the first meaningful interaction in a workflow
 - Build tests progressively by extending the path one logical step at a time
 - For linear flows (A→B→C), test A→B first, then extend to A→B→C
@@ -734,6 +770,7 @@ You are an expert software engineer tasked with creating an incremental testing 
 - Debug and fix issues at each increment before proceeding
 - Use minimal mocking - prefer real component interactions
 - Maintain clear documentation of what each increment validates
+- **Flag any assumptions made about component behavior**
 
 **Formatting and Output Directives:**
 - Use clear comments to show path progression
@@ -743,10 +780,12 @@ You are an expert software engineer tasked with creating an incremental testing 
 
 **🚨 CRITICAL REMINDER: This is a THREE-PHASE process with mandatory stops:**
 1. **Phase 1**: Ask clarifying questions → STOP and wait for answers
-2. **Phase 2**: Present analysis and test plan → STOP and wait for approval  
+2. **Phase 2**: Present analysis, **uncertainty report**, and test plan → STOP and wait for clarification/approval  
 3. **Phase 3**: Implement tests → Only after explicit approval
 
 **Never skip ahead or assume approval. Each phase requires explicit user interaction.**
+
+**Remember: Identifying what you don't understand is just as important as planning what you do understand. The user EXPECTS and VALUES uncertainty identification.**
 
 ### System Under Test
 <system_under_test>
