@@ -270,10 +270,9 @@ You are a senior software engineer tasked with debugging and fixing issues based
   - **Step-by-Step Investigation Strategy**: For each hypothesis, break down into actionable tasks/hypotheses:
     - **Add Strategic Logging**: Identify where to add temporary debug logs to trace execution flow and variable states. The log lines should follow the following format:
       - There should IDEALLY ONLY BE 1 log line per function which logs the variables most relevant to the User's Goal.
-      - Prefix/Abbreviation of the Hypothesis(e.g ZERO_FILESYSTEM_ID)
+      - Prefix: the class/module name or abbreviation of User's Goal and order in callpath(i.e `RESET_SEGMENT 1:`)
       - Function/class name
       - Semantic Log Message
-      - Order in the Callpath(1,2,3...)
       - Present the log lines you plan to add to the user in the form of simplified code snippets
     - **For each task/hypotheses you create, explain all the different Sequencing of these Log Lines that could be possible outcomes. Your explaination should take the following form:**
 ```markdown
@@ -810,7 +809,6 @@ PHASE 2: E2E Test (Happy Path) → Commit → 🛑 STOP (await "continue")
       - Write tests for the current complexity increment
       - Include comment: `// E2E TEST - Complexity Level: [current complexity dimension]`
       - Test the COMPLETE workflow with the current complexity level
-      - Add detailed logging with prefix `E2E_TEST_[COMPLEXITY]:`
       - Make assertions explicit with CAPITAL letter comments
       - Ensure test infrastructure can handle next complexity level
 
@@ -1406,10 +1404,9 @@ You are a senior software engineer tasked with analyzing and implementing soluti
    - Document how to verify that the implemented changes successfully address the User's Goal and write the following to a **Testing Plan markdown file.**
    - Suggest log lines to monitor(along with a simplified code location) and explain the exact sequencing/ordering of these log lines that would confirm your implementation. Your log lines should follow the following conventions:
      - **There should IDEALLY ONLY BE 1 log line per function which logs the variables most relevant to the User's Goal.**
-     - Prefix (e.g., class/module name or abbreviation of User's Goal)
+     - Prefix: the class/module name or abbreviation of User's Goal and order in callpath(i.e `RESET_SEGMENT 1:`)
      - Function/class name
      - Semantic Log Message
-     - Order in the Callpath(1,2,3...)
    - Use visualizations(such sequence, state, component diagrams, flowchart, free form ASCII text diagrams with simplified data structures) in your explanation
 
 **🚨 CRITICAL REMINDER: This is a THREE-PHASE process with mandatory stops:**
@@ -1425,8 +1422,6 @@ You are a senior software engineer tasked with analyzing and implementing soluti
 <Users_Goal>  
 <Example/First_Step>
 <Base Implementation>  
-
-At the end, prompt the user to check what else needs to be included in the plan
 ]]
               end,
             },
