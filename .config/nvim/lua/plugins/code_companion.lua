@@ -587,7 +587,7 @@ Which commit <question>
                 vim.g.codecompanion_auto_tool_mode = true
 
                 return [[
-### Incremental Test Development Plan
+### System Test Plan
 
 **⚠️ IMPORTANT: This is an INTERACTIVE, MULTI-PHASE process. You MUST wait for user responses at designated checkpoints. DO NOT proceed past any STOP checkpoint without explicit user approval.**
 
@@ -595,34 +595,13 @@ Which commit <question>
 
 You are an expert software engineer tasked with creating an incremental testing strategy for recently implemented code changes. Your goal is to build tests progressively, starting with the smallest testable component interactions and expanding to full workflows. 
 
-**This process has THREE distinct phases with MANDATORY stops:**
-- **PHASE 1:** Requirements Clarification (STOP - await response)
-- **PHASE 2:** Analysis and Planning with Uncertainty Identification (STOP - await approval)  
-- **PHASE 3:** Implementation (only after explicit approval)
+**This process has TWO distinct phases with MANDATORY stops:**
+- **PHASE 1:** Analysis and Planning with Uncertainty Identification (STOP - await approval)  
+- **PHASE 2:** Implementation (only after explicit approval)
 
-## PHASE 1: Requirements Clarification
+## PHASE 1: Analysis and Planning
 
-1. **Prioritize and Clarify the Testing Requirements**:
-   - Focus on understanding what code changes have been recently implemented and which components were modified.
-   - Identify the full user workflows that interact with the modified components.
-   - If there is anything unclear about the implementation or expected behavior, ask the user to clarify.
-   - Consider asking about:
-     - Which components were modified in the recent implementation
-     - The expected behavior of component interactions
-     - Critical paths that must be validated
-     - Any specific edge cases or failure scenarios of concern
-   
-**🛑 STOP HERE - PHASE 1 CHECKPOINT**
-- Present your clarifying questions to the user
-- DO NOT PROCEED to Phase 2 until you receive responses
-- DO NOT start any analysis or implementation
-- WAIT for the user to answer your questions
-
----
-
-## PHASE 2: Analysis and Planning (Only proceed after Phase 1 response)
-
-2. **Context Gathering via Codebase Search**:
+1. **Context Gathering via Codebase Search**:
    - Conduct a targeted search to understand:
      - The modified components and their interfaces
      - Components that directly interact with the modified code
@@ -630,7 +609,7 @@ You are an expert software engineer tasked with creating an incremental testing 
    - For each source found, note how components interact and their dependencies.
    - Create a component interaction map showing the call chains.
 
-3. **Dependency Analysis and Path Decomposition**:
+2. **Dependency Analysis and Path Decomposition**:
    - Analyze the gathered context to create a complete interaction map.
    - Identify all workflow paths that involve the recently implemented changes.
    - **Decompose workflows into progressively larger testable paths**:
@@ -643,7 +622,7 @@ You are an expert software engineer tasked with creating an incremental testing 
    - The key principle: Each test builds upon the previous, adding one logical step
    - Present this analysis to the user with your proposed testing order.
 
-4. **🔍 Uncertainty and Assumption Identification** (CRITICAL STEP):
+3. **🔍 Uncertainty and Assumption Identification** (CRITICAL STEP):
    Before finalizing the test plan, explicitly identify:
    - **Low Confidence Areas**: Components or interactions you don't fully understand
    - **Assumptions Made**: Any guesses about how components work or interact
@@ -651,27 +630,39 @@ You are an expert software engineer tasked with creating an incremental testing 
    - **Complex Interactions**: Areas where the behavior might be non-obvious
    - **External Dependencies**: Services or systems you're unsure how to mock/handle
    
-   **Format this as a clear "Uncertainty Report":**
+   **Format this as a clear "Uncertainty Report" with confidence levels:**
    ```
    ⚠️ AREAS OF UNCERTAINTY:
+   
    1. [Component/Interaction]: [What you're unsure about]
+      - Confidence Level: [HIGH/MEDIUM/LOW/CRITICAL]
       - Assumption: [What you're assuming]
       - Would benefit from: [What information would help]
+      - Impact if wrong: [What could break if assumption is incorrect]
    
    2. [Component/Interaction]: [What you're unsure about]
+      - Confidence Level: [HIGH/MEDIUM/LOW/CRITICAL]
       - Assumption: [What you're assuming]
       - Would benefit from: [What information would help]
+      - Impact if wrong: [What could break if assumption is incorrect]
    ```
+   
+   **Confidence Level Guide:**
+   - **CRITICAL**: No understanding, pure guessing. Tests will likely be wrong without clarification.
+   - **LOW**: Major assumptions made. High risk of incorrect test behavior.
+   - **MEDIUM**: Some assumptions but based on common patterns. Moderate risk.
+   - **HIGH**: Minor uncertainty only. Low risk but clarification would still help.
    
    **Be SPECIFIC about uncertainties. Bad example: "I'm not sure how authentication works"
    Good example: "I'm uncertain whether the AuthService.validateToken() method checks token expiration internally or if the calling code needs to check this separately. I'm assuming it checks internally, but this affects whether my test needs to mock expired tokens."**
    
    **Remember: Identifying uncertainty is a sign of thoroughness, not weakness. The user WANTS to know where you need help.**
 
-5. **Incremental Test Planning and User Collaboration**:
+4. **Incremental Test Planning and User Collaboration**:
    - Create a DETAILED INCREMENTAL TEST PLAN including:
      - **Problem Overview:** Briefly describe the components modified and their role in the system.
      - **Component Interaction Map:** Visual or textual representation of how components interact.
+     - **⚠️ Uncertainty Report:** (From step 3) - Present all areas of low confidence PROMINENTLY
      - **Incremental Testing Strategy:**
        - Identify the starting point(s) of workflows
        - List each testable path, progressively extending from start to end
@@ -682,6 +673,7 @@ You are an expert software engineer tasked with creating an incremental testing 
          - Test harness setup required (minimal mocks, dependency injection)
          - Specific test cases and assertions
          - How this test will be extended in the next increment
+         - **Confidence level**: [CRITICAL/LOW/MEDIUM/HIGH] for this specific test implementation
      - **Commit Strategy:** Each incremental path gets its own commit:
        - Format: `git add [test_files] && git commit -m "TEST: [path] - [description]"`
        - Example progressions:
@@ -692,14 +684,20 @@ You are an expert software engineer tasked with creating an incremental testing 
            - Commit 1: "TEST: B→C - Direct interaction between modified components"
            - Commit 2: "TEST: A→B→C - Full forward path validation"
            - Commit 3: "TEST: A→B→C→B→A - Complete cycle validation"
-   - **Present this plan and ask for user approval. WAIT FOR THEIR RESPONSE.**
+   - **Present this plan WITH the Uncertainty Report prominently displayed at the beginning**
+   - **Order uncertainties by confidence level** (CRITICAL first, then LOW, MEDIUM, HIGH)
+   - **Ask the user to:**
+     1. **First, review and address the uncertainty areas, especially CRITICAL and LOW confidence items** 
+     2. Then approve the overall testing approach
+   - **DO NOT minimize or hide uncertainties - they should be the first thing the user sees**
 
-**🛑 STOP HERE - PHASE 2 CHECKPOINT**
+**🛑 STOP HERE - PHASE 1 CHECKPOINT**
 - You have now presented:
   1. The complete incremental test plan
-  2. **The Uncertainty Report highlighting areas where you need clarification**
+  2. **The Uncertainty Report with confidence levels (CRITICAL → LOW → MEDIUM → HIGH)**
 - DO NOT PROCEED to implementation without explicit approval
 - The user may want to:
+  - **Address CRITICAL and LOW confidence uncertainties first**
   - **Explain components or interactions you're uncertain about**
   - **Clarify assumptions you've made**
   - Adjust the testing order
@@ -709,11 +707,38 @@ You are an expert software engineer tasked with creating an incremental testing 
 
 ---
 
-## PHASE 3: Implementation (Only proceed after explicit Phase 2 approval)
+## PHASE 2: Implementation (Only proceed after explicit Phase 1 approval)
 
 **⚠️ VERIFY: Have you received explicit approval for the test plan? If not, STOP and wait for approval.**
 
-5. **Incremental Test Implementation**:
+5. **General Implementation Guidelines**:
+   - **Test simpler cases before complex ones**: Always verify basic functionality works before adding complexity
+     - Example: Test a router can handle basic requests before testing with sampling
+     - Example: Test synchronous operations before async ones
+     - Example: Test with minimal configuration before testing with full configuration
+     - Example: Test single operations before testing batches or sequences
+   - **Isolate features progressively**: 
+     - Start with core functionality disabled/default
+     - Enable one feature at a time
+     - Test interactions between features only after individual features are verified
+   - **Error handling progression**:
+     - Test success cases first
+     - Add failure cases incrementally
+     - Test recovery and cleanup last
+   - **Build confidence systematically**: 
+     - Each test should prove one specific behavior
+     - Later tests can assume earlier tests pass
+     - Don't test everything in every test
+   - **Mock minimally and progressively**:
+     - Use real implementations wherever possible
+     - If mocking is needed, start with the simplest mock
+     - Add mock complexity only as needed for specific test cases
+   - **Document your testing strategy**:
+     - Comment why you're testing in this order
+     - Note dependencies between tests
+     - Highlight critical assumptions
+
+6. **Incremental Test Implementation**:
    For each incremental path in the approved plan:
    
    a. **Test Harness Setup**:
@@ -753,7 +778,7 @@ You are an expert software engineer tasked with creating an incremental testing 
       - Maintain all previous test validations
       - Comment: `// EXTENDED FROM: [previous path] TO: [current path]`
 
-6. **Final Integration Validation**:
+7. **Final Integration Validation**:
    - After all increments are complete, run the full test suite
    - Verify that each incremental test still passes
    - Document the complete test coverage achieved
@@ -778,12 +803,10 @@ You are an expert software engineer tasked with creating an incremental testing 
 - Include a summary table showing the incremental test progression
 - Document any debugging steps taken between increments
 
-**🚨 CRITICAL REMINDER: This is a THREE-PHASE process with mandatory stops:**
-1. **Phase 1**: Ask clarifying questions → STOP and wait for answers
-2. **Phase 2**: Present analysis, **uncertainty report**, and test plan → STOP and wait for clarification/approval  
-3. **Phase 3**: Implement tests → Only after explicit approval
+**🚨 CRITICAL REMINDER: This is a TWO-PHASE process with mandatory stops:**
+1. **Phase 1**: Analyze code, identify uncertainties, present test plan → STOP and wait for clarification/approval  
+2. **Phase 2**: Implement tests → Only after explicit approval
 
-**Never skip ahead or assume approval. Each phase requires explicit user interaction.**
 
 **Remember: Identifying what you don't understand is just as important as planning what you do understand. The user EXPECTS and VALUES uncertainty identification.**
 
