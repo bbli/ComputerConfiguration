@@ -968,7 +968,6 @@ PHASE 2: E2E Test (Happy Path) → Commit → 🛑 STOP (await "continue")
      - **Workflow Diagram:** Visual representation of the complete end-to-end flow.
      - **⚠️ Uncertainty Report:** (From step 3) - Present all areas of low confidence PROMINENTLY
      - **Incremental Complexity Strategy:**
-       - **NOT path-based** (not A→B, then A→B→C) 
        - **Complexity-based** (complete flow with increasing complexity)
        - List each complexity increment for the same workflow:
        - For each complexity increment, specify:
@@ -1659,6 +1658,8 @@ You are a senior software engineer tasked with analyzing and implementing soluti
      - **If implementation decisions arise that weren't covered in the plan, pause and present options:**
        - List available approaches with trade-offs
        - Include confidence level for each option
+       - **DO NOT attempt to simplify or make the decision yourself**
+       - **Present ALL viable options, even if complex**
        - WAIT FOR USER RESPONSE before continuing
      - After implementing a logical unit (typically a step or group of related steps from the plan), execute the commit strategy (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`).
 
