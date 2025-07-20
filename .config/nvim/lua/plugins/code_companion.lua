@@ -219,6 +219,65 @@ You are an expert prompt engineer. You write bespoke, detailed, and succinct pro
             },
           },
         },
+        ["Add Log Lines"] = {
+          strategy = "chat",
+          description = "generates a prompt to tell the llm to apply the generated code to the file",
+          opts = {
+            index = 20, -- Position in the action palette (higher numbers appear lower)
+            is_default = false, -- Not a default prompt
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            short_name = "log", -- Used for calling via :CodeCompanion /mycustom
+            auto_submit = false, -- Automatically submit to LLM without waiting
+            user_prompt = false, -- Whether to ask for user input before submitting
+          },
+          prompts = {
+            {
+              role = "user",
+              content = function(context)
+                -- Enable turbo mode!!!
+                vim.g.codecompanion_auto_tool_mode = true
+                return string.format([[
+### System Plan
+
+1. **Prioritize and Clarify the User's Question:**
+  - Center all actions and explanations on the User's Goal.
+  - If the User's Goal or requirements are ambiguous, ask clarifying questions and WAIT for a response before proceeding.
+  - Try to understand the underlying motivation and, if appropriate, present a generalized version of the User's Goal for confirmation.
+
+2. **Context Gathering via Codebase Search:**
+  - Search the codebase for relevant context that directly informs the User's Goal.
+  - For each source found, summarize its relevance. Disregard and briefly note irrelevant sources.
+  - Perform this as a separate task to avoid cluttering the main context window. Return only the most applicable files.
+
+3. **Instrumentation Plan:**
+  - As an expert debugging specialist, plan where to add log lines to best illuminate the callpath and runtime behavior relevant to the User's Goal.
+  - Suggest log lines to monitor (along with a simplified code location) and explain the exact sequencing/ordering of these log lines that would confirm your implementation.
+  - Use the following log line convention:
+    - **There should IDEALLY ONLY BE 1 log line per function which logs the variables most relevant to the User's Goal.**
+    - Prefix: the class/module name or abbreviation of User's Goal and order in callpath (e.g., `RESET_SEGMENT 1:`)
+    - Function/class name
+    - Semantic log message
+  - Example:
+    ```cpp
+    PS_DIAG_INFO(d_, "RENDER_BUFFER 1: example_func - snapshot_cleanup_req after dropping filesystem. space_scan_key");
+    ```
+  - If there are existing log lines, modify them to have the prefix convention
+  - Do not change anything else besides what the user requested
+  - Use visualizations (such as sequence, state, component diagrams, flowchart, free form ASCII text diagrams with simplified data structures) in your explanation to illustrate the expected log line sequencing and system behavior
+  - At the end, suggest for the user to call the Debug Prompt on the output of these logs.
+
+### User's Goal
+<user_goal>
+<prefix_and_logging_function>                
+Use @editor to add log lines to <buffer>
+]])
+              end,
+              opts = {
+                contains_code = true,
+              },
+            },
+          },
+        },
         ["Debug Code"] = {
           strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
           description = "AI assisted Debugging",
@@ -1062,8 +1121,7 @@ PHASE 2: E2E Test (Happy Path) → Commit → 🛑 STOP (await "continue")
 
    b. **Test Implementation**:
       - Write tests for the current complexity increment
-      - Include comment: `// E2E TEST - Complexity Level: [current complexity dimension]`
-      - Test the COMPLETE workflow with the current complexity level
+      - Include comment for each logical section
       - Make assertions explicit with CAPITAL letter comments
       - Ensure test infrastructure can handle next complexity level
 
@@ -1071,7 +1129,6 @@ PHASE 2: E2E Test (Happy Path) → Commit → 🛑 STOP (await "continue")
       - Run the tests for the current increment
       - If tests fail:
         - Analyze the failure
-        - Add diagnostic logging
         - Debug the implementation issue
         - Document the issue and resolution
       - **If new uncertainties arise during implementation:**
@@ -1106,7 +1163,6 @@ PHASE 2: E2E Test (Happy Path) → Commit → 🛑 STOP (await "continue")
       - Add new test cases for the complexity dimension
       - Reuse existing assertions and add complexity-specific ones
       - Maintain all previous test validations
-      - Comment: `// COMPLEXITY ADDED: [dimension] - Previous: [what was tested before]`
 
 7. **Final Integration Validation** (Only after all complexity increments are complete and approved):
    - After all complexity increments are complete, run the full test suite
@@ -1663,15 +1719,6 @@ You are a senior software engineer tasked with analyzing and implementing soluti
        - WAIT FOR USER RESPONSE before continuing
      - After implementing a logical unit (typically a step or group of related steps from the plan), execute the commit strategy (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`).
 
-7. **Verification of Implementation**
-   - Document how to verify that the implemented changes successfully address the User's Goal and write the following to a **Testing Plan markdown file.**
-   - Suggest log lines to monitor(along with a simplified code location) and explain the exact sequencing/ordering of these log lines that would confirm your implementation. Your log lines should follow the following conventions:
-     - **There should IDEALLY ONLY BE 1 log line per function which logs the variables most relevant to the User's Goal.**
-     - Prefix: the class/module name or abbreviation of User's Goal and order in callpath(i.e `RESET_SEGMENT 1:`)
-     - Function/class name
-     - Semantic Log Message
-   - Use visualizations(such sequence, state, component diagrams, flowchart, free form ASCII text diagrams with simplified data structures) in your explanation
-
 **🚨 CRITICAL REMINDER: This is a THREE-PHASE process with mandatory stops:**
 1. **Phase 1**: Ask clarifying questions → STOP and wait for answers
 2. **Phase 2**: Present uncertainties and implementation plan → STOP and wait for clarification/approval → **Remind user to request code snippets**
@@ -1815,7 +1862,7 @@ Trigger the tool call for all these files in the same call along with the plan
       },
       {
         "<leader>al",
-        ":CodeCompanion /code_workflow<CR>",
+        ":CodeCompanion /log<CR>",
         desc = "Add Log Lines",
         mode = { "n" },
       },
