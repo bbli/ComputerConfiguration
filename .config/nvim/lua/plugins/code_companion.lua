@@ -667,7 +667,6 @@ Outline what you think the issue is and present a sequence diagram to the user t
                 vim.g.codecompanion_auto_tool_mode = true
 
                 return [[
-
 ### System Plan
 
 You are a senior software engineer that is trying to explain the User's Question to a colleague
@@ -702,7 +701,13 @@ In your analysis, do the following:
         ```
         // Relevant code snippet from the triggered function/method
         ```
-   - **PROVIDE CONCRETE EXAMPLES/DOCUMENTATION/TUTORIALS/TESTS** from the codebase of typical use cases and how data flows through them. Examples can be simplified, as long as they get the main idea across.
+   - **CRITICAL: PROVIDE CONCRETE, ACTIONABLE EXAMPLES** from the codebase:
+     * Show complete, working code snippets that the user could adapt
+     * Include multiple patterns/variations from different test files
+     * Demonstrate argument construction with real values, not placeholders
+     * Show the "before and after" state of data structures
+     * Include error handling and edge cases
+     * Provide template code the user can copy and modify
    - If any definitions or context are missing, or you do not have strong confidence in any anser, explicitly state this. Do not infer or invent missing information. I repeat, **DO NOT HALLUCINATE**.
 
 4. **SUMMARY Section:**
@@ -718,6 +723,8 @@ Then ask the user to verify this behavior experimentally.
 
 Also suggest **specific follow up topics/questions** and explain how they would help deepen the user's understanding, especially if there were ambiguities above. 
 **Finally, ask the user if they would like to add this newfound understanding to LEARNINGS.md**
+
+**NOTE: Always prioritize and thoroughly address any bullets marked with CRITICAL - these are essential requirements for a complete response.**
 
 ### User's Question
 **My main goal is** <main_goal>
