@@ -299,341 +299,99 @@ Use @editor to add log lines to <buffer>
                 vim.g.codecompanion_auto_tool_mode = true
 
                 return [[
-### Incremental End-to-End Test Development Plan
+### System Code Debugging Plan
+You are a senior software engineer tasked with debugging and fixing issues based on the User's Problem. Follow these instructions precisely to understand the problem deeply before implementing any fixes:
 
-**⚠️ IMPORTANT: This is an INTERACTIVE, MULTI-PHASE process. You MUST wait for user responses at designated checkpoints. DO NOT proceed past any STOP checkpoint without explicit user approval.**
+1. **Context Gathering and Codebase Search**:
+  - Search the codebase for files, functions, references, or tests directly relevant to the User's Problem.
+  - For each source found:
+    - Summarize its relevance to the bug
+    - Identify potential entry points and code paths that could be involved
+  - Return a list of the most applicable files or code snippets for debugging investigation.
 
-**🎯 KEY PRINCIPLE: Openly communicate uncertainty. It is EXPECTED and VALUABLE for you to identify areas where you lack confidence or are making assumptions. The user can then provide clarification before implementation begins.**
+2. **DEBUGGING INVESTIGATION PLAN**:
+  - Create a comprehensive debugging plan. This plan should include:
+  - **Problem Analysis and Hypothesis Generation**: Restate the problem and give your initial hypothesis on potential root causes. Think broadly but at the same time the hypothesis needs to have a clear chain of reasoning. **Rank your hypotheses in terms of relevance to the issue.**. Here are examples of types of hypotheses to consider, but most importantly your hypotheses should tie back to the User's Goal:
+    - **Setup Verification**: CRITICAL: This is often the reason for bugs involving tests, so please include some checks for this. Based off the context from the user, verify each step in the call path. If unclear what to check, ask the user questions for guidance on what to check. Are all preconditions satisfied before the assert? We cannot check every line of code, **so suggest functions/locations in the code to verify based off the symptoms the problem is exhibiting. Be skeptical that a function does what it intends to do just from the function name. Also be skeptical of what the user said, as they may think certain actions has been performed when in actuality they haven't**
+    - **Unset/Misconfigured Variables**: Missing environment variables, uninitialized tunables, default values being used instead of intended configurations, or configuration files not being loaded properly.
+    - **Timing and Race Conditions**: Asynchronous operations completing in unexpected order, missing await/synchronization, concurrent access to shared resources, or timing-dependent behavior that only manifests under certain conditions.
+    - **State Pollution**: Previous tests or operations leaving behind state, caches not cleared, database transactions not rolled back, or global variables modified.
+    - **Cascading Failures**: One component failure triggering system-wide issues
+  
+  - **Visual Representation for Each Hypothesis**: For each hypothesis you generate, create an appropriate visualization to illustrate the suspected issue:
+    - **Sequence Diagrams**: For timing issues, race conditions, or call flow problems
+    - **State Diagrams**: For state pollution or state transition issues
+    - **Component Diagrams**: For architectural/integration problems
+    - **Flowcharts**: For logic flow or decision-making issues
+    - **ASCII Art Diagrams**: For data structure states, memory layouts, or simplified representations
+    - Choose the visualization type that best explains the hypothesis
+    - Include both "expected" and "actual/buggy" scenarios when applicable
+    - Include setup verification states in visualizations where relevant
 
-**Confidence Level Quick Reference:**
-- 🚨CRITICAL = No understanding, pure guessing
-- ⚠️LOW = Major assumptions, high risk
-- 🟡MEDIUM = Some assumptions, moderate risk  
-- 🟢HIGH = Minor uncertainty, low risk
+  - **Step-by-Step Investigation Strategy**: For each hypothesis, break down into actionable tasks/hypotheses:
+    - **Add Strategic Logging**: Identify where to add temporary debug logs to trace execution flow and variable states. The log lines should follow the following format:
+      - There should IDEALLY ONLY BE 1 log line per function which logs the variables most relevant to the User's Goal.
+      - Prefix: the class/module name or abbreviation of User's Goal and order in callpath(i.e `RESET_SEGMENT 1:`)
+      - Function/class name
+      - Semantic Log Message
+      - Present the log lines you plan to add to the user in the form of simplified code snippets
+    - **For each task/hypotheses you create, explain all the different Sequencing of these Log Lines that could be possible outcomes. Your explaination should take the following form:**
+```markdown
+## Expected Diagnostic Outcomes
 
-You are an expert software engineer tasked with creating an incremental end-to-end testing strategy. Your goal is to test complete workflows from the start, progressively adding complexity dimensions to the same end-to-end test.
-
-**📋 KEY CONCEPT: Every test runs the complete end-to-end workflow**
-- Increment 1: Test A→B→C→D (minimal data, happy path)
-- Increment 2: Test A→B→C→D (varied data types)
-- Increment 3: Test A→B→C→D (edge cases and boundaries)
-- Increment 4: Test A→B→C→D (error scenarios)
-- Each increment adds complexity to the SAME complete workflow 
-
-**This process has TWO distinct phases with MANDATORY stops:**
-- **PHASE 1:** Analysis and Planning with Uncertainty Identification (creates outline only) → STOP - await approval  
-- **PHASE 2:** Implementation (actual code writing) → only after explicit approval, with stops after each increment
-
-**Process Flow:**
+### If Hypothesis 3 is Correct (Most Likely)
+**Setup Verification**:
 ```
-PHASE 1: Analysis → Present Plan & Uncertainties → 🛑 STOP (offer code preview)
-                                                          ↓
-                               [Optional: Provide code snippets if requested]
-                                                          ↓
-                                          (await approval to proceed)
-                                                          ↓
-PHASE 2: E2E Test (Happy Path) → Commit → 🛑 STOP (await "continue")
-              ↓ (same test, add complexity)
-         E2E Test + Data Variety → Commit → 🛑 STOP (await "continue")
-              ↓ (same test, add complexity)
-         E2E Test + Edge Cases → Commit → 🛑 STOP (await "continue")
-              ↓ (same test, add complexity)
-         E2E Test + Error Handling → Commit → 🛑 STOP (await "continue")
-              ↓ (same test, add complexity)
-         ... (continue adding complexity dimensions) ...
-                                               ↓
-         Final Validation → Complete
+HYPO3_SETUP_config: dedup_cleanup_enabled=true, batch_size=100
+HYPO3_SETUP_snapshot: snapshot_id=42 restored successfully, segments=[100,101]
+HYPO3_SETUP_precondition: All required tables exist and are accessible
 ```
 
-## PHASE 1: Analysis and Planning (Outline Only - No Implementation)
+**After snapshot restore**:
+```
+HYPO3_REPORT_positive_est: Added estimated_deleted_shared_logical=5120 to sum, running total=5120
+HYPO3_REPORT_positive_est: Added estimated_deleted_shared_logical=3072 to sum, running total=8192
+```
 
-1. **Context Gathering via Codebase Search**:
-   - Conduct a targeted search to understand:
-     - The complete workflow from entry point to final output
-     - All components involved in the end-to-end flow
-     - Integration points and data transformations
-   - For each source found, note its role in the complete workflow.
-   - Create a map showing the entire end-to-end flow.
+**After dedup cleanup**:
+```
+HYPO3_REPORT_negative_est: Ignoring negative estimated_deleted_shared_logical=-5120 for segment_id=100, medium_id=50
+HYPO3_REPORT_negative_est: Ignoring negative estimated_deleted_shared_logical=-3072 for segment_id=101, medium_id=50
+HYPO3_REPORT_final: Final filesystem_space_query result cold_usable_capacity=8192
+```
 
-2. **Workflow Analysis and Complexity Decomposition**:
-   - Analyze the gathered context to identify the complete end-to-end workflows.
-   - Map out the full workflow from start to finish (e.g., A → B → C → D).
-   - **⚠️ CRITICAL: Do NOT decompose into path segments (A→B, B→C, etc.). Every test must be complete end-to-end.**
-   - **Decompose complexity into progressive layers for the SAME complete workflow**:
-     - Start with the simplest possible end-to-end test (happy path)
-     - Identify dimensions of complexity to add incrementally:
-       - **Baseline (Increment 1)**: Minimal data, default configuration, no errors
-       - **Data Variations (Increment 2)**: Different input types, sizes, formats
-       - **Edge Cases (Increment 3)**: Boundary values, empty data, special characters
-       - **Error Scenarios (Increment 4)**: Network failures, invalid inputs, timeouts
-       - **Concurrent Operations (Increment 5)**: Multiple simultaneous executions
-       - **Performance/Load (Increment 6)**: High volume, stress conditions
-   - Each increment tests the COMPLETE workflow with added complexity
-   - Example for a payment workflow:
-     - Increment 1: Single payment with credit card (minimal)
-     - Increment 2: Same flow with debit, PayPal, crypto (data variety)
-     - Increment 3: Same flow with $0, $0.01, $999,999.99 (boundaries)
-     - Increment 4: Same flow with declined cards, network timeouts
-     - Increment 5: Same flow with 10 concurrent payments
-   - Present this analysis to the user with your proposed complexity progression.
+**Result**: Shared space stays at 8192 instead of going to 0 because negative decrements are ignored!
 
-3. **🔍 Uncertainty and Assumption Identification** (CRITICAL STEP):
-   Before finalizing the test plan, explicitly identify:
-   - **Low Confidence Areas**: Components or interactions you don't fully understand
-   - **Assumptions Made**: Any guesses about how components work or interact
-   - **Missing Knowledge**: Information that would help create better tests
-   - **Complex Interactions**: Areas where the behavior might be non-obvious
-   - **External Dependencies**: Services or systems you're unsure how to mock/handle
-   
-   **Format this as a clear "Uncertainty Report" with confidence levels:**
-   ```
-   ⚠️ AREAS OF UNCERTAINTY:
-   
-   Summary: 2 🚨CRITICAL | 3 ⚠️LOW | 1 🟡MEDIUM | 0 🟢HIGH uncertainties identified
-   
-   1. [Component/Interaction]: [What you're unsure about]
-      - Confidence Level: [🚨CRITICAL/⚠️LOW/🟡MEDIUM/🟢HIGH]
-      - Assumption: [What you're assuming]
-      - Would benefit from: [What information would help]
-      - Impact if wrong: [What could break if assumption is incorrect]
-   
-   2. [Component/Interaction]: [What you're unsure about]
-      - Confidence Level: [🚨CRITICAL/⚠️LOW/🟡MEDIUM/🟢HIGH]
-      - Assumption: [What you're assuming]
-      - Would benefit from: [What information would help]
-      - Impact if wrong: [What could break if assumption is incorrect]
-   ```
-   
-   **Confidence Level Guide:**
-   - **🚨CRITICAL**: No understanding, pure guessing. Tests will likely be wrong without clarification.
-   - **⚠️LOW**: Major assumptions made. High risk of incorrect test behavior.
-   - **🟡MEDIUM**: Some assumptions but based on common patterns. Moderate risk.
-   - **🟢HIGH**: Minor uncertainty only. Low risk but clarification would still help.
-   
-   **Be SPECIFIC about uncertainties. 
-   Bad example: "I'm not sure how authentication works"
-   Good example: 
-   "AuthService.validateToken() behavior: I'm uncertain whether this method checks token expiration internally or if the calling code needs to check this separately.
-   - Confidence Level: ⚠️LOW
-   - Assumption: The method checks expiration internally
-   - Would benefit from: Seeing the method implementation or documentation
-   - Impact if wrong: Tests might pass with expired tokens when they shouldn't"**
-   
-   **Sort uncertainties by severity (🚨CRITICAL items first) to help users prioritize their responses.**
-   
-   **Remember: Identifying uncertainty is a sign of thoroughness, not weakness. The user WANTS to know where you need help.**
+### If Hypothesis 1 is Correct
+**Setup Verification**:
+```
+HYPO1_SETUP_service: dedup_service status=NOT_RUNNING (Expected: RUNNING)
+HYPO1_SETUP_config: Configuration file /etc/dedup.conf not found
+HYPO1_SETUP_init: Service initialization failed at startup
+```
 
-4. **Incremental Test Planning and User Collaboration**:
-   - Create a DETAILED INCREMENTAL TEST PLAN including:
-     - **Problem Overview:** Briefly describe the components and workflow being tested.
-     - **Workflow Diagram:** Visual representation of the complete end-to-end flow.
-     - **⚠️ Uncertainty Report:** (From step 3) - Present all areas of low confidence PROMINENTLY
-     - **Incremental Complexity Strategy:**
-       - **NOT path-based** (not A→B, then A→B→C) 
-       - **Complexity-based** (complete flow with increasing complexity)
-       - List each complexity increment for the same workflow:
-       - For each complexity increment, specify:
-         - **Increment number and name**: (e.g., "Increment 1: Baseline Happy Path")
-         - **Complete E2E workflow**: (e.g., "User request → API → Router → Tool → Response → User")
-         - **Complexity added**: What makes this increment more complex than the previous
-         - **Test scenarios**: Specific cases to test at this complexity level
-         - **Test data examples**: Concrete examples of inputs/outputs
-         - **Assertions focus**: What new behaviors to verify
-         - **Infrastructure changes**: How test harness needs to evolve
-         - **Confidence level**: [🚨CRITICAL/⚠️LOW/🟡MEDIUM/🟢HIGH] for this specific test implementation
-     - **Commit Strategy:** Each complexity increment gets its own commit with a checkpoint:
-       - Format: `git add [test_files] && git commit -m "E2E TEST: [workflow] - [complexity level]"`
-       - **After each commit: STOP and wait for user inspection/approval**
-       - Example progression with checkpoints:
-         - Commit 1: "E2E TEST: User Purchase Flow - Baseline happy path (🟢HIGH confidence)" → STOP
-         - Commit 2: "E2E TEST: User Purchase Flow - Multiple payment methods (🟢HIGH confidence)" → STOP
-         - Commit 3: "E2E TEST: User Purchase Flow - Edge cases & boundaries (🟡MEDIUM confidence)" → STOP
-         - Commit 4: "E2E TEST: User Purchase Flow - Error handling & recovery (⚠️LOW confidence)" → STOP
-         - Commit 5: "E2E TEST: User Purchase Flow - Concurrent operations (🚨CRITICAL confidence)" → STOP
-   - **Present this plan WITH the Uncertainty Report prominently displayed at the beginning**
-   - **Order uncertainties by confidence level** (🚨CRITICAL first, then ⚠️LOW, 🟡MEDIUM, 🟢HIGH)
-   - **Ask the user to:**
-     1. **First, review and address the uncertainty areas, especially 🚨CRITICAL and ⚠️LOW confidence items** 
-     2. Then approve the overall testing approach
-   - **DO NOT minimize or hide uncertainties - they should be the first thing the user sees**
-   - **NOTE: This is just the PLAN. Actual code implementation happens in Phase 2 after approval.**
-   
-   **📌 Handling Code Preview Requests:**
-   - If user asks for code snippets/examples during Phase 1, provide illustrative examples
-   - Code previews should:
-     - Show the test structure and approach
-     - Demonstrate how complexity is added incrementally
-     - Include example assertions and test data
-     - Be pseudocode or simplified versions (not full implementation)
-   - Focus on 1-2 increments to illustrate the pattern
-   - After providing code preview, return to the checkpoint and await approval to proceed
+```
+HYPO1_DEDUP_no_extents: No extents found for processing
+HYPO2_TIMING_batch_complete: Processed 0 dedup_cleanup tuples in batch
+```
 
-**🛑 STOP HERE - PHASE 1 CHECKPOINT**
-- You have now presented:
-  1. The complete incremental test plan
-  2. **The Uncertainty Report with confidence levels (🚨CRITICAL → ⚠️LOW → 🟡MEDIUM → 🟢HIGH)**
-- DO NOT PROCEED to implementation without explicit approval
-- The user may want to:
-  - **Address 🚨CRITICAL and ⚠️LOW confidence uncertainties first**
-  - **Explain components or interactions you're uncertain about**
-  - **Clarify assumptions you've made**
-  - Adjust the testing order
-  - Add or remove test cases
-  - Modify the incremental approach
+### If Hypothesis 2 is Correct
+**Setup Verification**:
+```
+HYPO2_SETUP_workers: dedup_worker_count=4, all workers healthy
+HYPO2_SETUP_locks: Mutex locks initialized correctly
+HYPO2_SETUP_queue: Work queue contains 10 items pending
+```
 
-**📝 CODE PREVIEW REQUEST:**
-**"Would you like me to provide code snippets showing what the test implementation would look like for any of these increments? This can help visualize the testing approach before we proceed with full implementation."**
+```
+HYPO2_TIMING_batch_complete: Processed 10 dedup_cleanup tuples in batch
+HYPO2_TIMING_extents_tombstoned: Tombstoned 8 extents in this batch
+[Multiple batches over time showing ongoing work]
+```
+```
+  -   **Commit Strategy:** Commit changes (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`) after completing significant steps in the plan. The commit message should clearly describe the tests added/modified in that step.
+  - Present this plan clearly to the user, formatted using Markdown. Crucially, **ASK THE USER FOR APPROVAL** of this debugging plan before proceeding to implement.
 
-**⚠️ IMPORTANT: If the user responds but does NOT request code snippets, continue to offer code preview in your next response. Keep offering until they either:**
-1. **Explicitly request code snippets** (then provide them)
-2. **Explicitly decline** (e.g., "no code needed", "skip the preview")
-3. **Give approval to proceed to Phase 2** (e.g., "looks good", "proceed", "go ahead")
-
-**Example persistence:**
-- User: "Can you explain the uncertainty about the Router?"
-- LLM: [Explains uncertainty] "...Would you like to see code snippets for any increments?"
-- User: "What about the authentication part?"
-- LLM: [Explains authentication] "...Before we proceed, would you like to see example code snippets showing how these tests would be structured?"
-
-- WAIT for the user to address uncertainties AND provide explicit approval like "looks good", "proceed", or "go ahead"
-
----
-
-## PHASE 2: Implementation (Only proceed after explicit Phase 1 approval)
-
-**Note: This phase includes multiple checkpoints - you will STOP after each commit for user inspection.**
-
-**⚠️ VERIFY: Have you received explicit approval for the test plan? If not, STOP and wait for approval.**
-
-5. **General Implementation Guidelines**:
-   - **Always test the complete end-to-end workflow**: Every increment should exercise the full workflow
-   - **Start with absolute minimum complexity**: 
-     - Simplest possible data that still exercises the workflow
-     - All optional features disabled
-     - No error conditions
-     - Single user/thread
-   - **Add one complexity dimension at a time**:
-     - Increment 1: Happy path with minimal data
-     - Increment 2: Vary the data (types, sizes, formats)
-     - Increment 3: Add edge cases (nulls, empty, boundaries)
-     - Increment 4: Add error scenarios (failures, timeouts)
-     - Increment 5: Add concurrency or performance stress
-   - **Reuse and extend test infrastructure**:
-     - Each increment builds on the previous test setup
-     - Add new test cases, don't replace existing ones
-     - Shared helpers should handle increasing complexity
-   - **Make complexity explicit**:
-     - Comment which complexity dimension each test adds
-     - Use descriptive test names that indicate complexity level
-     - Document why this complexity matters
-   - **Example progression for a "SamplingRouter" E2E test**:
-     - Increment 1: Complete request → router → tool → response (no sampling)
-     - Increment 2: Complete request → router → tool → response (with sampling enabled)
-     - Increment 3: Complete request → router → tool → response (multiple tools, mixed sampling)
-     - Increment 4: Complete request → router → tool → response (with network failures)
-     - Increment 5: Complete request → router → tool → response (10 concurrent requests)
-   - **Note**: Each increment runs the FULL workflow. We're not testing router→tool in isolation, then adding request→router later. Every test is complete end-to-end.
-
-6. **Incremental Test Implementation**:
-   For each complexity increment in the approved plan:
-   
-   **Complete one full increment (steps a-e) before moving to the next.**
-   
-   **⚠️ IMPORTANT: Each increment tests the COMPLETE end-to-end workflow. Do NOT test partial paths. The same workflow runs in every increment with different complexity.**
-   
-   a. **Test Harness Setup**:
-      - For increment 1: Create test harness for the complete E2E workflow
-      - For increments 2+: Extend existing harness to handle new complexity
-      - Use dependency injection to configure complexity variations
-      - Only mock external dependencies, not components in the workflow
-      - Design harness to easily accommodate future complexity dimensions
-
-   b. **Test Implementation**:
-      - Write tests for the current complexity increment
-      - Include comment: `// E2E TEST - Complexity Level: [current complexity dimension]`
-      - Test the COMPLETE workflow with the current complexity level
-      - Add detailed logging with prefix `E2E_TEST_[COMPLEXITY]:`
-      - Make assertions explicit with CAPITAL letter comments
-      - Ensure test infrastructure can handle next complexity level
-
-   c. **Validation and Debugging**:
-      - Run the tests for the current increment
-      - If tests fail:
-        - Analyze the failure
-        - Add diagnostic logging
-        - Debug the implementation issue
-        - Document the issue and resolution
-      - **If new uncertainties arise during implementation:**
-        - STOP and document the uncertainty with a confidence level
-        - For 🚨CRITICAL uncertainties: Do not proceed without user clarification
-        - For ⚠️LOW uncertainties: Document clearly and ask for guidance
-        - For 🟡MEDIUM/🟢HIGH: Note the assumption and continue, but flag for review
-        - Do not make assumptions about critical behavior
-      - Only proceed to next increment after current tests pass
-
-   d. **Commit and Progress**:
-      - Execute: `git add [test_files] && git commit -m "E2E TEST: [workflow name] - [complexity level description]"`
-      - Document what was tested and validated
-      - **🛑 STOP HERE - INCREMENT CHECKPOINT**
-        - Present:
-          1. What complexity was just added to the E2E test
-          2. Summary of test scenarios at this complexity level
-          3. Any issues encountered and how they were resolved
-          4. What complexity dimension will be added next (if applicable)
-        - Wait for user signal to continue (e.g., "continue", "next", "proceed")
-        - User may want to:
-          - Review the test code
-          - Run the tests themselves
-          - Suggest modifications
-          - Skip remaining complexity increments
-        - DO NOT automatically proceed to the next increment
-      - Only proceed to next increment after user approval
-      - Prepare harness extensions needed for next increment
-
-   e. **Test Extension** (for increments 2+, after previous increment approved):
-      - Extend existing test infrastructure to handle new complexity
-      - Add new test cases for the complexity dimension
-      - Reuse existing assertions and add complexity-specific ones
-      - Maintain all previous test validations
-      - Comment: `// COMPLEXITY ADDED: [dimension] - Previous: [what was tested before]`
-
-7. **Final Integration Validation** (Only after all complexity increments are complete and approved):
-   - After all complexity increments are complete, run the full test suite
-   - Verify that each complexity level still passes
-   - Confirm the most complex test exercises all dimensions together
-   - Document the complete end-to-end test coverage achieved across all complexity dimensions
-   - Create a final commit summarizing the incremental complexity testing completed
-
-**Key Principles**:
-- **Always communicate uncertainty** - Identify areas where you lack confidence
-- **Stop after every commit** - Allow user inspection at each increment
-- **Test the complete workflow from the start** - Every test is end-to-end
-- **Add complexity incrementally** - Start simple, add one dimension at a time
-- **Complexity dimensions**: data variety → edge cases → errors → concurrency → performance
-- Each test increment adds complexity to the SAME workflow
-- Never remove or replace tests, only extend them
-- Debug and fix issues at each increment before proceeding
-- Use minimal mocking - prefer real component interactions
-- Maintain clear documentation of what complexity each increment adds
-- **Flag any assumptions made about component behavior**
-- **Never proceed past a checkpoint without explicit user approval**
-
-**Formatting and Output Directives:**
-- Use clear comments to show path progression
-- Present each increment's tests in separate code blocks
-- Include a summary table showing the incremental test progression
-- Document any debugging steps taken between increments
-
-**🚨 CRITICAL REMINDER: This is a TWO-PHASE process with mandatory stops:**
-1. **Phase 1**: Analyze code, identify uncertainties, present test plan → STOP and wait for clarification/approval  
-   - **Keep offering code preview until user requests it, declines it, or approves Phase 2**
-2. **Phase 2**: Implement tests incrementally → Multiple STOPS after each commit for inspection
-
-**Within Phase 2, you MUST stop after EVERY commit to allow user inspection.**
-
-**Never skip ahead or assume approval. Each phase and each increment requires explicit user interaction.**
-
-**Remember: Identifying what you don't understand is just as important as planning what you do understand. The user EXPECTS and VALUES uncertainty identification.**
 
 ### User's Goal
 I am trying to debug <description>
