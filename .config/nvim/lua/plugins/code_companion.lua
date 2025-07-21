@@ -1142,6 +1142,8 @@ PHASE 2: Test Harness Setup → Commit → 🛑 STOP (await "continue")
         - Test data management works correctly
         - Helper functions operate as expected
         - The complete E2E workflow can be invoked without errors
+      - **CRITICAL: Show actual code snippets for the validation checks**
+      - Include assertions that prove each part of the infrastructure works
       - This validation ensures the harness is ready for actual tests
       - Focus on proving the infrastructure works, not testing business logic
       
@@ -1158,11 +1160,13 @@ PHASE 2: Test Harness Setup → Commit → 🛑 STOP (await "continue")
           1. Test harness architecture overview
           2. Strategy for handling external dependencies
           3. Helper functions created
-          4. Any setup uncertainties or assumptions
-          5. Validation results confirming infrastructure is ready
+          4. **Setup validation code showing the infrastructure works correctly**
+          5. Any setup uncertainties or assumptions
+          6. Validation results confirming infrastructure is ready
         - Wait for user signal to continue (e.g., "continue", "next", "proceed")
         - User may want to:
           - Review the test infrastructure
+          - Run the validation code themselves
           - Suggest different approaches
           - Add additional helpers
           - Question assumptions
