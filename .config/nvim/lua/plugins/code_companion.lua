@@ -916,6 +916,7 @@ Which commit <question>
 You are an expert software engineer tasked with creating an incremental end-to-end testing strategy. Your goal is to test complete workflows from the start, progressively adding complexity dimensions to the same end-to-end test.
 
 **📋 KEY CONCEPT: Every test runs the complete end-to-end workflow**
+- Increment 0: Test Harness Setup & Validation (infrastructure only)
 - Increment 1: Test A→B→C→D (minimal data, happy path)
 - Increment 2: Test A→B→C→D (varied data types)
 - Increment 3: Test A→B→C→D (edge cases and boundaries)
@@ -930,7 +931,9 @@ You are an expert software engineer tasked with creating an incremental end-to-e
 ```
 PHASE 1: Analysis → Present Plan & Uncertainties → 🛑 STOP (await approval)
                                                           ↓
-PHASE 2: E2E Test (Happy Path) → Commit → 🛑 STOP (await "continue")
+PHASE 2: Test Harness Setup → Commit → 🛑 STOP (await "continue")
+              ↓
+         E2E Test (Happy Path) → Commit → 🛑 STOP (await "continue")
               ↓ (same test, add complexity)
          E2E Test + Data Variety → Commit → 🛑 STOP (await "continue")
               ↓ (same test, add complexity)
@@ -958,16 +961,16 @@ PHASE 2: E2E Test (Happy Path) → Commit → 🛑 STOP (await "continue")
    - Map out the full workflow from start to finish (e.g., A → B → C → D).
    - **⚠️ CRITICAL: Do NOT decompose into path segments (A→B, B→C, etc.). Every test must be complete end-to-end.**
    - **Decompose complexity into progressive layers for the SAME complete workflow**:
-     - Start with the simplest possible end-to-end test (happy path)
-     - Identify dimensions of complexity to add incrementally:
-       - **Baseline (Increment 1)**: Minimal data, default configuration, no errors
-       - **Data Variations (Increment 2)**: Different input types, sizes, formats
-       - **Edge Cases (Increment 3)**: Boundary values, empty data, special characters
-       - **Error Scenarios (Increment 4)**: Network failures, invalid inputs, timeouts
-       - **Concurrent Operations (Increment 5)**: Multiple simultaneous executions
-       - **Performance/Load (Increment 6)**: High volume, stress conditions
+     - **Test Harness (Increment 0)**: Infrastructure setup, mocks, helpers, validation
+     - **Baseline (Increment 1)**: Minimal data, default configuration, no errors
+     - **Data Variations (Increment 2)**: Different input types, sizes, formats
+     - **Edge Cases (Increment 3)**: Boundary values, empty data, special characters
+     - **Error Scenarios (Increment 4)**: Network failures, invalid inputs, timeouts
+     - **Concurrent Operations (Increment 5)**: Multiple simultaneous executions
+     - **Performance/Load (Increment 6)**: High volume, stress conditions
    - Each increment tests the COMPLETE workflow with added complexity
    - Example for a payment workflow:
+     - Increment 0: Test infrastructure with mocked payment gateways
      - Increment 1: Single payment with credit card (minimal)
      - Increment 2: Same flow with debit, PayPal, crypto (data variety)
      - Increment 3: Same flow with $0, $0.01, $999,999.99 (boundaries)
@@ -1030,10 +1033,10 @@ PHASE 2: E2E Test (Happy Path) → Commit → 🛑 STOP (await "continue")
        - **Complexity-based** (complete flow with increasing complexity)
        - List each complexity increment for the same workflow:
        - For each complexity increment, specify:
-         - **Increment number and name**: (e.g., "Increment 1: Baseline Happy Path")
+         - **Increment number and name**: (e.g., "Increment 0: Test Harness Setup")
          - **Complete E2E workflow**: (e.g., "User request → API → Router → Tool → Response → User")
          - **Complexity added**: What makes this increment more complex than the previous
-         - **Test scenarios**: Specific cases to test at this complexity level
+         - **Test scenarios**: Specific cases to test at this complexity level (or infrastructure to build for Increment 0)
          - **Test data examples**: Concrete examples of inputs/outputs
          - **Assertions focus**: What new behaviors to verify
          - **Infrastructure changes**: How test harness needs to evolve
@@ -1042,6 +1045,7 @@ PHASE 2: E2E Test (Happy Path) → Commit → 🛑 STOP (await "continue")
        - Format: `git add [test_files] && git commit -m "E2E TEST: [workflow] - [complexity level]"`
        - **After each commit: STOP and wait for user inspection/approval**
        - Example progression with checkpoints:
+         - Commit 0: "E2E TEST: User Purchase Flow - Test harness setup (🟡MEDIUM confidence)" → STOP
          - Commit 1: "E2E TEST: User Purchase Flow - Baseline happy path (🟢HIGH confidence)" → STOP
          - Commit 2: "E2E TEST: User Purchase Flow - Multiple payment methods (🟢HIGH confidence)" → STOP
          - Commit 3: "E2E TEST: User Purchase Flow - Edge cases & boundaries (🟡MEDIUM confidence)" → STOP
@@ -1078,12 +1082,16 @@ PHASE 2: E2E Test (Happy Path) → Commit → 🛑 STOP (await "continue")
 
 5. **General Implementation Guidelines**:
    - **Always test the complete end-to-end workflow**: Every increment should exercise the full workflow
-   - **Start with absolute minimum complexity**: 
+   - **Start with test infrastructure**: 
+     - Increment 0 sets up the harness without actual tests
+     - Validate the infrastructure works before adding tests
+   - **Then add minimal complexity**: 
      - Simplest possible data that still exercises the workflow
      - All optional features disabled
      - No error conditions
      - Single user/thread
    - **Add one complexity dimension at a time**:
+     - Increment 0: Test harness and infrastructure
      - Increment 1: Happy path with minimal data
      - Increment 2: Vary the data (types, sizes, formats)
      - Increment 3: Add edge cases (nulls, empty, boundaries)
@@ -1098,6 +1106,7 @@ PHASE 2: E2E Test (Happy Path) → Commit → 🛑 STOP (await "continue")
      - Use descriptive test names that indicate complexity level
      - Document why this complexity matters
    - **Example progression for a "SamplingRouter" E2E test**:
+     - Increment 0: Set up mocks for all tools, create test request builders
      - Increment 1: Complete request → router → tool → response (no sampling)
      - Increment 2: Complete request → router → tool → response (with sampling enabled)
      - Increment 3: Complete request → router → tool → response (multiple tools, mixed sampling)
@@ -1112,21 +1121,76 @@ PHASE 2: E2E Test (Happy Path) → Commit → 🛑 STOP (await "continue")
    
    **⚠️ IMPORTANT: Each increment tests the COMPLETE end-to-end workflow. Do NOT test partial paths. The same workflow runs in every increment with different complexity.**
    
+   **Increment 0: Test Harness Setup (Infrastructure Only)**
+   
    a. **Test Harness Setup**:
-      - For increment 1: Create test harness for the complete E2E workflow
-      - For increments 2+: Extend existing harness to handle new complexity
-      - Use dependency injection to configure complexity variations
-      - Only mock external dependencies, not components in the workflow
-      - Design harness to easily accommodate future complexity dimensions
-
-   b. **Test Implementation**:
-      - Write tests for the current complexity increment
+      - Create the complete test infrastructure for the E2E workflow
+      - Set up handling for external dependencies
+      - Configure test environment as needed
+      - Create helper functions for:
+        - Building test inputs
+        - Managing test data lifecycle
+        - Asserting on workflow outputs
+        - Controlling test scenarios
+      - Implement utilities for test execution
+      - **NO ACTUAL TESTS YET - only infrastructure**
+      - Document the approach and any assumptions
+      
+   b. **Setup Validation**:
+      - Create validation that verifies the test infrastructure is ready:
+        - All necessary components can be initialized
+        - External dependencies are properly handled
+        - Test data management works correctly
+        - Helper functions operate as expected
+        - The complete E2E workflow can be invoked without errors
+      - This validation ensures the harness is ready for actual tests
+      - Focus on proving the infrastructure works, not testing business logic
+      
+   c. **Validation and Debugging**:
+      - Run the setup validation
+      - Fix any infrastructure issues
+      - Document the test harness architecture
+      - Note any limitations or assumptions
+      
+   d. **Commit and Progress**:
+      - Execute: `git add [test_infrastructure_files] && git commit -m "E2E TEST: [workflow name] - Test harness setup"`
+      - **🛑 STOP HERE - INCREMENT 0 CHECKPOINT**
+        - Present:
+          1. Test harness architecture overview
+          2. Strategy for handling external dependencies
+          3. Helper functions created
+          4. Any setup uncertainties or assumptions
+          5. Validation results confirming infrastructure is ready
+        - Wait for user signal to continue (e.g., "continue", "next", "proceed")
+        - User may want to:
+          - Review the test infrastructure
+          - Suggest different approaches
+          - Add additional helpers
+          - Question assumptions
+        - DO NOT automatically proceed to Increment 1
+   
+   e. **Infrastructure Ready**: 
+      - Only after user approval of harness
+      - Infrastructure is now ready for actual E2E tests
+      - Proceed to Increment 1
+   
+   **Increment 1+ (Actual E2E Tests - After harness approval):**
+   
+   a. **Test Implementation** (extends existing harness):
+      - For increment 1: Write the first actual E2E test using the harness
+      - For increments 2+: Extend existing tests with new complexity
+      - Use the infrastructure created in Increment 0
       - Include comment for each logical section
       - Make assertions explicit with CAPITAL letter comments
       - Ensure test infrastructure can handle next complexity level
 
-   c. **Validation and Debugging**:
+   b. **Test Execution**:
       - Run the tests for the current increment
+      - Verify the complete E2E workflow executes
+      - Check that all assertions pass
+      - Note any unexpected behaviors
+
+   c. **Validation and Debugging**:
       - If tests fail:
         - Analyze the failure
         - Debug the implementation issue
@@ -1172,11 +1236,12 @@ PHASE 2: E2E Test (Happy Path) → Commit → 🛑 STOP (await "continue")
    - Create a final commit summarizing the incremental complexity testing completed
 
 **Key Principles**:
+- **Start with infrastructure** - Increment 0 validates the test harness before any tests
 - **Always communicate uncertainty** - Identify areas where you lack confidence
 - **Stop after every commit** - Allow user inspection at each increment
 - **Test the complete workflow from the start** - Every test is end-to-end
 - **Add complexity incrementally** - Start simple, add one dimension at a time
-- **Complexity dimensions**: data variety → edge cases → errors → concurrency → performance
+- **Complexity dimensions**: harness → data variety → edge cases → errors → concurrency → performance
 - Each test increment adds complexity to the SAME workflow
 - Never remove or replace tests, only extend them
 - Debug and fix issues at each increment before proceeding
