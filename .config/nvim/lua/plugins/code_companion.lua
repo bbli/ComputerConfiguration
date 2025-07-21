@@ -907,8 +907,9 @@ Which commit <question>
 
 **🎯 KEY PRINCIPLE: Openly communicate uncertainty. It is EXPECTED and VALUABLE for you to identify areas where you lack confidence or are making assumptions. The user can then provide clarification before implementation begins.**
 
+**📌 INSTRUCTION PRIORITY: Any section marked with "CRITICAL" requires special attention and strict adherence. These are the most important parts of this process that must not be overlooked or abbreviated.**
+
 **Confidence Level Quick Reference:**
-- 🚨CRITICAL = No understanding, pure guessing
 - ⚠️LOW = Major assumptions, high risk
 - 🟡MEDIUM = Some assumptions, moderate risk  
 - 🟢HIGH = Minor uncertainty, low risk
@@ -959,6 +960,7 @@ PHASE 2: Test Harness Setup → Commit → 🛑 STOP (await "continue")
 2. **Workflow Analysis and Complexity Decomposition**:
    - Analyze the gathered context to identify the complete end-to-end workflows.
    - Map out the full workflow from start to finish (e.g., A → B → C → D).
+   - **⚠️ CRITICAL: Do NOT decompose into path segments (A→B, B→C, etc.). Every test must be complete end-to-end.**
    - **Decompose complexity into progressive layers for the SAME complete workflow**:
      - **Test Harness (Increment 0)**: Infrastructure setup, mocks, helpers, validation
      - **Baseline (Increment 1)**: Minimal data, default configuration, no errors
@@ -982,24 +984,23 @@ PHASE 2: Test Harness Setup → Commit → 🛑 STOP (await "continue")
    ```
    ⚠️ AREAS OF UNCERTAINTY:
    
-   Summary: 2 🚨CRITICAL | 3 ⚠️LOW | 1 🟡MEDIUM | 0 🟢HIGH uncertainties identified
+   Summary: 3 ⚠️LOW | 1 🟡MEDIUM | 0 🟢HIGH uncertainties identified
    
    1. [Component/Interaction]: [What you're unsure about]
-      - Confidence Level: [🚨CRITICAL/⚠️LOW/🟡MEDIUM/🟢HIGH]
+      - Confidence Level: [⚠️LOW/🟡MEDIUM/🟢HIGH]
       - Assumption: [What you're assuming]
       - Would benefit from: [What information would help]
       - Impact if wrong: [What could break if assumption is incorrect]
    
    2. [Component/Interaction]: [What you're unsure about]
-      - Confidence Level: [🚨CRITICAL/⚠️LOW/🟡MEDIUM/🟢HIGH]
+      - Confidence Level: [⚠️LOW/🟡MEDIUM/🟢HIGH]
       - Assumption: [What you're assuming]
       - Would benefit from: [What information would help]
       - Impact if wrong: [What could break if assumption is incorrect]
    ```
    
    **Confidence Level Guide:**
-   - **🚨CRITICAL**: No understanding, pure guessing. Tests will likely be wrong without clarification.
-   - **⚠️LOW**: Major assumptions made. High risk of incorrect test behavior.
+   - **⚠️LOW**: Major assumptions made. High risk of incorrect test behavior. Tests likely need adjustment without clarification.
    - **🟡MEDIUM**: Some assumptions but based on common patterns. Moderate risk.
    - **🟢HIGH**: Minor uncertainty only. Low risk but clarification would still help.
    
@@ -1012,7 +1013,7 @@ PHASE 2: Test Harness Setup → Commit → 🛑 STOP (await "continue")
    - Would benefit from: Seeing the method implementation or documentation
    - Impact if wrong: Tests might pass with expired tokens when they shouldn't"**
    
-   **Sort uncertainties by severity (🚨CRITICAL items first) to help users prioritize their responses.**
+   **Sort uncertainties by severity (⚠️LOW items first) to help users prioritize their responses.**
    
    **Remember: Identifying uncertainty is a sign of thoroughness, not weakness. The user WANTS to know where you need help.**
 
@@ -1032,7 +1033,7 @@ PHASE 2: Test Harness Setup → Commit → 🛑 STOP (await "continue")
          - **Test data examples**: Concrete examples of inputs/outputs
          - **Assertions focus**: What new behaviors to verify
          - **Infrastructure changes**: How test harness needs to evolve
-         - **Confidence level**: [🚨CRITICAL/⚠️LOW/🟡MEDIUM/🟢HIGH] for this specific test implementation
+         - **Confidence level**: [⚠️LOW/🟡MEDIUM/🟢HIGH] for this specific test implementation
      - **Commit Strategy:** Each complexity increment gets its own commit with a checkpoint:
        - Format: `git add [test_files] && git commit -m "E2E TEST: [workflow] - [complexity level]"`
        - **After each commit: STOP and wait for user inspection/approval**
@@ -1042,21 +1043,21 @@ PHASE 2: Test Harness Setup → Commit → 🛑 STOP (await "continue")
          - Commit 2: "E2E TEST: User Purchase Flow - Multiple payment methods (🟢HIGH confidence)" → STOP
          - Commit 3: "E2E TEST: User Purchase Flow - Edge cases & boundaries (🟡MEDIUM confidence)" → STOP
          - Commit 4: "E2E TEST: User Purchase Flow - Error handling & recovery (⚠️LOW confidence)" → STOP
-         - Commit 5: "E2E TEST: User Purchase Flow - Concurrent operations (🚨CRITICAL confidence)" → STOP
+         - Commit 5: "E2E TEST: User Purchase Flow - Concurrent operations (⚠️LOW confidence)" → STOP
    - **Present this plan WITH the Uncertainty Report prominently displayed at the beginning**
-   - **Order uncertainties by confidence level** (🚨CRITICAL first, then ⚠️LOW, 🟡MEDIUM, 🟢HIGH)
+   - **Order uncertainties by confidence level** (⚠️LOW first, then 🟡MEDIUM, 🟢HIGH)
    - **Ask the user to:**
-     1. **First, review and address the uncertainty areas, especially 🚨CRITICAL and ⚠️LOW confidence items** 
+     1. **First, review and address the uncertainty areas, especially ⚠️LOW confidence items** 
      2. Then approve the overall testing approach
    - **DO NOT minimize or hide uncertainties - they should be the first thing the user sees**
 
 **🛑 STOP HERE - PHASE 1 CHECKPOINT**
 - You have now presented:
   1. The complete incremental test plan
-  2. **The Uncertainty Report with confidence levels (🚨CRITICAL → ⚠️LOW → 🟡MEDIUM → 🟢HIGH)**
+  2. **The Uncertainty Report with confidence levels (⚠️LOW → 🟡MEDIUM → 🟢HIGH)**
 - DO NOT PROCEED to implementation without explicit approval
 - The user may want to:
-  - **Address 🚨CRITICAL and ⚠️LOW confidence uncertainties first**
+  - **Address ⚠️LOW confidence uncertainties first**
   - **Explain components or interactions you're uncertain about**
   - **Clarify assumptions you've made**
   - Adjust the testing order
@@ -1098,13 +1099,12 @@ PHASE 2: Test Harness Setup → Commit → 🛑 STOP (await "continue")
      - Use descriptive test names that indicate complexity level
      - Document why this complexity matters
    - **Example progression for a "SamplingRouter" E2E test**:
-     - Increment 0: Set up mocks for all tools, create test request builders
+     - Increment 0: Set up test infrastructure for router workflow
      - Increment 1: Complete request → router → tool → response (no sampling)
      - Increment 2: Complete request → router → tool → response (with sampling enabled)
      - Increment 3: Complete request → router → tool → response (multiple tools, mixed sampling)
      - Increment 4: Complete request → router → tool → response (with network failures)
      - Increment 5: Complete request → router → tool → response (10 concurrent requests)
-   - **Note**: Each increment runs the FULL workflow. We're not testing router→tool in isolation, then adding request→router later. Every test is complete end-to-end.
 
 6. **Incremental Test Implementation**:
    For each complexity increment in the approved plan:
@@ -1189,8 +1189,7 @@ PHASE 2: Test Harness Setup → Commit → 🛑 STOP (await "continue")
         - Document the issue and resolution
       - **If new uncertainties arise during implementation:**
         - STOP and document the uncertainty with a confidence level
-        - For 🚨CRITICAL uncertainties: Do not proceed without user clarification
-        - For ⚠️LOW uncertainties: Document clearly and ask for guidance
+        - For ⚠️LOW uncertainties: Document clearly and ask for guidance before proceeding
         - For 🟡MEDIUM/🟢HIGH: Note the assumption and continue, but flag for review
         - Do not make assumptions about critical behavior
       - Only proceed to next increment after current tests pass
@@ -1237,12 +1236,13 @@ PHASE 2: Test Harness Setup → Commit → 🛑 STOP (await "continue")
 - Each test increment adds complexity to the SAME workflow
 - Never remove or replace tests, only extend them
 - Debug and fix issues at each increment before proceeding
-- Use minimal mocking - prefer real component interactions
+- Use minimal external dependency simulation - prefer real component interactions
 - Maintain clear documentation of what complexity each increment adds
 - **Flag any assumptions made about component behavior**
 - **Never proceed past a checkpoint without explicit user approval**
 
 **Formatting and Output Directives:**
+- Use clear comments to show path progression
 - Present each increment's tests in separate code blocks
 - Include a summary table showing the incremental test progression
 - Document any debugging steps taken between increments
