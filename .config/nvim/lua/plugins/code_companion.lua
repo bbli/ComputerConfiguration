@@ -959,7 +959,6 @@ PHASE 2: Test Harness Setup → Commit → 🛑 STOP (await "continue")
 2. **Workflow Analysis and Complexity Decomposition**:
    - Analyze the gathered context to identify the complete end-to-end workflows.
    - Map out the full workflow from start to finish (e.g., A → B → C → D).
-   - **⚠️ CRITICAL: Do NOT decompose into path segments (A→B, B→C, etc.). Every test must be complete end-to-end.**
    - **Decompose complexity into progressive layers for the SAME complete workflow**:
      - **Test Harness (Increment 0)**: Infrastructure setup, mocks, helpers, validation
      - **Baseline (Increment 1)**: Minimal data, default configuration, no errors
@@ -969,13 +968,6 @@ PHASE 2: Test Harness Setup → Commit → 🛑 STOP (await "continue")
      - **Concurrent Operations (Increment 5)**: Multiple simultaneous executions
      - **Performance/Load (Increment 6)**: High volume, stress conditions
    - Each increment tests the COMPLETE workflow with added complexity
-   - Example for a payment workflow:
-     - Increment 0: Test infrastructure with mocked payment gateways
-     - Increment 1: Single payment with credit card (minimal)
-     - Increment 2: Same flow with debit, PayPal, crypto (data variety)
-     - Increment 3: Same flow with $0, $0.01, $999,999.99 (boundaries)
-     - Increment 4: Same flow with declined cards, network timeouts
-     - Increment 5: Same flow with 10 concurrent payments
    - Present this analysis to the user with your proposed complexity progression.
 
 3. **🔍 Uncertainty and Assumption Identification** (CRITICAL STEP):
@@ -1251,7 +1243,6 @@ PHASE 2: Test Harness Setup → Commit → 🛑 STOP (await "continue")
 - **Never proceed past a checkpoint without explicit user approval**
 
 **Formatting and Output Directives:**
-- Use clear comments to show path progression
 - Present each increment's tests in separate code blocks
 - Include a summary table showing the incremental test progression
 - Document any debugging steps taken between increments
