@@ -673,8 +673,6 @@ Which commit <question>
 
 **⚠️ IMPORTANT: This is an INTERACTIVE, MULTI-PHASE process. You MUST wait for user responses at designated checkpoints. DO NOT proceed past any STOP checkpoint without explicit user approval.**
 
-**🎯 KEY PRINCIPLE: Openly communicate uncertainty. It is EXPECTED and VALUABLE for you to identify areas where you lack confidence or are making assumptions. The user can then provide clarification before implementation begins.**
-
 **📌 INSTRUCTION PRIORITY: Any section marked with "CRITICAL" requires special attention and strict adherence. These are the most important parts of this process that must not be overlooked or abbreviated.**
 
 **Confidence Level Quick Reference:**
@@ -683,14 +681,6 @@ Which commit <question>
 - 🟢HIGH = Minor uncertainty, low risk
 
 You are an expert software engineer tasked with creating an incremental end-to-end testing strategy. Your goal is to test complete workflows from the start, progressively adding complexity dimensions to the same end-to-end test.
-
-**📋 KEY CONCEPT: Every test runs the complete end-to-end workflow**
-- Increment 0: Test Harness Setup & Validation (infrastructure only)
-- Increment 1: Test A→B→C→D (minimal data, happy path)
-- Increment 2: Test A→B→C→D (varied data types)
-- Increment 3: Test A→B→C→D (edge cases and boundaries)
-- Increment 4: Test A→B→C→D (error scenarios)
-- Each increment adds complexity to the SAME complete workflow 
 
 **This process has TWO distinct phases with MANDATORY stops:**
 - **PHASE 1:** Analysis and Planning with Uncertainty Identification (STOP - await approval)  
@@ -793,11 +783,35 @@ PHASE 2: Test Harness Setup → Commit → 🛑 STOP (await "continue")
      - **Incremental Complexity Strategy:**
        - **Complexity-based** (complete flow with increasing complexity)
        - List each complexity increment for the same workflow:
-       - For each complexity increment, specify:
-         - **Increment number and name**: (e.g., "Increment 0: Test Harness Setup")
+       
+       **Increment 0: Test Harness Setup (Infrastructure Only)**
+       - **Complete E2E workflow**: Full workflow will be testable but not yet tested
+       - **Complexity added**: None - this is pure infrastructure
+       - **Test harness components**:
+         - Complete test infrastructure for the E2E workflow
+         - Handling for external dependencies (mocks, stubs, or real services)
+         - Test environment configuration
+         - Helper functions for:
+           - Building test inputs
+           - Managing test data lifecycle
+           - Asserting on workflow outputs
+           - Controlling test scenarios
+         - Utilities for test execution and reporting
+       - **Setup validation**: Infrastructure validation that verifies:
+         - All necessary components can be initialized
+         - External dependencies are properly handled
+         - Test data management works correctly
+         - Helper functions operate as expected
+         - The complete E2E workflow can be invoked without errors
+       - **Code examples**: Include actual code snippets for key infrastructure pieces
+       - **NO ACTUAL TESTS YET** - only infrastructure and validation
+       - **Confidence level**: [⚠️LOW/🟡MEDIUM/🟢HIGH] for harness implementation
+       
+       - For each subsequent complexity increment (1-6), specify:
+         - **Increment number and name**: (e.g., "Increment 1: Baseline Happy Path")
          - **Complete E2E workflow**: (e.g., "User request → API → Router → Tool → Response → User")
          - **Complexity added**: What makes this increment more complex than the previous
-         - **Test scenarios**: Specific cases to test at this complexity level (or infrastructure to build for Increment 0)
+         - **Test scenarios**: Specific cases to test at this complexity level
          - **Test data examples**: Concrete examples of inputs/outputs
          - **Assertions focus**: What new behaviors to verify
          - **Infrastructure changes**: How test harness needs to evolve
@@ -821,7 +835,7 @@ PHASE 2: Test Harness Setup → Commit → 🛑 STOP (await "continue")
 
 **🛑 STOP HERE - PHASE 1 CHECKPOINT**
 - You have now presented:
-  1. The complete incremental test plan
+  1. The complete incremental test plan (including Increment 0 infrastructure details)
   2. **The Uncertainty Report with confidence levels (⚠️LOW → 🟡MEDIUM → 🟢HIGH)**
 - DO NOT PROCEED to implementation without explicit approval
 - The user may want to:
@@ -837,197 +851,129 @@ PHASE 2: Test Harness Setup → Commit → 🛑 STOP (await "continue")
 
 ## PHASE 2: Implementation (Only proceed after explicit Phase 1 approval)
 
-**Note: This phase includes multiple checkpoints - you will STOP after each commit for user inspection.**
+**⚠️ CRITICAL: This phase includes multiple checkpoints - you will STOP after each commit for user inspection.**
 
 **⚠️ VERIFY: Have you received explicit approval for the test plan? If not, STOP and wait for approval.**
 
-5. **General Implementation Guidelines**:
-   - **Always test the complete end-to-end workflow**: Every increment should exercise the full workflow
-   - **Start with test infrastructure**: 
-     - Increment 0 sets up the harness without actual tests
-     - Validate the infrastructure works before adding tests
-   - **Then add minimal complexity**: 
-     - Simplest possible data that still exercises the workflow
-     - All optional features disabled
-     - No error conditions
-     - Single user/thread
-   - **Add one complexity dimension at a time**:
-     - Increment 0: Test harness and infrastructure
-     - Increment 1: Happy path with minimal data
-     - Increment 2: Vary the data (types, sizes, formats)
-     - Increment 3: Add edge cases (nulls, empty, boundaries)
-     - Increment 4: Add error scenarios (failures, timeouts)
-     - Increment 5: Add concurrency or performance stress
-   - **Reuse and extend test infrastructure**:
-     - Each increment builds on the previous test setup
-     - Add new test cases, don't replace existing ones
-     - Shared helpers should handle increasing complexity
-   - **Make complexity explicit**:
-     - Comment which complexity dimension each test adds
-     - Use descriptive test names that indicate complexity level
-     - Document why this complexity matters
-   - **Example progression for a "SamplingRouter" E2E test**:
-     - Increment 0: Set up test infrastructure for router workflow
-     - Increment 1: Complete request → router → tool → response (no sampling)
-     - Increment 2: Complete request → router → tool → response (with sampling enabled)
-     - Increment 3: Complete request → router → tool → response (multiple tools, mixed sampling)
-     - Increment 4: Complete request → router → tool → response (with network failures)
-     - Increment 5: Complete request → router → tool → response (10 concurrent requests)
+### 5. Implementation Process
 
-6. **Incremental Test Implementation**:
-   For each complexity increment in the approved plan:
+**a. Implementation Order**
+- Always start with Increment 0 (Test Harness Setup)
+- Validate infrastructure before writing any actual tests
+- Build each increment on top of the previous one
+- Never skip increments or combine them
+
+**b. For Each Increment**
+
+1. **Build/Extend**:
+   - For Increment 0: Create test infrastructure per the approved plan
+   - For Increments 1+: Extend existing infrastructure for new complexity
+   - Add one complexity dimension at a time
+   - Reuse existing helpers and extend them as needed
+   - Document which complexity dimension is being added
+
+2. **Execute and Validate**:
+   - Run all tests for the current increment
+   - Verify the complete E2E workflow executes successfully
+   - Check that all assertions pass
+   - For Increment 0: Run infrastructure validation checks
+   - For Increments 1+: Ensure previous tests still pass
+
+3. **Debug if Needed**:
+   - If tests fail, analyze and fix the issue
+   - Document the problem and solution
+   - Re-run tests to confirm fix
+   - Only proceed when all tests pass
+
+4. **Handle New Uncertainties**:
+   - **⚠️LOW uncertainties**: STOP and ask for guidance before proceeding
+   - **🟡MEDIUM uncertainties**: Document assumption, continue, flag for review
+   - **🟢HIGH uncertainties**: Note minor uncertainty and continue
+   - Never make assumptions about critical behavior
+
+5. **Commit and Checkpoint**:
+   ```bash
+   git add [test_files]
+   git commit -m "E2E TEST: [workflow name] - [complexity level] (confidence level)"
+   ```
    
-   **Complete one full increment (steps a-e) before moving to the next.**
+   **🛑 MANDATORY STOP - INCREMENT CHECKPOINT**
    
-   **⚠️ IMPORTANT: Each increment tests the COMPLETE end-to-end workflow. Do NOT test partial paths. The same workflow runs in every increment with different complexity.**
+   Present to the user:
+   - What was just implemented (infrastructure or complexity added)
+   - Summary of test scenarios/validations at this level
+   - Any issues encountered and resolutions
+   - New uncertainties discovered (if any)
+   - What comes next (if not the final increment)
    
-   **Increment 0: Test Harness Setup (Infrastructure Only)**
+   **WAIT for explicit user signal** (e.g., "continue", "next", "proceed")
    
-   a. **Test Harness Setup**:
-      - Create the complete test infrastructure for the E2E workflow
-      - Set up handling for external dependencies
-      - Configure test environment as needed
-      - Create helper functions for:
-        - Building test inputs
-        - Managing test data lifecycle
-        - Asserting on workflow outputs
-        - Controlling test scenarios
-      - Implement utilities for test execution
-      - **NO ACTUAL TESTS YET - only infrastructure**
-      - Document the approach and any assumptions
-      
-   b. **Setup Validation**:
-      - Create validation that verifies the test infrastructure is ready:
-        - All necessary components can be initialized
-        - External dependencies are properly handled
-        - Test data management works correctly
-        - Helper functions operate as expected
-        - The complete E2E workflow can be invoked without errors
-      - **CRITICAL: Show actual code snippets for the validation checks**
-      - Include assertions that prove each part of the infrastructure works
-      - This validation ensures the harness is ready for actual tests
-      - Focus on proving the infrastructure works, not testing business logic
-      
-   c. **Validation and Debugging**:
-      - Run the setup validation
-      - Fix any infrastructure issues
-      - Document the test harness architecture
-      - Note any limitations or assumptions
-      
-   d. **Commit and Progress**:
-      - Execute: `git add [test_infrastructure_files] && git commit -m "E2E TEST: [workflow name] - Test harness setup"`
-      - **🛑 STOP HERE - INCREMENT 0 CHECKPOINT**
-        - Present:
-          1. Test harness architecture overview
-          2. Strategy for handling external dependencies
-          3. Helper functions created
-          4. **Setup validation code showing the infrastructure works correctly**
-          5. Any setup uncertainties or assumptions
-          6. Validation results confirming infrastructure is ready
-        - Wait for user signal to continue (e.g., "continue", "next", "proceed")
-        - User may want to:
-          - Review the test infrastructure
-          - Run the validation code themselves
-          - Suggest different approaches
-          - Add additional helpers
-          - Question assumptions
-        - DO NOT automatically proceed to Increment 1
+   The user may want to:
+   - Review the code
+   - Run tests themselves  
+   - Request modifications
+   - Skip remaining increments
+   - Address new uncertainties
    
-   e. **Infrastructure Ready**: 
-      - Only after user approval of harness
-      - Infrastructure is now ready for actual E2E tests
-      - Proceed to Increment 1
-   
-   **Increment 1+ (Actual E2E Tests - After harness approval):**
-   
-   a. **Test Implementation** (extends existing harness):
-      - For increment 1: Write the first actual E2E test using the harness
-      - For increments 2+: Extend existing tests with new complexity
-      - Use the infrastructure created in Increment 0
-      - Include comment for each logical section
-      - Make assertions explicit with CAPITAL letter comments
-      - Ensure test infrastructure can handle next complexity level
+   **DO NOT proceed without explicit approval**
 
-   b. **Test Execution**:
-      - Run the tests for the current increment
-      - Verify the complete E2E workflow executes
-      - Check that all assertions pass
-      - Note any unexpected behaviors
+**c. Special Considerations by Increment**
 
-   c. **Validation and Debugging**:
-      - If tests fail:
-        - Analyze the failure
-        - Debug the implementation issue
-        - Document the issue and resolution
-      - **If new uncertainties arise during implementation:**
-        - STOP and document the uncertainty with a confidence level
-        - For ⚠️LOW uncertainties: Document clearly and ask for guidance before proceeding
-        - For 🟡MEDIUM/🟢HIGH: Note the assumption and continue, but flag for review
-        - Do not make assumptions about critical behavior
-      - Only proceed to next increment after current tests pass
+- **Increment 0 (Test Harness)**:
+  - Focus on infrastructure validation, not business logic
+  - Show actual validation code that proves harness works
+  - No actual tests yet - only setup and validation
 
-   d. **Commit and Progress**:
-      - Execute: `git add [test_files] && git commit -m "E2E TEST: [workflow name] - [complexity level description]"`
-      - Document what was tested and validated
-      - **🛑 STOP HERE - INCREMENT CHECKPOINT**
-        - Present:
-          1. What complexity was just added to the E2E test
-          2. Summary of test scenarios at this complexity level
-          3. Any issues encountered and how they were resolved
-          4. What complexity dimension will be added next (if applicable)
-        - Wait for user signal to continue (e.g., "continue", "next", "proceed")
-        - User may want to:
-          - Review the test code
-          - Run the tests themselves
-          - Suggest modifications
-          - Skip remaining complexity increments
-        - DO NOT automatically proceed to the next increment
-      - Only proceed to next increment after user approval
-      - Prepare harness extensions needed for next increment
+- **Increments 1+ (Actual Tests)**:
+  - Each builds on previous increment
+  - Add new test cases, don't replace existing ones
+  - Make complexity explicit in test names and comments
+  - Maintain all previous validations
 
-   e. **Test Extension** (for increments 2+, after previous increment approved):
-      - Extend existing test infrastructure to handle new complexity
-      - Add new test cases for the complexity dimension
-      - Reuse existing assertions and add complexity-specific ones
-      - Maintain all previous test validations
+### 6. Key Implementation Principles
 
-7. **Final Integration Validation** (Only after all complexity increments are complete and approved):
-   - After all complexity increments are complete, run the full test suite
-   - Verify that each complexity level still passes
-   - Confirm the most complex test exercises all dimensions together
-   - Document the complete end-to-end test coverage achieved across all complexity dimensions
-   - Create a final commit summarizing the incremental complexity testing completed
+**Core Requirements**:
+- ✅ Start with infrastructure (Increment 0) before any tests
+- ✅ Test the complete E2E workflow in every increment
+- ✅ Add only one complexity dimension per increment
+- ✅ Stop after EVERY commit for user inspection
+- ✅ Never proceed without explicit approval
 
-**Key Principles**:
-- **Start with infrastructure** - Increment 0 validates the test harness before any tests
-- **Always communicate uncertainty** - Identify areas where you lack confidence
-- **Stop after every commit** - Allow user inspection at each increment
-- **Test the complete workflow from the start** - Every test is end-to-end
-- **Add complexity incrementally** - Start simple, add one dimension at a time
-- **Complexity dimensions**: harness → data variety → edge cases → errors → concurrency → performance
-- Each test increment adds complexity to the SAME workflow
-- Never remove or replace tests, only extend them
-- Debug and fix issues at each increment before proceeding
-- Use minimal external dependency simulation - prefer real component interactions
-- Maintain clear documentation of what complexity each increment adds
-- **Flag any assumptions made about component behavior**
-- **Never proceed past a checkpoint without explicit user approval**
+**Technical Approach**:
+- Build on previous increments, never replace them
+- Extend test infrastructure to handle new complexity
+- Use descriptive test names indicating complexity level
+- Prefer real component interactions over heavy mocking
+- Document what each increment adds and why
 
-**Formatting and Output Directives:**
-- Use clear comments to show path progression
-- Present each increment's tests in separate code blocks
-- Include a summary table showing the incremental test progression
-- Document any debugging steps taken between increments
+**Uncertainty Handling**:
+- Always flag new uncertainties with confidence levels
+- For ⚠️LOW confidence issues: stop and ask for help
+- Document all assumptions made during implementation
+- The user values knowing what you're uncertain about
 
-**🚨 CRITICAL REMINDER: This is a TWO-PHASE process with mandatory stops:**
-1. **Phase 1**: Analyze code, identify uncertainties, present test plan → STOP and wait for clarification/approval  
-2. **Phase 2**: Implement tests incrementally → Multiple STOPS after each commit for inspection
+**Output Format**:
+- Present each increment's code in separate blocks
+- Use clear comments showing the E2E workflow
+- Include a summary table of test progression
+- Document any debugging steps taken
 
-**Within Phase 2, you MUST stop after EVERY commit to allow user inspection.**
+---
 
-**Never skip ahead or assume approval. Each phase and each increment requires explicit user interaction.**
+## 🚨 CRITICAL PROCESS REMINDERS
 
-**Remember: Identifying what you don't understand is just as important as planning what you do understand. The user EXPECTS and VALUES uncertainty identification.**
+**This is a TWO-PHASE process with mandatory stops:**
+
+1. **Phase 1**: Analyze → Identify Uncertainties → Present Plan → **🛑 STOP** (await approval)
+2. **Phase 2**: Implement Incrementally → **🛑 STOP after EACH commit** (await "continue")
+
+**You MUST:**
+- Wait for explicit approval before starting Phase 2
+- Stop after EVERY commit in Phase 2
+- Never skip checkpoints or assume approval
+- Always present uncertainties prominently
+
+**Remember**: Identifying what you don't understand is just as valuable as planning what you do understand. The user EXPECTS and VALUES uncertainty identification.
 
 ### System Under Test
 <system_under_test>
