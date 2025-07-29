@@ -791,7 +791,7 @@ PHASE 2: Test Harness Setup → Commit → 🛑 STOP (await "continue")
          - Complete test infrastructure for the E2E workflow
          - Handling for external dependencies (mocks, stubs, or real services)
          - Test environment configuration
-         - Helper functions for:
+         - **Helper functions for**:
            - Building test inputs
            - Managing test data lifecycle
            - Asserting on workflow outputs
@@ -1406,6 +1406,7 @@ You are a senior software engineer tasked with analyzing and implementing soluti
        - **This step should result in a compilable, testable foundation even if features aren't complete**
        - **Confidence level**: [🔴 CRITICAL/🟠 LOW/🟡 MEDIUM/🟢 HIGH] for core plumbing implementation
        - **Files to modify/create**: [List specific files for the plumbing step]
+       - **Log lines**: As an expert debugging specialist, plan specific log lines for this step to illuminate the callpath and runtime behavior. Use the convention: ideally 1 log line per function with prefix (class/module + User's Goal abbreviation + call order), function name, and semantic message. Example format: `PS_DIAG_INFO(d_, "RENDER_BUFFER 1: example_func - semantic message with relevant variables");` If existing log lines are present, modify them to follow the prefix convention.
        - **Commit message**: "NEED_REVIEW: Add core plumbing for [feature/goal]"
      - **Step-by-Step Feature Implementation:** After core plumbing, break down remaining features into manageable tasks:
        - For each subsequent step:
@@ -1413,6 +1414,7 @@ You are a senior software engineer tasked with analyzing and implementing soluti
          - Identify the file(s) that will be modified or created.
          - Explain the specific code changes or logic you intend to implement within those files -> and **how they contribute to the overall goal**
          - **Confidence level**: [🔴 CRITICAL/🟠 LOW/🟡 MEDIUM/🟢 HIGH] for this specific implementation step
+         - **Log lines**: Plan specific log lines for this step to monitor the callpath and confirm the implementation works. Follow the same logging convention as Step 1. Explain the sequencing/ordering of these log lines.
          - **Build incrementally**: Each step should add ONE clear piece of functionality to the working foundation
          - **If there are multiple options for implementation, present them all to the user. Rank the options in terms of relevance.**
      - **Commit Strategy:** Reiterate that you will commit changes (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`) after completing logical units of work. **The FIRST commit will always be the core plumbing setup.**
@@ -1458,6 +1460,7 @@ You are a senior software engineer tasked with analyzing and implementing soluti
      - Avoid silent failures
      - Use early returns
      - Log key decision points
+   - **Define Helper Functions for Abstractions**
    - **Document as you go**:
      - Add comments for non-trivial logic
      - Document assumptions made

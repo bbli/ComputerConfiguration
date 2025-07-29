@@ -235,3 +235,6 @@ nnoremap <leader>fr <cmd>lua vim.lsp.buf.rename()<CR>
 " nnoremap <leader>jr <cmd>lua vim.lsp.buf.incoming_calls()<CR>
 " nnoremap <leader>ji <cmd>lua vim.lsp.buf.implementation()<CR>
 ]])
+vim.diagnostic.config({
+  underline = false,
+})
