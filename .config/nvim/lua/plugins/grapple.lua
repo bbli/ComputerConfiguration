@@ -18,7 +18,7 @@ return {
         end,
         desc = "Clear All Harpoon Tags",
       },
-      -- grapple log -> gl
+      -- grapple log -> hl
       {
         "<leader>hl",
         function()
@@ -95,6 +95,21 @@ return {
           require("grapple").select({ name = "other" })
         end,
         desc = "Jump to Other Tag",
+      },
+      -- grapple plan -> hp
+      {
+        "<leader>hp",
+        function()
+          require("grapple").tag({ name = "plan" })
+        end,
+        desc = "Grapple Plan Tag",
+      },
+      {
+        "<leader>jp",
+        function()
+          require("grapple").select({ name = "other" })
+        end,
+        desc = "Jump to Plan Tag",
       },
     },
   },
