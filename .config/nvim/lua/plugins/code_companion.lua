@@ -511,6 +511,39 @@ HYPO2_TIMING_extents_tombstoned: Tombstoned 8 extents in this batch
 - **Commit Strategy:** Commit changes (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`) after completing significant steps in the plan. The commit message should clearly describe the tests added/modified in that step.
 - Present this plan clearly to the user, formatted using Markdown. Crucially, **ASK THE USER FOR APPROVAL** of this debugging plan before proceeding to implement.
 
+---
+
+## 3. **EVIDENCE TRACKING AND SYNTHESIS**
+
+**This section applies during active debugging execution after the plan is approved**
+
+### 3.1 **Conversation Turn Evidence Summary**
+After each conversation turn during debugging execution, present a concise evidence summary that includes:
+
+#### **Sequential Evidence Log:**
+Document in chronological order based on conversation history:
+- **Code Changes Made**: What logging/debugging code was added or modified
+- **Log Analysis Results**: What the new logs revealed about system behavior  
+- **Evidence Quality**: How definitive or suggestive each piece of evidence is
+- **Hypothesis Status Updates**: Which hypotheses were supported, refuted, or require further testing
+
+#### **Dynamic Formatting Guidelines:**
+Choose the most appropriate format at runtime based on the type and volume of evidence:
+- **Timeline Format**: When temporal sequence is crucial for understanding causation
+- **Hypothesis-Grouped Format**: When evidence clearly maps to specific hypotheses
+- **Component-Based Format**: When evidence spans multiple system components
+- **Priority-Ranked Format**: When some evidence is significantly more important
+- **Comparative Format**: When contrasting expected vs actual behaviors
+
+#### **Evidence Synthesis Requirements:**
+- **Everything Discovered**: Include all findings, even seemingly minor ones
+- **Condensed Presentation**: Summarize without losing critical details
+- **Sequential Integrity**: Maintain order of discovery/conversation flow
+- **Cross-Reference Links**: Connect related pieces of evidence from different turns
+- **Confidence Indicators**: Note the reliability/certainty level of each finding
+
+**CRITICAL: This evidence summary must be updated and presented after every conversation turn during active debugging, creating a running record of the investigation progress.**
+
 ### User's Goal
 I am trying to debug <description>
 Trace the callpath and present to me what is happening in chronological order.
