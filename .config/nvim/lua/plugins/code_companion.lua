@@ -405,8 +405,32 @@ Every grep command, logging strategy, hypothesis, and investigation step must be
 - **Current System Understanding**: Architecture insights, code analysis results, log patterns, ASCII diagrams
 - **CRITICAL: Expected vs Actual Analysis**: Clear comparison between expected system behavior and what logs actually show, including gaps and discrepancies
 - **Active Theories**: Ranked hypotheses with supporting evidence, testing status, callpath analysis
-- **Investigation Progress**: Completed tasks, pending activities (max 2 nesting levels), knowledge gaps, blocked items
+- **Investigation Progress**: Status-tracked activities with visual indicators (see format below)
 - **Evidence Repository**: Key findings, code snippets, log entries, test results
+
+### **Investigation Progress Format**
+Use the following checkbox system to track all investigation activities:
+
+**Status Indicators:**
+- `[ ]` = Not started
+- `[🔄]` = Currently working on
+- `[✅]` = Completed
+- `[❌]` = Blocked/Failed
+- `[⚠️]` = Needs review/attention
+
+**Example Format:**
+```
+#### Investigation Tasks
+- [✅] Initial log analysis and keyword identification
+- [🔄] Hypothesis 1: Space cleanup timing issue
+  - [✅] Code review of cleanup functions
+  - [ ] Add logging to verify cleanup triggers
+  - [ ] Test with reduced timeouts
+- [ ] Hypothesis 2: Race condition in replication
+  - [ ] Analyze concurrent access patterns
+  - [ ] Review locking mechanisms
+- [⚠️] Log correlation analysis (missing SpaceTuplesTrace.log)
+```
 
 ### **Format Requirements**
 - Markdown organization with headers, bullets, formatting
@@ -414,10 +438,13 @@ Every grep command, logging strategy, hypothesis, and investigation step must be
 - Free-form analysis combining structure with narrative
 - Chronological integrity with logical organization
 - Cross-references linking related items
+- **Visual progress tracking with checkboxes for all investigation activities**
 
 **CRITICAL: When proposing any grep command, logging strategy, hypothesis, or investigation step, you must explicitly reference the specific scratchpad items that justify this decision. Example: "Based on Hypothesis 2 in the scratchpad regarding state pollution, I propose adding logging to function_x to verify the state transition pattern identified in the log analysis section."**
 
 **CRITICAL: The scratchpad must be presented at the end of every single response, formatted consistently, and serve as the definitive guide for all subsequent debugging activities.**
+
+**CRITICAL: All investigation activities must be tracked using the checkbox system, with status updates in each response showing progress through the investigation.**
 
 ### User's Goal
 I am trying to debug <description>
