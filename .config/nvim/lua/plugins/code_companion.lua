@@ -317,15 +317,12 @@ Search for files, functions, references, or tests relevant to the User's Problem
 - **Callpath Integration**: Identify how code fits into execution paths from tests or main functions
 
 ### 1.2 **Strategic Log Analysis Keywords**
-Develop comprehensive strategy for searching log files:
+Develop comprehensive strategy for searching log files, such as:
 
-**Primary Keywords:**
-- Core domain terms, error messages, function/method names
-- Transaction/request IDs, service/component names, timing markers
+- Transaction/request IDs
+- **Service/Component/Class names**
+- Timing markers
 
-**Secondary Keywords:**
-- Related operations, state indicators, user/session identifiers
-- Configuration markers, resource indicators
 
 **CRITICAL: Present your initial keyword list to the user and iterate until they're satisfied with the coverage for log analysis. Add the agreed-upon keywords to the Debugging Scratchpad for reference.**
 
