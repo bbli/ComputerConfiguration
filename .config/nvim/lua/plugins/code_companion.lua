@@ -323,8 +323,7 @@ Develop comprehensive strategy for searching log files, such as:
 - **Service/Component/Class names**
 - Timing markers
 
-
-**CRITICAL: Present your initial keyword list to the user and iterate until they're satisfied with the coverage for log analysis. Add the agreed-upon keywords to the Debugging Scratchpad for reference.**
+**CRITICAL: these keywords suggestions should come from log lines from the codebase. So please cite your sources for each one**
 
 ### 1.3 **Apply Log Analysis Plan**
 When user provides logs, systematically apply keywords:
@@ -521,7 +520,7 @@ In your analysis, do the following:
 4. **SUMMARY Section:**
    - Conclude your response with a `SUMMARY` section, formatted as a Markdown header.
    - Use bullet points to concisely present the main findings and insights.
-   - Include a relevant visualization (such sequence, state, component diagrams, flowchart, free form ASCII text diagrams with simplified data structures) to clarify KEY CONCEPTS. **Analogies would be helpful as well**
+   - Include a relevant visualization (such sequence, state, component diagrams, flowchart, free form ASCII text diagrams with simplified data structures) to clarify KEY CONCEPTS. **ANALOGIES would be helpful as well**
 
 After your analysis, suggest log lines to add to the codebase. For each log line, show:
 - The simplified code location (function/method name with minimal context)

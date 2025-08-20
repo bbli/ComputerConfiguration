@@ -210,6 +210,7 @@ vmap <leader><leader>c gc
 vnoremap Y :'<,'>w! ~/copy.txt<CR>
 
 nnoremap <leader><leader>m @m
+vnoremap <leader><leader>m :'<,'>normal @m
 nnoremap <leader><leader>j 'm
 nnoremap <leader>ob :CreateUnitTestFile 
 ]])
