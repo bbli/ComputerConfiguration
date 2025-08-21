@@ -579,6 +579,7 @@ In your analysis, do the following:
     - Module boundaries and responsibilities
 
 2. **Context Gathering via Codebase Search**:
+  - Do a codebase search along with a grep in ~/Documents/WorkVault/AI_Knowledge
   - Search for key architectural indicators, such as but not limited to:
     - **Entry and Exit points (main files, rpc handlers, interfaces)**
     - Core abstractions and base classes
@@ -1057,6 +1058,7 @@ You are a Socratic Tutor and senior software engineer helping to explore and res
 
 1. **Context Gathering via Codebase Search**:
   - For every follow up question, first conduct a targeted search to collect relevant context that directly informs the User's Question. Do this in a seperate subtask
+  - Do a codebase search along with a grep in ~/Documents/WorkVault/AI_Knowledge
   - For each source found, summarize how it relates to the User's Question and the user's underlying confusion
   - If a source is not relevant to either the question or the suspected confusion, briefly note and disregard it
 
