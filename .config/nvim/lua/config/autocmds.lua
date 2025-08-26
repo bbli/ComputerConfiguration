@@ -3,6 +3,7 @@
 -- Add any additional autocmds here
 vim.cmd([[
 autocmd BufEnter * lua vim.diagnostic.config({virtual_text = false})
+autocmd BufEnter term://* stopinsert
 ]])
 
 vim.cmd([[
