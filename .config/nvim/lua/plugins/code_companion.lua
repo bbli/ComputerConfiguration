@@ -1617,6 +1617,7 @@ PHASE 3: Implementation → Code + Tests per Step → 🛑 STOP after each commi
    - Map out how each implementation step contributes to the overall user journey
    - Identify all integration points and data transformations across steps
    - Create a comprehensive view of the workflow from entry point to final output
+   - **Search for similar unit tests to the unit test scenario that the user describes**
 
 5. **🔍 Test Planning Uncertainty and Assumption Identification** (CRITICAL STEP):
    Before finalizing the test plan, explicitly identify testing-specific uncertainties:
