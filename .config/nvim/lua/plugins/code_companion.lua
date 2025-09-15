@@ -1773,8 +1773,8 @@ PHASE 3: Implementation → Code + Tests per Step → 🛑 STOP after each commi
 
 ### **User's Goal:**  
 <Users_Goal>  
-<Example/First_Step>
 <Base Implementation>  
+<Unit_Test_Scenario>
 ]]
               end,
             },

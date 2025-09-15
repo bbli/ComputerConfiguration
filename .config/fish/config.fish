@@ -236,7 +236,7 @@ end
 
 ## Starship prompt
 if status --is-interactive
-    source ("/usr/bin/starship" init fish --print-full-init | psub)
+    source (starship init fish --print-full-init | psub)
 end
 
 # Set settings for https://github.com/franciscolourenco/done
