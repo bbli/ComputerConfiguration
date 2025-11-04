@@ -655,8 +655,8 @@ Use the following checkbox system to track all validation activities:
 ### User's Goal
 I am trying to debug <description>
 Trace the callpath and present to me what is happening in chronological order.
-<check_setup>
 Outline what you think the issue is and present a sequence diagram to the user to confirm your understanding.
+<log_file>
 
 ]]
               end,
@@ -701,7 +701,6 @@ In your analysis, do the following:
      - Potentially problematic or confusing
      - Have complex logic or unexpected behavior
      - Appear to be workarounds or have TODO/FIXME comments
-   - **For these critical segments ONLY, request git blame information in the format: `git blame -L <line_number>,<line_number> <file_path>`
    - Perform this action in a seperate task if possible, so as to not clutter the current context window. This task should return the files it deems most applicable to the User's Question.
 
 3. **Step-by-Step Breakdown:**
@@ -1722,11 +1721,6 @@ PHASE 3: Implementation → Code + Tests per Step → 🛑 STOP after each commi
        - **This step should result in a compilable, testable foundation even if features aren't complete**
        - **🧪 Testing strategy**: [TO BE FILLED IN PHASE 2]
        - **Files to modify/create**: [List specific files for the plumbing step]
-       - **Log lines**: As an expert debugging specialist, plan specific log lines for this step to illuminate the callpath and runtime behavior. Use the following convention:
-         - ideally 1 log line per function 
-         - with prefix (class/module + User's Goal abbreviation + call order), function name, and semantic message. Example format: `PS_DIAG_INFO(d_, "RENDER_BUFFER 1: example_func - semantic message with relevant variables");` 
-         - If existing log lines are present, modify them to follow the prefix convention.
-         - CRITICAL: afterwards explain how this sequence of log lines illuminates the callpath
        - **Commit message**: "NEED_REVIEW: Add core plumbing for [feature/goal]"
      - **Step-by-Step Feature Implementation:** After core plumbing, break down remaining features into manageable tasks:
        - For each subsequent step:
@@ -1734,7 +1728,6 @@ PHASE 3: Implementation → Code + Tests per Step → 🛑 STOP after each commi
          - Identify the file(s) that will be modified or created.
          - Explain the specific code changes or logic you intend to implement within those files → and **how they contribute to the overall goal**
          - **🧪 Testing strategy**: [TO BE FILLED IN PHASE 2]
-         - **Log lines**: Plan specific log lines for this step to monitor the callpath and confirm the implementation works. Follow the same logging convention as Step 1. Explain the sequencing/ordering of these log lines.
          - **Build incrementally**: Each step should add ONE clear piece of functionality to the working foundation
          - **If there are multiple options for implementation, present them all to the user. Rank the options in terms of relevance.**
      - **Commit Strategy:** Reiterate that you will commit changes (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`) after completing logical units of work. **The FIRST commit will always be the core plumbing setup.**
