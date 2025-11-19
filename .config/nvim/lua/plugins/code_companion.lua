@@ -654,10 +654,11 @@ Use the following checkbox system to track all validation activities:
 
 ### User's Goal
 I am trying to debug <description>
-Trace the callpath and present to me what is happening in chronological order.
-Outline what you think the issue is and present a sequence diagram to the user to confirm your understanding.
-<log_file>
 
+First, trace the callpath and present to me what is happening in chronological order.
+<Test Specific Events>
+
+Support your answer with log lines from the log file: <log_file>
 ]]
               end,
             },
