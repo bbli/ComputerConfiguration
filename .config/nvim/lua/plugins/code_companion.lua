@@ -656,7 +656,7 @@ Use the following checkbox system to track all validation activities:
 I am trying to debug <description>
 
 First, trace the callpath and present to me what is happening in chronological order.
-<Test Specific Events>
+<Test_Specific_Events>
 
 Support your answer with log lines from the log file: <log_file>
 ]]
@@ -1380,9 +1380,22 @@ Risk Points:
 
 Using the context established in Phase 1, structure your review using Markdown headers for each major concern area:
 
-1. **Correctness Issues**:
+1. **Correctness Issues (CRITICAL)**:
   - Identify any logical errors or incorrect implementations
   - Justify findings with direct code snippets, including line numbers and filenames
+  - **Caller Impact Analysis (CRITICAL)**:
+    - **Search the codebase for all callers of modified functions**
+    - For each modified function signature (parameters added/removed/reordered, return type changed, exceptions modified):
+      - Identify all call sites in the codebase
+      - Verify each caller is compatible with the changes
+      - Check if callers handle new error conditions or return values
+      - Validate that removed parameters aren't being passed by existing callers
+      - Confirm new required parameters are provided by all callers
+    - For functions with changed behavior (even without signature changes):
+      - Identify callers that may depend on the old behavior
+      - Assess if the new behavior could break existing assumptions
+      - Check for callers in unexpected locations (tests, scripts, configuration)
+    - **List all affected callers and their compatibility status**
 
 2. **Edge Cases and Control Flow Analysis**:
   - Think critically about edge cases for newly implemented code
@@ -1390,9 +1403,42 @@ Using the context established in Phase 1, structure your review using Markdown h
   - **Point out any gaps in test coverage**
   - When applicable, demonstrate how test code interacts with the main codebase changes
 
-3. **Logging and Debugging Analysis**:
+3. **Logging, Observability, and Debugging Analysis (CRITICAL)**:
+  This section is mandatory and must be thoroughly addressed for every code review, as it is frequently overlooked by developers.
+  
+  **Logging:**
   - Point out any changes to existing log lines and critique their effectiveness
-  - **Analyze whether new log lines are needed, especially for failure cases**
+  - **Analyze whether new log lines are needed, especially for:**
+    - Failure cases and error conditions
+    - Entry and exit points of critical functions
+    - State transitions or important decision points
+    - Integration points with external services or databases
+  - Evaluate log levels (DEBUG, INFO, WARN, ERROR) for appropriateness
+  - Check if logs contain sufficient context (request IDs, user IDs, relevant parameters) for debugging
+  - Verify that sensitive data (passwords, tokens, PII) is not being logged
+  
+  **Metrics and Monitoring:**
+  - **Identify where metrics should be added or updated:**
+    - Performance metrics: latency, duration, processing time for new or modified operations
+    - Business metrics: counts of important events (requests, transactions, conversions)
+    - Error rates and failure counts for new error paths
+    - Resource utilization: database connections, memory usage, queue depths
+  - Consider which metrics need aggregation (counters, gauges, histograms)
+  - Evaluate if existing metrics need to be updated or removed due to code changes
+  - **Think about alerting implications:** What metric thresholds would indicate problems?
+  
+  **Tracing and Distributed Context:**
+  - For operations that span multiple services or components:
+    - Verify trace context propagation (span creation, context passing)
+    - Check if new external calls or async operations need trace instrumentation
+    - Identify operations that should be captured as distinct spans
+  - For complex operations, consider if trace attributes/tags should be added for filtering
+  - Evaluate if parent-child span relationships are correctly maintained
+  
+  **Debugging Considerations:**
+  - Assess if the changes provide sufficient information to diagnose production issues
+  - Identify code paths where additional observability would significantly reduce MTTR (Mean Time To Resolution)
+  - Consider: "If this fails in production at 3 AM, what information would I need to debug it?"
 
 4. **Deleted Code Regression Analysis**:
   - **Analyze if deleted or modified code had important side effects or edge case handling**:
@@ -1400,6 +1446,7 @@ Using the context established in Phase 1, structure your review using Markdown h
     - Identify if deleted code provided critical fallback mechanisms
     - Review if modified code removes important validation or safety checks
     - Look for deleted code that managed state transitions or cleanup operations
+    - **Check if deleted code had logging, metrics, or tracing that needs to be preserved**
   - Verify that replacement code maintains the same level of robustness
 
 5. **Code Quality and Maintenance**:
@@ -1457,6 +1504,8 @@ After completing the code review analysis, perform a focused investigation to id
 
 Conclude with a `SUMMARY` section using:
 - Bullet points for main findings and recommendations from Phase 2
+- **CALLER COMPATIBILITY ISSUES (CRITICAL)**: List all affected callers of modified functions and their compatibility status
+- **LOGGING AND OBSERVABILITY RECOMMENDATIONS (CRITICAL)**: Summarize key logging, metrics, and tracing additions needed
 - **UNIT TESTS TO RUN (CRITICAL)**: Present the specific unit test recommendations from Phase 3, including:
   - Exact test file paths and test names
   - Step-by-step reasoning for each recommended test
@@ -1466,6 +1515,7 @@ Conclude with a `SUMMARY` section using:
 
 ## Guidelines:
 - **All items marked with (CRITICAL) are mandatory requirements that must be addressed in every review**
+- **ALWAYS search the codebase for callers of modified functions - this is critical to prevent breaking changes**
 - Only provide feedback where changes are actually needed
 - Skip files that don't require any modifications
 - Justify all reasoning with specific code examples
@@ -1473,6 +1523,12 @@ Conclude with a `SUMMARY` section using:
 - Focus on actionable, specific suggestions rather than general advice
 - **Phase 3 unit test recommendations must be based on the specific issues and risks identified in Phase 2**
 - **ALWAYS include specific unit tests to run in the summary with detailed reasoning - this is a critical requirement**
+- **ALWAYS include logging and observability analysis and recommendations - this is frequently overlooked and is critical for production support**
+- **ALWAYS include caller compatibility analysis in the summary - breaking changes to callers are a critical risk**
+
+### User's Goal
+<pr_intention>
+
 
 ### User's Goal
 <pr_intention>
