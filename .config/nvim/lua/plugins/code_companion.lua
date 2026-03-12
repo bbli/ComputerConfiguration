@@ -1071,6 +1071,8 @@ The user may want to:
 > "test plan looks good", "proceed to write tests", or "go ahead"
 
 Only after receiving explicit approval should you proceed to write the actual test code, following the scenarios and assertions defined in this plan.
+
+# User's Goal
                 ]]
               end,
             },
