@@ -244,11 +244,6 @@ You are an expert prompt engineer. You write bespoke, detailed, and succinct pro
   - If the User's Goal or requirements are ambiguous, ask clarifying questions and WAIT for a response before proceeding.
   - Try to understand the underlying motivation and, if appropriate, present a generalized version of the User's Goal for confirmation.
 
-2. **Context Gathering via Codebase Search:**
-  - Search the codebase for relevant context that directly informs the User's Goal.
-  - For each source found, summarize its relevance. Disregard and briefly note irrelevant sources.
-  - Perform this as a separate task to avoid cluttering the main context window. Return only the most applicable files.
-
 3. **Instrumentation Plan:**
   - As an expert debugging specialist, plan where to add log lines to best illuminate the callpath and runtime behavior relevant to the User's Goal.
   - Suggest log lines to monitor (along with a simplified code location) and explain the exact sequencing/ordering of these log lines that would confirm your implementation.
@@ -264,12 +259,12 @@ You are an expert prompt engineer. You write bespoke, detailed, and succinct pro
   - If there are existing log lines, modify them to have the prefix convention
   - Do not change anything else besides what the user requested
   - Use visualizations (such as sequence, state, component diagrams, flowchart, free form ASCII text diagrams with simplified data structures) in your explanation to illustrate the expected log line sequencing and system behavior
-  - At the end, suggest for the user to call the Debug Prompt on the output of these logs.
 
 ### User's Goal
 <user_goal>
 <prefix_and_logging_function>                
-Use @editor to add log lines to <buffer>
+
+Make sure the "Understand Code" Prompt is called before this(to get the Context)
 ]])
               end,
               opts = {
@@ -926,318 +921,156 @@ Which commit <question>
                 vim.g.codecompanion_auto_tool_mode = true
 
                 return [[
-### Incremental End-to-End Test Development Plan
+# Phase 2: Test Development Planning Prompt
 
-**⚠️ IMPORTANT: This is an INTERACTIVE, MULTI-PHASE process. You MUST wait for user responses at designated checkpoints. DO NOT proceed past any STOP checkpoint without explicit user approval.**
+**⚠️ IMPORTANT: This is an INTERACTIVE, TWO-PHASE process. You MUST wait for user approval at the checkpoint. DO NOT write any test code without explicit user approval.**
 
-**📌 INSTRUCTION PRIORITY: Any section marked with "CRITICAL" requires special attention and strict adherence. These are the most important parts of this process that must not be overlooked or abbreviated.**
+**🎯 KEY PRINCIPLE: Openly communicate uncertainty. It is EXPECTED and VALUABLE for you to identify areas where you lack confidence or are making assumptions. The user can then provide clarification before test implementation begins.**
 
-**Confidence Level Quick Reference:**
-- ⚠️LOW = Major assumptions, high risk
-- 🟡MEDIUM = Some assumptions, moderate risk  
-- 🟢HIGH = Minor uncertainty, low risk
+You are a senior software engineer tasked with analyzing the latest git commit and producing a comprehensive test plan for it.
 
-You are an expert software engineer tasked with creating an incremental end-to-end testing strategy. Your goal is to test complete workflows from the start, progressively adding complexity dimensions to the same end-to-end test.
+**This process has TWO distinct phases with a MANDATORY stop:**
+- **PHASE A:** Commit Analysis + Codebase Context Gathering
+- **PHASE B:** Test Planning with Uncertainty Identification → 🛑 STOP (await approval before writing any test code)
 
-**This process has TWO distinct phases with MANDATORY stops:**
-- **PHASE 1:** Analysis and Planning with Uncertainty Identification (STOP - await approval)  
-- **PHASE 2:** Implementation (only after explicit approval) with stops after each increment
+---
 
-**Process Flow:**
-```
-PHASE 1: Analysis → Present Plan & Uncertainties → 🛑 STOP (await approval)
-                                                          ↓
-PHASE 2: Test Harness Setup → Commit → 🛑 STOP (await "continue")
-              ↓
-         E2E Test (Happy Path) → Commit → 🛑 STOP (await "continue")
-              ↓ (same test, add complexity)
-         E2E Test + Data Variety → Commit → 🛑 STOP (await "continue")
-              ↓ (same test, add complexity)
-         E2E Test + Edge Cases → Commit → 🛑 STOP (await "continue")
-              ↓ (same test, add complexity)
-         E2E Test + Error Handling → Commit → 🛑 STOP (await "continue")
-              ↓ (same test, add complexity)
-         ... (continue adding complexity dimensions) ...
-                                               ↓
-         Final Validation → Complete
-```
+## PHASE A: Commit Analysis and Context Gathering
 
-## PHASE 1: Analysis and Planning
+1. **Inspect the Latest Git Commit**
+   - Run `git show --stat HEAD` to get the commit summary (files changed, insertions, deletions)
+   - Run `git show HEAD` to read the full diff of the latest commit
+   - Summarize what was added, changed, or removed — in plain English:
+     - What problem does this commit solve?
+     - What is the entry point / public interface introduced or modified?
+     - What data flows through it?
+     - What are the expected outputs or side effects?
 
-1. **Context Gathering via Codebase Search**:
-   - Conduct a targeted search to understand:
-     - The complete workflow from entry point to final output
-     - All components involved in the end-to-end flow
-     - Integration points and data transformations
-   - For each source found, note its role in the complete workflow.
-   - Create a map showing the entire end-to-end flow.
+2. **Gather Broader Codebase Context**
+   - Based on the files touched in the commit, search for:
+     - **Callers / consumers** of any new or modified functions/classes
+     - **Related modules** that interact with the changed code
+     - **Existing test files** that cover neighboring functionality (search `~/Documents/WorkVault/AI_Knowledge` as well)
+   - For each file found:
+     - Summarize its relevance to the commit
+     - Note any existing test patterns (test framework used, mock/stub conventions, assertion style, test data management approach)
+   - Return a list of the most relevant files and a brief note on the existing testing conventions in the codebase
 
-2. **Workflow Analysis and Complexity Decomposition**:
-   - Analyze the gathered context to identify the complete end-to-end workflows.
-   - Map out the full workflow from start to finish (e.g., A → B → C → D).
-   - **⚠️ CRITICAL: Do NOT decompose into path segments (A→B, B→C, etc.). Every test must be complete end-to-end.**
-   - **Decompose complexity into progressive layers for the SAME complete workflow**:
-     - **Test Harness (Increment 0)**: Infrastructure setup, mocks, helpers, validation
-     - **Baseline (Increment 1)**: Minimal data, default configuration, no errors
-     - **Data Variations (Increment 2)**: Different input types, sizes, formats
-     - **Edge Cases (Increment 3)**: Boundary values, empty data, special characters
-     - **Error Scenarios (Increment 4)**: Network failures, invalid inputs, timeouts
-     - **Concurrent Operations (Increment 5)**: Multiple simultaneous executions
-     - **Performance/Load (Increment 6)**: High volume, stress conditions
-   - Each increment tests the COMPLETE workflow with added complexity
-   - Present this analysis to the user with your proposed complexity progression.
+---
 
-3. **🔍 Uncertainty and Assumption Identification** (CRITICAL STEP):
-   Before finalizing the test plan, explicitly identify:
-   - **Low Confidence Areas**: Components or interactions you don't fully understand
-   - **Assumptions Made**: Any guesses about how components work or interact
-   - **Missing Knowledge**: Information that would help create better tests
-   - **Complex Interactions**: Areas where the behavior might be non-obvious
-   - **External Dependencies**: Services or systems you're unsure how to mock/handle
-   
-   **Format this as a clear "Uncertainty Report" with confidence levels:**
+## PHASE B: Test Development Planning
+
+3. **Map the Complete End-to-End Workflow**
+   - Using the commit diff and the gathered context, map out the full workflow this commit participates in:
+     - What triggers execution (user action, API call, event, etc.)?
+     - What does the commit's code do step-by-step?
+     - What is the final output or observable side effect?
+   - Draw a complete **E2E Workflow ASCII Diagram**:
    ```
-   ⚠️ AREAS OF UNCERTAINTY:
-   
-   Summary: 3 ⚠️LOW | 1 🟡MEDIUM | 0 🟢HIGH uncertainties identified
-   
-   1. [Component/Interaction]: [What you're unsure about]
-      - Confidence Level: [⚠️LOW/🟡MEDIUM/🟢HIGH]
-      - Assumption: [What you're assuming]
-      - Would benefit from: [What information would help]
-      - Impact if wrong: [What could break if assumption is incorrect]
-   
-   2. [Component/Interaction]: [What you're unsure about]
-      - Confidence Level: [⚠️LOW/🟡MEDIUM/🟢HIGH]
-      - Assumption: [What you're assuming]
-      - Would benefit from: [What information would help]
-      - Impact if wrong: [What could break if assumption is incorrect]
+   [Trigger / Entry Point]
+         ↓
+   [Step from this commit]
+         ↓
+   [Next downstream step]
+         ↓
+   [Final Output / Side Effect]
    ```
-   
+
+4. **🔍 Test Planning Uncertainty and Assumption Identification** (CRITICAL STEP)
+
+   Before finalizing the test plan, explicitly identify testing-specific uncertainties derived from the commit and context gathered:
+   - **Test Environment Setup**: What you're unsure about regarding test infrastructure
+   - **Mock/Stub Strategy**: Components you're uncertain how to simulate or isolate
+   - **Test Data Management**: Uncertainties about test data creation, cleanup, or state management
+   - **Assertion Strategy**: What outputs/behaviors you're unsure how to validate
+   - **Integration Testing**: Uncertainties about testing component interactions
+
+   **Format as a clear "Test Planning Uncertainty Report":**
+   ```
+   🧪 TEST PLANNING UNCERTAINTIES:
+
+   Summary: X 🔴 CRITICAL | X 🟠 LOW | X 🟡 MEDIUM | X 🟢 HIGH test uncertainties identified
+
+   1. [Test Aspect/Component]: [What you're unsure about for testing]
+      - Confidence Level: [🔴 CRITICAL/🟠 LOW/🟡 MEDIUM/🟢 HIGH]
+      - Assumption: [What you're assuming about the testing approach]
+      - Would benefit from: [What information would help with testing]
+      - Impact if wrong: [What testing issues could arise if assumption is incorrect]
+   ```
+
    **Confidence Level Guide:**
-   - **⚠️LOW**: Major assumptions made. High risk of incorrect test behavior. Tests likely need adjustment without clarification.
-   - **🟡MEDIUM**: Some assumptions but based on common patterns. Moderate risk.
-   - **🟢HIGH**: Minor uncertainty only. Low risk but clarification would still help.
-   
-   **Be SPECIFIC about uncertainties. 
-   Bad example: "I'm not sure how authentication works"
-   Good example: 
-   "AuthService.validateToken() behavior: I'm uncertain whether this method checks token expiration internally or if the calling code needs to check this separately.
-   - Confidence Level: ⚠️LOW
-   - Assumption: The method checks expiration internally
-   - Would benefit from: Seeing the method implementation or documentation
-   - Impact if wrong: Tests might pass with expired tokens when they shouldn't"**
-   
-   **Sort uncertainties by severity (⚠️LOW items first) to help users prioritize their responses.**
-   
-   **Remember: Identifying uncertainty is a sign of thoroughness, not weakness. The user WANTS to know where you need help.**
+   - **🔴 CRITICAL**: No understanding of this planned approach, pure guessing. Tests will likely be wrong without clarification.
+   - **🟠 LOW**: Major assumptions made. High risk of incorrect or misleading tests.
+   - **🟡 MEDIUM**: Some assumptions based on common patterns. Moderate risk.
+   - **🟢 HIGH**: Minor uncertainty only. Low risk, but clarification would still help.
 
-4. **Incremental Test Planning and User Collaboration**:
-   - Create a DETAILED INCREMENTAL TEST PLAN including:
-     - **Problem Overview:** Briefly describe the components and workflow being tested.
-     - **Workflow Diagram:** Visual representation of the complete end-to-end flow.
-     - **⚠️ Uncertainty Report:** (From step 3) - Present all areas of low confidence PROMINENTLY
-     - **Incremental Complexity Strategy:**
-       - **Complexity-based** (complete flow with increasing complexity)
-       - List each complexity increment for the same workflow:
-       
-       **Increment 0: Test Harness Setup (Infrastructure Only)**
-       - **Complete E2E workflow**: Full workflow will be testable but not yet tested
-       - **Complexity added**: None - this is pure infrastructure
-       - **Test harness components**:
-         - Complete test infrastructure for the E2E workflow
-         - Handling for external dependencies (mocks, stubs, or real services)
-         - Test environment configuration
-         - **Helper functions for**:
-           - Building test inputs
-           - Managing test data lifecycle
-           - Asserting on workflow outputs
-           - Controlling test scenarios
-         - Utilities for test execution and reporting
-       - **Setup validation**: Infrastructure validation that verifies:
-         - All necessary components can be initialized
-         - External dependencies are properly handled
-         - Test data management works correctly
-         - Helper functions operate as expected
-         - The complete E2E workflow can be invoked without errors
-       - **Code examples**: Include actual code snippets for key infrastructure pieces
-       - **NO ACTUAL TESTS YET** - only infrastructure and validation
-       - **Confidence level**: [⚠️LOW/🟡MEDIUM/🟢HIGH] for harness implementation
-       
-       - For each subsequent complexity increment (1-6), specify:
-         - **Increment number and name**: (e.g., "Increment 1: Baseline Happy Path")
-         - **Complete E2E workflow**: (e.g., "User request → API → Router → Tool → Response → User")
-         - **Complexity added**: What makes this increment more complex than the previous
-         - **Test scenarios**: Specific cases to test at this complexity level
-         - **Test data examples**: Concrete examples of inputs/outputs
-         - **Assertions focus**: What new behaviors to verify
-         - **Infrastructure changes**: How test harness needs to evolve
-         - **Confidence level**: [⚠️LOW/🟡MEDIUM/🟢HIGH] for this specific test implementation
-     - **Commit Strategy:** Each complexity increment gets its own commit with a checkpoint:
-       - Format: `git add [test_files] && git commit -m "E2E TEST: [workflow] - [complexity level]"`
-       - **After each commit: STOP and wait for user inspection/approval**
-       - Example progression with checkpoints:
-         - Commit 0: "E2E TEST: User Purchase Flow - Test harness setup (🟡MEDIUM confidence)" → STOP
-         - Commit 1: "E2E TEST: User Purchase Flow - Baseline happy path (🟢HIGH confidence)" → STOP
-         - Commit 2: "E2E TEST: User Purchase Flow - Multiple payment methods (🟢HIGH confidence)" → STOP
-         - Commit 3: "E2E TEST: User Purchase Flow - Edge cases & boundaries (🟡MEDIUM confidence)" → STOP
-         - Commit 4: "E2E TEST: User Purchase Flow - Error handling & recovery (⚠️LOW confidence)" → STOP
-         - Commit 5: "E2E TEST: User Purchase Flow - Concurrent operations (⚠️LOW confidence)" → STOP
-   - **Present this plan WITH the Uncertainty Report prominently displayed at the beginning**
-   - **Order uncertainties by confidence level** (⚠️LOW first, then 🟡MEDIUM, 🟢HIGH)
-   - **Ask the user to:**
-     1. **First, review and address the uncertainty areas, especially ⚠️LOW confidence items** 
-     2. Then approve the overall testing approach
-   - **DO NOT minimize or hide uncertainties - they should be the first thing the user sees**
+   Order uncertainties: 🔴 CRITICAL first → 🟠 LOW → 🟡 MEDIUM → 🟢 HIGH.
 
-**🛑 STOP HERE - PHASE 1 CHECKPOINT**
-- You have now presented:
-  1. The complete incremental test plan (including Increment 0 infrastructure details)
-  2. **The Uncertainty Report with confidence levels (⚠️LOW → 🟡MEDIUM → 🟢HIGH)**
-- DO NOT PROCEED to implementation without explicit approval
-- The user may want to:
-  - **Address ⚠️LOW confidence uncertainties first**
-  - **Explain components or interactions you're uncertain about**
-  - **Clarify assumptions you've made**
-  - Adjust the testing order
-  - Add or remove test cases
-  - Modify the incremental approach
-- WAIT for the user to address uncertainties AND provide explicit approval like "looks good", "proceed", or "go ahead"
+5. **E2E Test Strategy — Step-by-Step**
 
----
+   Organize the test plan around the commit's logical units of work (functions, classes, or behaviors introduced or modified). For each unit:
 
-## PHASE 2: Implementation (Only proceed after explicit Phase 1 approval)
-
-**⚠️ CRITICAL: This phase includes multiple checkpoints - you will STOP after each commit for user inspection.**
-
-**⚠️ VERIFY: Have you received explicit approval for the test plan? If not, STOP and wait for approval.**
-
-### 5. Implementation Process
-
-**a. Implementation Order**
-- Always start with Increment 0 (Test Harness Setup)
-- Validate infrastructure before writing any actual tests
-- Build each increment on top of the previous one
-- Never skip increments or combine them
-
-**b. For Each Increment**
-
-1. **Build/Extend**:
-   - For Increment 0: Create test infrastructure per the approved plan
-   - For Increments 1+: Extend existing infrastructure for new complexity
-   - Add one complexity dimension at a time
-   - Reuse existing helpers and extend them as needed
-   - Document which complexity dimension is being added
-
-2. **Execute and Validate**:
-   - Run all tests for the current increment
-   - Verify the complete E2E workflow executes successfully
-   - Check that all assertions pass
-   - For Increment 0: Run infrastructure validation checks
-   - For Increments 1+: Ensure previous tests still pass
-
-3. **Debug if Needed**:
-   - If tests fail, analyze and fix the issue
-   - Document the problem and solution
-   - Re-run tests to confirm fix
-   - Only proceed when all tests pass
-
-4. **Handle New Uncertainties**:
-   - **⚠️LOW uncertainties**: STOP and ask for guidance before proceeding
-   - **🟡MEDIUM uncertainties**: Document assumption, continue, flag for review
-   - **🟢HIGH uncertainties**: Note minor uncertainty and continue
-   - Never make assumptions about critical behavior
-
-5. **Commit and Checkpoint**:
-   ```bash
-   git add [test_files]
-   git commit -m "E2E TEST: [workflow name] - [complexity level] (confidence level)"
+   **E2E Workflow ASCII Diagram** (show the full flow with this unit's contribution highlighted):
    ```
-   
-   **🛑 MANDATORY STOP - INCREMENT CHECKPOINT**
-   
-   Present to the user:
-   - What was just implemented (infrastructure or complexity added)
-   - Summary of test scenarios/validations at this level
-   - Any issues encountered and resolutions
-   - New uncertainties discovered (if any)
-   - What comes next (if not the final increment)
-   
-   **WAIT for explicit user signal** (e.g., "continue", "next", "proceed")
-   
-   The user may want to:
-   - Review the code
-   - Run tests themselves  
-   - Request modifications
-   - Skip remaining increments
-   - Address new uncertainties
-   
-   **DO NOT proceed without explicit approval**
+   [Trigger] → [Prior Steps] → [THIS UNIT ← under test] → [Downstream] → [Final Output]
+                                        ↓
+                              [Test validates complete workflow through this unit]
+   ```
 
-**c. Special Considerations by Increment**
+   **Test Infrastructure Setup:**
+   - Test environment configuration needed
+   - Mock/stub requirements for external dependencies
+   - Test data management approach (creation, teardown, state isolation)
+   - Helper functions or fixtures needed
 
-- **Increment 0 (Test Harness)**:
-  - Focus on infrastructure validation, not business logic
-  - Show actual validation code that proves harness works
-  - No actual tests yet - only setup and validation
+   **Test Scenarios** — for each unit, cover:
+   - ✅ Happy path: normal expected input → expected output
+   - 🔀 Data variations: edge cases, boundary values, alternate valid inputs
+   - ❌ Error conditions: invalid input, dependency failures, unexpected state
+   - 🔗 Integration points: interactions with other modules or the prior step in the workflow
 
-- **Increments 1+ (Actual Tests)**:
-  - Each builds on previous increment
-  - Add new test cases, don't replace existing ones
-  - Make complexity explicit in test names and comments
-  - Maintain all previous validations
+   **Assertions Strategy:**
+   - What specific outputs, return values, side effects, or state changes to assert
+   - How to verify integration with callers/consumers identified in Phase A
 
-### 6. Key Implementation Principles
+   **Confidence Level** for testing this unit: [🔴 CRITICAL/🟠 LOW/🟡 MEDIUM/🟢 HIGH]
 
-**Core Requirements**:
-- ✅ Start with infrastructure (Increment 0) before any tests
-- ✅ Test the complete E2E workflow in every increment
-- ✅ Add only one complexity dimension per increment
-- ✅ Stop after EVERY commit for user inspection
-- ✅ Never proceed without explicit approval
+6. **Test Execution and Commit Strategy**
 
-**Technical Approach**:
-- Build on previous increments, never replace them
-- Extend test infrastructure to handle new complexity
-- Use descriptive test names indicating complexity level
-- Prefer real component interactions over heavy mocking
-- Document what each increment adds and why
-
-**Uncertainty Handling**:
-- Always flag new uncertainties with confidence levels
-- For ⚠️LOW confidence issues: stop and ask for help
-- Document all assumptions made during implementation
-- The user values knowing what you're uncertain about
-
-**Output Format**:
-- Present each increment's code in separate blocks
-- Use clear comments showing the E2E workflow
-- Include a summary table of test progression
-- Document any debugging steps taken
+   - **Test execution order**: List the order tests should be run and why (dependencies, setup requirements)
+   - **State management**: How to ensure tests are isolated and don't bleed state into each other
+   - **Commit convention**: Once tests are approved and written, they will be committed as:
+     ```bash
+     git add [test_files]
+     git commit -m "NEED_REVIEW: Add E2E tests for [commit description]"
+     ```
 
 ---
 
-## 🚨 CRITICAL PROCESS REMINDERS
+## 🛑 STOP HERE — PHASE B CHECKPOINT
 
-**This is a TWO-PHASE process with mandatory stops:**
+You have now presented:
+1. **A plain-English summary of what the latest commit does**
+2. **Relevant codebase context and existing test conventions**
+3. **A complete E2E Workflow ASCII Diagram**
+4. **The Test Planning Uncertainty Report** (🔴 CRITICAL → 🟠 LOW → 🟡 MEDIUM → 🟢 HIGH)
+5. **Step-by-step test scenarios with assertions for each logical unit in the commit**
+6. **Test execution order and commit strategy**
 
-1. **Phase 1**: Analyze → Identify Uncertainties → Present Plan → **🛑 STOP** (await approval)
-2. **Phase 2**: Implement Incrementally → **🛑 STOP after EACH commit** (await "continue")
+**DO NOT write any test code without explicit user approval.**
 
-**You MUST:**
-- Wait for explicit approval before starting Phase 2
-- Stop after EVERY commit in Phase 2
-- Never skip checkpoints or assume approval
-- Always present uncertainties prominently
+The user may want to:
+- **Address 🔴 CRITICAL and 🟠 LOW confidence uncertainties first**
+- Clarify testing assumptions you've made
+- Modify test scenarios or approaches
+- Adjust the test infrastructure plan
+- Add or remove scenarios
 
-**Remember**: Identifying what you don't understand is just as valuable as planning what you do understand. The user EXPECTS and VALUES uncertainty identification.
+**WAIT for the user to address test uncertainties AND provide explicit approval** such as:
+> "test plan looks good", "proceed to write tests", or "go ahead"
 
-### System Under Test
-<system_under_test>
-<base_test> (ask AI if you can't think of one)
-<example_unit_test>
-
-]]
+Only after receiving explicit approval should you proceed to write the actual test code, following the scenarios and assertions defined in this plan.
+                ]]
               end,
             },
           },
@@ -1705,7 +1538,7 @@ Generate a detailed technical plan and provide the complete code implementation 
 ### User's Goal
 <data_to_passthrough>
 
-Call Log Lines Prompt before this(to get the callpath)
+Make sure the "Understand Code" Prompt is called before this(to get the Context)
 
 ]]
               end,
@@ -1732,27 +1565,26 @@ Call Log Lines Prompt before this(to get the callpath)
                 vim.g.codecompanion_auto_tool_mode = true
 
                 return [[
-### Integrated System Code Implementation Plan with Test Development
+# Integrated System Code Implementation Plan
 
-**⚠️ IMPORTANT: This is an INTERACTIVE, THREE-PHASE process. You MUST wait for user responses at designated checkpoints. DO NOT proceed past any STOP checkpoint without explicit user approval.**
+**⚠️ IMPORTANT: This is an INTERACTIVE, TWO-PHASE process. You MUST wait for user responses at designated checkpoints. DO NOT proceed past any STOP checkpoint without explicit user approval.**
 
 **🎯 KEY PRINCIPLE: Openly communicate uncertainty. It is EXPECTED and VALUABLE for you to identify areas where you lack confidence or are making assumptions. The user can then provide clarification before implementation begins.**
 
-You are a senior software engineer tasked with analyzing, planning tests for, and implementing solutions based on the User's Goal.
+You are a senior software engineer tasked with analyzing, planning, and implementing solutions based on the User's Goal.
 
-**This process has THREE distinct phases with MANDATORY stops:**
+**This process has TWO distinct phases with MANDATORY stops:**
 - **PHASE 1:** Analysis and Implementation Planning with Uncertainty Identification (STOP - await approval)
-- **PHASE 2:** Test Development Planning with E2E Test Strategy (STOP - await approval)
-- **PHASE 3:** Implementation with Testing (only after explicit approval of both plans)
+- **PHASE 2:** Implementation (only after explicit approval of the plan)
 
 **Process Flow:**
 ```
 PHASE 1: Analysis → Implementation Plan → Plan-Based Uncertainties → 🛑 STOP (await approval)
                                                                ↓
-PHASE 2: Test Planning → E2E Test Strategy & Test Uncertainties → 🛑 STOP (await approval)  
-                                                               ↓
-PHASE 3: Implementation → Code + Tests per Step → 🛑 STOP after each commit
+PHASE 2: Implementation → Code per Step → 🛑 STOP after each commit
 ```
+
+---
 
 ## PHASE 1: Analysis and Implementation Planning
 
@@ -1769,14 +1601,13 @@ PHASE 3: Implementation → Code + Tests per Step → 🛑 STOP after each commi
      - **Proposed Solution Outline:** Describe the overall technical approach you will take to address the problem.
        - **If there is a change to an existing function, check that its callers expect this behavior and list these callers out for the user to confirm**
        - **If there are multiple implementation options or approaches, present them for the user to decide.**
-       - Use visualizations (such sequence, state, component diagrams, flowchart, free form ASCII text diagrams with simplified data structures) to clarify key concepts, system interactions, or data flow related to the changes.
+       - Use visualizations (such as sequence, state, component diagrams, flowchart, free form ASCII text diagrams with simplified data structures) to clarify key concepts, system interactions, or data flow related to the changes.
      - **🔧 STEP 1 (MANDATORY FIRST COMMIT): Core Plumbing Setup**
        - Implement the fundamental infrastructure, interfaces, or "API skeleton" first
        - Create minimal working version with basic connectivity/structure
        - Establish data flow pathways without complex logic
        - Set up error handling framework
        - **This step should result in a compilable, testable foundation even if features aren't complete**
-       - **🧪 Testing strategy**: [TO BE FILLED IN PHASE 2]
        - **Files to modify/create**: [List specific files for the plumbing step]
        - **Commit message**: "NEED_REVIEW: Add core plumbing for [feature/goal]"
      - **Step-by-Step Feature Implementation:** After core plumbing, break down remaining features into manageable tasks:
@@ -1784,7 +1615,6 @@ PHASE 3: Implementation → Code + Tests per Step → 🛑 STOP after each commi
          - Describe the specific task to be performed.
          - Identify the file(s) that will be modified or created.
          - Explain the specific code changes or logic you intend to implement within those files → and **how they contribute to the overall goal**
-         - **🧪 Testing strategy**: [TO BE FILLED IN PHASE 2]
          - **Build incrementally**: Each step should add ONE clear piece of functionality to the working foundation
          - **If there are multiple options for implementation, present them all to the user. Rank the options in terms of relevance.**
      - **Commit Strategy:** Reiterate that you will commit changes (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`) after completing logical units of work. **The FIRST commit will always be the core plumbing setup.**
@@ -1796,15 +1626,15 @@ PHASE 3: Implementation → Code + Tests per Step → 🛑 STOP after each commi
    - **Missing Knowledge**: Information about the planned approach that would help create better implementation
    - **Complex Interactions**: Areas in the plan where the behavior might be non-obvious
    - **External Dependencies**: Services or systems mentioned in the plan that you're unsure how to integrate
-   
+
    **⚠️ CRITICAL: Uncertainties must be directly derived from and reference specific aspects of the implementation plan from Step 2**
-   
+
    **Format this as a clear "Implementation Uncertainty Report" with confidence levels:**
    ```
    ⚠️ IMPLEMENTATION UNCERTAINTIES (Based on the Implementation Plan):
-   
+
    Summary: X 🔴 CRITICAL | X 🟠 LOW | X 🟡 MEDIUM | X 🟢 HIGH uncertainties identified
-   
+
    1. [Specific Plan Component/Step]: [What you're unsure about in this planned approach]
       - Confidence Level: [🔴 CRITICAL/🟠 LOW/🟡 MEDIUM/🟢 HIGH]
       - Plan Reference: [Reference to specific step/component in the implementation plan]
@@ -1812,12 +1642,12 @@ PHASE 3: Implementation → Code + Tests per Step → 🛑 STOP after each commi
       - Would benefit from: [What information would help implement this part of the plan]
       - Impact if wrong: [What could break if assumption about this plan component is incorrect]
    ```
-   
+
    **Add confidence levels to each step in the implementation plan:**
    - Go back to the implementation plan from Step 2
    - Add **Confidence level**: [🔴 CRITICAL/🟠 LOW/🟡 MEDIUM/🟢 HIGH] to each implementation step
    - This creates a direct mapping between plan components and uncertainty levels
-   
+
    **Confidence Level Guide:**
    - **🔴 CRITICAL**: No understanding of this planned approach, pure guessing. Implementation will likely be wrong without clarification.
    - **🟠 LOW**: Major assumptions made about this plan component. High risk of incorrect implementation.
@@ -1831,222 +1661,80 @@ PHASE 3: Implementation → Code + Tests per Step → 🛑 STOP after each commi
 - You have now presented:
   1. **The complete implementation plan with confidence levels for each step**
   2. **The Implementation Uncertainty Report based on the specific plan components (🔴 CRITICAL → 🟠 LOW → 🟡 MEDIUM → 🟢 HIGH)**
-  3. **Each step with placeholder for testing strategy (TO BE FILLED IN PHASE 2)**
-- DO NOT PROCEED to test planning without explicit approval
+- DO NOT PROCEED to implementation without explicit approval
 - The user may want to:
   - **Address 🔴 CRITICAL and 🟠 LOW confidence uncertainties first**
   - **Clarify assumptions you've made about specific plan components**
   - Choose between implementation options
   - Adjust the implementation approach
   - Modify the step ordering
-- WAIT for the user to address plan-based uncertainties AND provide explicit approval like "looks good", "proceed to test planning", or "go ahead to Phase 2"
+- WAIT for the user to address plan-based uncertainties AND provide explicit approval like "looks good", "proceed to implementation", or "go ahead to Phase 2"
 
 ---
 
-## PHASE 2: Test Development Planning (Only proceed after explicit Phase 1 approval)
+## PHASE 2: Implementation (Only proceed after explicit Phase 1 approval)
 
 **⚠️ VERIFY: Have you received explicit approval for the implementation plan? If not, STOP and wait for approval.**
 
-4. **Test Context Gathering and E2E Workflow Analysis**:
-   - Analyze the approved implementation plan to understand the complete end-to-end workflow
-   - Map out how each implementation step contributes to the overall user journey
-   - Identify all integration points and data transformations across steps
-   - Create a comprehensive view of the workflow from entry point to final output
-   - **Search for similar unit tests to the unit test scenario that the user describes**
-
-5. **🔍 Test Planning Uncertainty and Assumption Identification** (CRITICAL STEP):
-   Before finalizing the test plan, explicitly identify testing-specific uncertainties:
-   - **Test Environment Setup**: What you're unsure about regarding test infrastructure
-   - **Mock/Stub Strategy**: Components you're uncertain how to simulate or isolate
-   - **Test Data Management**: Uncertainties about test data creation, cleanup, or state management
-   - **Assertion Strategy**: What outputs/behaviors you're unsure how to validate
-   - **Integration Testing**: Uncertainties about testing component interactions
-   
-   **Format this as a clear "Test Planning Uncertainty Report" with confidence levels:**
-   ```
-   🧪 TEST PLANNING UNCERTAINTIES:
-   
-   Summary: X 🔴 CRITICAL | X 🟠 LOW | X 🟡 MEDIUM | X 🟢 HIGH test uncertainties identified
-   
-   1. [Test Aspect/Component]: [What you're unsure about for testing]
-      - Confidence Level: [🔴 CRITICAL/🟠 LOW/🟡 MEDIUM/🟢 HIGH]
-      - Assumption: [What you're assuming about testing approach]
-      - Would benefit from: [What information would help with testing]
-      - Impact if wrong: [What testing issues could arise if assumption is incorrect]
-   ```
-
-6. **E2E Test Strategy Development**:
-   - **Problem Overview**: Briefly describe the complete workflow being tested and how it maps to implementation steps
-   - **Complete E2E Workflow Diagram**: Visual representation of the full end-to-end flow showing all implementation steps
-   - **⚠️ Test Planning Uncertainty Report**: (From step 5) - Present all areas of low testing confidence PROMINENTLY
-   - **Step-by-Step Test Planning**: For each implementation step from Phase 1, develop:
-   
-   **For Step 1 (Core Plumbing Setup):**
-   - **E2E Workflow ASCII Diagram**: Show how the plumbing enables the complete workflow
-   ```
-   [User Request] → [Step 1 Infrastructure] → [Future Steps] → [Final Output]
-                         ↓
-                   [Test validates basic connectivity and error handling]
-   ```
-   - **Test Infrastructure Setup**: 
-     - Test environment configuration for this step
-     - Mock/stub requirements for external dependencies
-     - Test data management approach
-     - Helper functions for validation
-   - **Test Scenarios**: Infrastructure validation tests:
-     - Connectivity verification
-     - Error handling framework validation
-     - Basic data flow confirmation
-   - **Assertions Strategy**: What to validate at this infrastructure level
-   - **Confidence level**: [🔴 CRITICAL/🟠 LOW/🟡 MEDIUM/🟢 HIGH] for testing this step
-   
-   **For Each Subsequent Implementation Step:**
-   - **E2E Workflow ASCII Diagram**: Show the complete workflow with this step's contribution highlighted
-   ```
-   [User Request] → [Step 1] → [Step 2] → [Step N] → [Final Output]
-                                  ↑
-                            [Current step being tested]
-                                  ↓
-                    [Test validates complete workflow through this step]
-   ```
-   - **Test Infrastructure Evolution**: How test harness needs to evolve for this step
-   - **E2E Test Scenarios**: Complete workflow tests that exercise:
-     - Happy path through all implemented steps
-     - Data variations relevant to this step
-     - Error conditions introduced by this step
-   - **Step-Specific Validations**: What new behaviors to verify at this step
-   - **Integration Points**: How this step interacts with previous steps in tests
-   - **Confidence level**: [🔴 CRITICAL/🟠 LOW/🟡 MEDIUM/🟢 HIGH] for testing this step
-   
-   - **Test Execution Strategy**: 
-     - Order of test execution
-     - Test data lifecycle management
-     - Cleanup and state management between tests
-   - **Commit Strategy for Tests**: Each step's tests get committed with the implementation:
-     - Format: `git add [implementation_files] [test_files] && git commit -m "NEED_REVIEW: [step] + E2E tests"`
-
-**🛑 STOP HERE - PHASE 2 CHECKPOINT**
-- You have now presented:
-  1. **The Test Planning Uncertainty Report with confidence levels**
-  2. **Complete E2E test strategy with ASCII diagrams for each implementation step**
-  3. **Test infrastructure evolution plan**
-  4. **Specific test scenarios and assertions for each step**
-- DO NOT PROCEED to implementation without explicit approval
-- The user may want to:
-  - **Address 🔴 CRITICAL and 🟠 LOW confidence test uncertainties first**
-  - **Clarify testing assumptions you've made**
-  - **Modify test scenarios or approaches**
-  - **Adjust test infrastructure plans**
-- WAIT for the user to address test uncertainties AND provide explicit approval like "test plan looks good", "proceed to implementation", or "go ahead to Phase 3"
-
----
-
-## PHASE 3: Implementation with Testing (Only proceed after explicit approval of both Phase 1 and Phase 2)
-
-**⚠️ VERIFY: Have you received explicit approval for BOTH the implementation plan AND the test plan? If not, STOP and wait for approval.**
-
-7. **Implementation Process with Integrated Testing**:
+4. **Implementation Process**:
    - **Build incrementally from simple to complex**:
-     - Start with Step 1 (Core Plumbing Setup) + its E2E infrastructure tests
-     - Add each subsequent step + its complete E2E tests
+     - Start with Step 1 (Core Plumbing Setup)
+     - Add each subsequent step
      - Verify each addition works before proceeding
    - **Handle uncertainties during implementation**:
-     - For 🔴 CRITICAL uncertainties (implementation or testing): STOP and ask for clarification
+     - For 🔴 CRITICAL uncertainties: STOP and ask for clarification
      - For 🟠 LOW uncertainties: Document and seek guidance before proceeding
      - For 🟡 MEDIUM/🟢 HIGH: Note assumption and continue, flag for review
 
-8. **Implementation**:
-   - For each planned implementation step (with its corresponding test strategy from Phase 2):
+5. **Implementation**:
+   - For each planned implementation step:
      - **Implement the step according to the approved plan**
-     - **Implement the E2E tests for that step according to the approved test strategy**
-     - **Run tests to verify the complete workflow through this step**
-     - **Debug if needed**: If tests fail, analyze and fix issues in implementation or tests
-     - **Commit both implementation and tests together**:
+     - **Commit the implementation**:
        ```bash
-       git add [implementation_files] [test_files]
-       git commit -m "NEED_REVIEW: [step description] + E2E tests"
+       git add [implementation_files]
+       git commit -m "NEED_REVIEW: [step description]"
        ```
-     
+
      **🛑 MANDATORY STOP - STEP CHECKPOINT**
-     
+
      Present to the user:
      - What was implemented (step description)
-     - What E2E tests were added
-     - Test results (pass/fail with details)
      - Any issues encountered and resolutions
      - New uncertainties discovered (if any)
-     - ASCII diagram showing current workflow test coverage
+     - ASCII diagram showing current state of the system (if helpful)
      - What comes next (if not the final step)
-     
+
      **WAIT for explicit user signal** (e.g., "continue", "next", "proceed")
-     
+
      The user may want to:
      - Review the implementation code
-     - Review the test code
-     - Run tests themselves
      - Request modifications
      - Address new uncertainties
-     
+
      **DO NOT proceed without explicit approval**
+
+---
 
 **🚨 CRITICAL PROCESS REMINDERS**
 
-**This is a THREE-PHASE process with mandatory stops:**
+**This is a TWO-PHASE process with mandatory stops:**
 
 1. **Phase 1**: Analyze → Implementation Plan → **Plan-Based Uncertainties** → **🛑 STOP** (await approval)
-2. **Phase 2**: Test Planning → E2E Test Strategy & Test Uncertainties → **🛑 STOP** (await approval)
-3. **Phase 3**: Implement → Code + Tests per Step → **🛑 STOP after EACH commit** (await "continue")
+2. **Phase 2**: Implement → Code per Step → **🛑 STOP after EACH commit** (await "continue")
 
 **You MUST:**
 - Create the implementation plan FIRST, then identify uncertainties based on that specific plan
 - Wait for explicit approval before starting each phase
-- Stop after EVERY commit in Phase 3
+- Stop after EVERY commit in Phase 2
 - Never skip checkpoints or assume approval
-- Always present both implementation AND testing uncertainties prominently
-- Create E2E tests that validate the complete workflow at each step
+- Always present implementation uncertainties prominently
 
-**Remember**: Identifying what you don't understand about your specific implementation plan (for both implementation AND testing) is just as valuable as planning what you do understand. The user EXPECTS and VALUES uncertainty identification based on the concrete plan you've created.
+**Remember**: Identifying what you don't understand about your specific implementation plan is just as valuable as planning what you do understand. The user EXPECTS and VALUES uncertainty identification based on the concrete plan you've created.
 
-### **User's Goal:**  
-<Users_Goal>  
-<Base Implementation>  
-<Unit_Test_Scenario>
-]]
-              end,
-            },
-          },
-        },
-        ["Referencing Snippets"] = {
-          strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
-          description = "add files from the list to the context window",
-          opts = {
-            index = 20, -- Position in the action palette (higher numbers appear lower)
-            is_default = false, -- Not a default prompt
-            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
-            short_name = "references", -- Used for calling via :CodeCompanion /mycustom
-            auto_submit = false, -- Automatically submit to LLM without waiting
-            --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
-          },
-          prompts = {
-            {
-              role = "user",
-              opts = { auto_submit = false },
-              content = function()
-                -- Enable turbo mode!!!
-                vim.g.codecompanion_auto_tool_mode = true
-
-                return [[
-
-- Use @files to add the following list of files to the context window.
-- The filename will appear at the beginning of each line
-- Prompt the user for each one
-- Do not prompt if files has alredy been added
-
-Trigger the tool call for all these files in the same call along with the plan
-
-### List of Files
-
-]]
+### **User's Goal:**
+<Users_Goal>
+<Base_Implementation>
+                ]]
               end,
             },
           },
