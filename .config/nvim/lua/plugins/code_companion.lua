@@ -742,7 +742,7 @@ Also suggest **specific follow up topics/questions** and explain how they would 
 **My main goal is** <main_goal>
 <first_step> (i.e "Additional Search Folders" in the UI)
 
-Possible Followup Prompts 1) Add Log Line 2) Add Trace ID
+Possible Followup Prompts 1) Follow Up Question 2) Add Log Line 3) Add Trace ID
 
 ]]
               end,
@@ -1737,6 +1737,8 @@ PHASE 2: Implementation → Code per Step → 🛑 STOP after each commit
 ### **User's Goal:**
 <Users_Goal>
 <Base_Implementation>
+
+Possible Followup Prompts 1) PR Review
                 ]]
               end,
             },
@@ -1802,6 +1804,12 @@ PHASE 2: Implementation → Code per Step → 🛑 STOP after each commit
         "<leader>aw",
         ":CodeCompanion /code_workflow<CR>",
         desc = "Edit Code Workflow",
+        mode = { "n" },
+      },
+      {
+        "<leader>ar",
+        ":CodeCompanion /pr<CR>",
+        desc = "PR Review",
         mode = { "n" },
       },
       {
