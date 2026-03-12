@@ -741,7 +741,8 @@ Also suggest **specific follow up topics/questions** and explain how they would 
 ### User's Question
 **My main goal is** <main_goal>
 <first_step> (i.e "Additional Search Folders" in the UI)
-<ask_ai_for_its_base_understanding>
+
+Possible Followup Prompts 1) Add Log Line 2) Add Trace ID
 
 ]]
               end,
