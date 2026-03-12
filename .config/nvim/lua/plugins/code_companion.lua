@@ -1738,7 +1738,7 @@ PHASE 2: Implementation → Code per Step → 🛑 STOP after each commit
 <Users_Goal>
 <Base_Implementation>
 
-Possible Followup Prompts 1) PR Review
+Possible Followup Prompts 1) Understand Code 2) PR Review
                 ]]
               end,
             },
