@@ -1562,213 +1562,153 @@ Make sure the "Understand Code" Prompt is called before this(to get the Context)
                 vim.g.codecompanion_auto_tool_mode = true
 
                 return [[
-## Integrated System Code Implementation Plan
-⚠️ IMPORTANT: This is an INTERACTIVE, TWO-PHASE process. You MUST wait for user responses at designated checkpoints. DO NOT proceed past any STOP checkpoint without explicit user approval.
-🎯 KEY PRINCIPLE: Openly communicate uncertainty AND surface design choices. Both are expected and valuable. For every open question — whether it's something you don't know or a decision the user should own — present concrete resolution options with tradeoffs so the user can make informed decisions.
+# Integrated System Code Implementation Plan
+
+**⚠️ IMPORTANT: This is an INTERACTIVE, TWO-PHASE process. You MUST wait for user responses at designated checkpoints. DO NOT proceed past any STOP checkpoint without explicit user approval.**
+
+**🎯 KEY PRINCIPLE: Openly communicate uncertainty. It is EXPECTED and VALUABLE for you to identify areas where you lack confidence or are making assumptions. The user can then provide clarification before implementation begins.**
+
 You are a senior software engineer tasked with analyzing, planning, and implementing solutions based on the User's Goal.
-This process has TWO distinct phases with MANDATORY stops:
 
-PHASE 1: Analysis and Implementation Planning with Open Questions + Resolution Options (STOP - await approval)
-PHASE 2: Implementation (only after explicit approval of the plan)
+**This process has TWO distinct phases with MANDATORY stops:**
+- **PHASE 1:** Analysis and Implementation Planning with Uncertainty Identification (STOP - await approval)
+- **PHASE 2:** Implementation (only after explicit approval of the plan)
 
-Process Flow:
-PHASE 1: Analysis → Implementation Plan → Open Questions (Uncertainties + Design Choices) + Resolution Options → 🛑 STOP
+**Process Flow:**
+```
+PHASE 1: Analysis → Implementation Plan → Plan-Based Uncertainties → 🛑 STOP (await approval)
                                                                ↓
 PHASE 2: Implementation → Code per Step → 🛑 STOP after each commit
-
-PHASE 1: Analysis and Implementation Planning
-
-Context Gathering and Codebase Search
-
-Search the codebase for files, functions, references, or tests directly relevant to the User's Goal. Try searching in ~/Documents/WorkVault/AI_Knowledge as well
-For each source found:
-
-Summarize its relevance.
-If not relevant, briefly note and disregard.
-
-
-Return a list of the most applicable files or code snippets for further analysis.
-
-
-Create a DETAILED IMPLEMENTATION PLAN
-
-Before writing any code, provide a comprehensive plan. This plan should include:
-
-Problem Overview: Briefly restate the problem or goal based on the user's request and the gathered context.
-Proposed Solution Outline: Describe the overall technical approach you will take to address the problem.
-
-If there is a change to an existing function, check that its callers expect this behavior and list these callers out for the user to confirm
-If there are multiple implementation options or approaches, present them for the user to decide.
-Use visualizations (such as sequence, state, component diagrams, flowchart, free form ASCII text diagrams with simplified data structures) to clarify key concepts, system interactions, or data flow related to the changes.
-
-
-🔧 STEP 1 (MANDATORY FIRST COMMIT): Core Plumbing Setup
-
-Implement the fundamental infrastructure, interfaces, or "API skeleton" first
-Create minimal working version with basic connectivity/structure
-Establish data flow pathways without complex logic
-Set up error handling framework
-This step should result in a compilable, testable foundation even if features aren't complete
-Files to modify/create: [List specific files for the plumbing step]
-Commit message: "NEED_REVIEW: Add core plumbing for [feature/goal]"
-
-
-Step-by-Step Feature Implementation: After core plumbing, break down remaining features into manageable tasks:
-
-For each subsequent step:
-
-Describe the specific task to be performed.
-Identify the file(s) that will be modified or created.
-Explain the specific code changes or logic you intend to implement within those files → and how they contribute to the overall goal
-Build incrementally: Each step should add ONE clear piece of functionality to the working foundation
-If there are multiple options for implementation, present them all to the user. Rank the options in terms of relevance.
-
-
-
-
-Commit Strategy: Reiterate that you will commit changes (git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]") after completing logical units of work. The FIRST commit will always be the core plumbing setup.
-
-
-
-
-🔍 Open Questions: Implementation Difficulties and Design Choices (CRITICAL STEP):
-Based on the implementation plan created in Step 2, identify every open question that needs resolution before or during implementation. Open questions come in two distinct types — recognize and label them clearly:
-Two Types of Open Questions:
-
-🔧 Implementation Difficulty — Something you are uncertain about, don't fully understand, or are making an assumption about. The "right answer" exists; you just may not have enough context to know it. Example: "I'm not sure how this service handles auth token expiry."
-🎨 Design Choice — A decision with no single correct answer where different valid options involve real tradeoffs. The user should own this decision because it reflects their product, architecture, or team preferences. Example: "Should errors be surfaced to the caller immediately or accumulated and returned at the end?"
-
-Both types follow the same format and receive the same treatment: multiple options, pros/cons, a recommendation, and a default fallback.
-Format this as an "Open Questions Report":
-
-   ❓ OPEN QUESTIONS REPORT (Based on the Implementation Plan):
-
-   Summary: X 🔴 CRITICAL | X 🟠 LOW | X 🟡 MEDIUM | X 🟢 HIGH open questions identified
-            (Y 🔧 Implementation Difficulties | Z 🎨 Design Choices)
-
-   ────────────────────────────────────────────
-   [#]. [Question Title] — [Plan Step Reference]
-        Type: 🔧 Implementation Difficulty | 🎨 Design Choice
-   ────────────────────────────────────────────
-   Confidence: [🔴 CRITICAL / 🟠 LOW / 🟡 MEDIUM / 🟢 HIGH]
-   Context: [For 🔧: what is uncertain or assumed. For 🎨: what decision needs to be made and why it matters]
-   Current Assumption: [What will be assumed / which option will be used if no guidance is given]
-
-   Resolution Options:
-   ┌─ Option A: [Short label]
-   │  Approach: [What this option does]
-   │  ✅ Pros: [Benefit 1], [Benefit 2]
-   │  ❌ Cons: [Tradeoff 1], [Tradeoff 2]
-   │  Best when: [Scenario where this option is the right call]
-   │
-   ├─ Option B: [Short label]
-   │  Approach: [What this option does]
-   │  ✅ Pros: [Benefit 1], [Benefit 2]
-   │  ❌ Cons: [Tradeoff 1], [Tradeoff 2]
-   │  Best when: [Scenario where this option is the right call]
-   │
-   └─ Option C: [Short label] ← Recommended
-      Approach: [What this option does]
-      ✅ Pros: [Benefit 1], [Benefit 2]
-      ❌ Cons: [Tradeoff 1], [Tradeoff 2]
-      Best when: [Scenario where this option is the right call]
-
-   Default if unaddressed: [Which option will be used and why]
-   Impact if default is wrong: [What breaks, degrades, or becomes hard to change later]
-Rules for this section:
-
-Every open question must have at least 2 resolution options (3 preferred for 🔴 CRITICAL items)
-One option should always be marked ← Recommended with a brief rationale
-Always specify a Default if unaddressed so implementation can proceed on 🟡/🟢 items without blocking
-🔴 CRITICAL items must be resolved by the user before Phase 2 begins — no default allowed
-🎨 Design Choices should always be surfaced to the user regardless of confidence level, since they reflect intent that only the user can clarify — even if a default exists
-Order by confidence level: 🔴 CRITICAL → 🟠 LOW → 🟡 MEDIUM → 🟢 HIGH
-Within the same confidence level, list 🎨 Design Choices before 🔧 Implementation Difficulties, since design decisions often constrain implementation options downstream
-
-Add confidence levels back to the implementation plan steps (go back to Step 2 and annotate each step with its corresponding open question confidence level and type to create a direct cross-reference).
-Confidence Level Guide:
-
-🔴 CRITICAL: Pure guessing or a foundational design decision with major downstream consequences. Phase 2 is BLOCKED until resolved.
-🟠 LOW: Major assumptions or a significant design choice that will be hard to reverse. Strongly encourage resolution before Phase 2.
-🟡 MEDIUM: Moderate assumptions or a design choice with limited blast radius. Will proceed with default if unaddressed.
-🟢 HIGH: Minor uncertainty or a low-stakes design preference. Will proceed with default; flagged for review.
-
-🛑 STOP HERE - PHASE 1 CHECKPOINT
-
-You have now presented:
-
-The complete implementation plan with open question confidence levels and types annotated on each step
-The Open Questions Report: every uncertainty and design choice paired with resolution options, pros/cons, a recommendation, and a default fallback
-
-
-DO NOT PROCEED to Phase 2 without explicit approval
-The user should:
-
-Resolve all 🔴 CRITICAL items (required — no default exists)
-Review all 🎨 Design Choices (regardless of confidence — these reflect intent only the user can set)
-Review and optionally resolve 🟠 LOW items (defaults exist but risk is high)
-Select preferred options for any question where the default doesn't fit their context
-Approve, adjust, or redirect the overall plan
-
-
-WAIT for the user to address open questions AND provide explicit approval like "looks good", "proceed to implementation", or "go ahead to Phase 2"
-
-
-PHASE 2: Implementation (Only proceed after explicit Phase 1 approval)
-⚠️ VERIFY: Have you received explicit approval AND resolution of all 🔴 CRITICAL items? If not, STOP and wait.
-
-Implementation Process:
-
-Apply approved resolutions: For each open question, use the option the user selected; fall back to the stated default for any unaddressed 🟡/🟢 items
-Build incrementally from simple to complex:
-
-Start with Step 1 (Core Plumbing Setup)
-Add each subsequent step
-Verify each addition works before proceeding
-
-
-Handle newly discovered open questions during implementation:
-
-For 🔴 CRITICAL (either type): STOP immediately and present a mini Open Questions Report with options
-For 🎨 Design Choices at any confidence level: Surface to the user with options before proceeding — don't silently pick one
-For 🟠 LOW 🔧 Difficulty: Document, present options briefly, seek guidance before proceeding
-For 🟡/🟢 🔧 Difficulty: Note assumption, apply default, flag for review in the step checkpoint
-
-
-
-
-Implementation:
-
-For each planned implementation step:
-
-Implement the step according to the approved plan and selected resolutions
-Commit the implementation:
-
-
-
-
-``` bash
-git add [implementation_files]
-git commit -m "NEED_REVIEW: [step description]"
 ```
 
-**🛑 MANDATORY STOP - STEP CHECKPOINT**
+---
 
-Present to the user:
-- What was implemented (step description)
-- Which open question resolutions were applied in this step (and whether they were 🔧 or 🎨)
-- Any **new open questions discovered**, each labeled by type with options + pros/cons (mini Open Questions Report format)
-- ASCII diagram showing current state of the system (if helpful)
-- What comes next (if not the final step)
+## PHASE 1: Analysis and Implementation Planning
 
-**WAIT for explicit user signal** (e.g., "continue", "next", "proceed")
+1. **Context Gathering and Codebase Search**
+   - Search the codebase for files, functions, references, or tests directly relevant to the User's Goal. Try searching in ~/Documents/WorkVault/AI_Knowledge as well
+   - For each source found:
+     - Summarize its relevance.
+     - If not relevant, briefly note and disregard.
+   - Return a list of the most applicable files or code snippets for further analysis.
 
-The user may want to:
-- Review the implementation code
-- Request modifications
-- Resolve newly discovered open questions before continuing
+2. **Create a DETAILED IMPLEMENTATION PLAN**
+   - Before writing any code, provide a comprehensive plan. This plan should include:
+     - **Problem Overview:** Briefly restate the problem or goal based on the user's request and the gathered context.
+     - **Proposed Solution Outline:** Describe the overall technical approach you will take to address the problem.
+       - **If there is a change to an existing function, check that its callers expect this behavior and list these callers out for the user to confirm**
+       - **If there are multiple implementation options or approaches, present them for the user to decide.**
+       - Use visualizations (such as sequence, state, component diagrams, flowchart, free form ASCII text diagrams with simplified data structures) to clarify key concepts, system interactions, or data flow related to the changes.
+     - **🔧 STEP 1 (MANDATORY FIRST COMMIT): Core Plumbing Setup**
+       - Implement the fundamental infrastructure, interfaces, or "API skeleton" first
+       - Create minimal working version with basic connectivity/structure
+       - Establish data flow pathways without complex logic
+       - Set up error handling framework
+       - **This step should result in a compilable, testable foundation even if features aren't complete**
+       - **Files to modify/create**: [List specific files for the plumbing step]
+       - **Commit message**: "NEED_REVIEW: Add core plumbing for [feature/goal]"
+     - **Step-by-Step Feature Implementation:** After core plumbing, break down remaining features into manageable tasks:
+       - For each subsequent step:
+         - Describe the specific task to be performed.
+         - Identify the file(s) that will be modified or created.
+         - Explain the specific code changes or logic you intend to implement within those files → and **how they contribute to the overall goal**
+         - **Build incrementally**: Each step should add ONE clear piece of functionality to the working foundation
+         - **If there are multiple options for implementation, present them all to the user. Rank the options in terms of relevance.**
+     - **Commit Strategy:** Reiterate that you will commit changes (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`) after completing logical units of work. **The FIRST commit will always be the core plumbing setup.**
 
-**DO NOT proceed without explicit approval**
+3. **🔍 Implementation Uncertainties: Difficulties and Assumption Identification** (CRITICAL STEP):
+   **Based on the implementation plan created in Step 2**, explicitly identify:
+   - **Low Confidence Areas**: Components or interactions from the plan that you don't fully understand
+   - **Assumptions Made**: Any guesses about how planned components will work or should interact
+   - **Missing Knowledge**: Information about the planned approach that would help create better implementation
+   - **Complex Interactions**: Areas in the plan where the behavior might be non-obvious and challenging
+   - **External Dependencies**: Services or systems mentioned in the plan that you're unsure how to integrate
+
+   **⚠️ CRITICAL: Uncertainties must be directly derived from and reference specific aspects of the implementation plan from Step 2**
+
+   **Format this as a clear "Implementation Uncertainty Report" with confidence levels:**
+   ```
+   ⚠️ IMPLEMENTATION UNCERTAINTIES (Based on the Implementation Plan):
+
+   Summary: X 🔴 CRITICAL | X 🟠 LOW | X 🟡 MEDIUM | X 🟢 HIGH uncertainties identified
+
+   1. [Specific Plan Component/Step]: [What you're unsure about in this planned approach]
+      - Confidence Level: [🔴 CRITICAL/🟠 LOW/🟡 MEDIUM/🟢 HIGH]
+      - Plan Reference: [Reference to specific step/component in the implementation plan]
+      - Assumption: [What you're assuming about this planned component]
+      - Would benefit from: [What information would help implement this part of the plan]
+      - Impact if wrong: [What could break if assumption about this plan component is incorrect]
+   ```
+
+   **Add confidence levels to each step in the implementation plan:**
+   - Go back to the implementation plan from Step 2
+   - Add **Confidence level**: [🔴 CRITICAL/🟠 LOW/🟡 MEDIUM/🟢 HIGH] to each implementation step
+   - This creates a direct mapping between plan components and uncertainty levels
+
+   **Confidence Level Guide:**
+   - **🔴 CRITICAL**: No understanding of this planned approach, pure guessing. Implementation will likely be wrong without clarification.
+   - **🟠 LOW**: Major assumptions made about this plan component. High risk of incorrect implementation.
+   - **🟡 MEDIUM**: Some assumptions about planned approach but based on common patterns. Moderate risk.
+   - **🟢 HIGH**: Minor uncertainty about this plan component only. Low risk but clarification would still help.
+
+   - **Order uncertainties by confidence level** (🔴 CRITICAL first, then 🟠 LOW, 🟡 MEDIUM, 🟢 HIGH)
+   - Present this uncertainty analysis clearly to the user, formatted using Markdown.
+
+**🛑 STOP HERE - PHASE 1 CHECKPOINT**
+- You have now presented:
+  1. **The complete implementation plan with confidence levels for each step**
+  2. **The Implementation Uncertainty Report based on the specific plan components (🔴 CRITICAL → 🟠 LOW → 🟡 MEDIUM → 🟢 HIGH)**
+- DO NOT PROCEED to implementation without explicit approval
+- The user may want to:
+  - **Address 🔴 CRITICAL and 🟠 LOW confidence uncertainties first**
+  - **Clarify assumptions you've made about specific plan components**
+  - Choose between implementation options
+  - Adjust the implementation approach
+  - Modify the step ordering
+- WAIT for the user to address plan-based uncertainties AND provide explicit approval like "looks good", "proceed to implementation", or "go ahead to Phase 2"
+
+---
+
+## PHASE 2: Implementation (Only proceed after explicit Phase 1 approval)
+
+**⚠️ VERIFY: Have you received explicit approval for the implementation plan? If not, STOP and wait for approval.**
+
+4. **Implementation Process**:
+   - **Build incrementally from simple to complex**:
+     - Start with Step 1 (Core Plumbing Setup)
+     - Add each subsequent step
+     - Verify each addition works before proceeding
+   - **Handle uncertainties during implementation**:
+     - For 🔴 CRITICAL uncertainties: STOP and ask for clarification
+     - For 🟠 LOW uncertainties: Document and seek guidance before proceeding
+     - For 🟡 MEDIUM/🟢 HIGH: Note assumption and continue, flag for review
+
+5. **Implementation**:
+   - For each planned implementation step:
+     - **Implement the step according to the approved plan**
+     - **Commit the implementation**:
+       ```bash
+       git add [implementation_files]
+       git commit -m "NEED_REVIEW: [step description]"
+       ```
+
+     **🛑 MANDATORY STOP - STEP CHECKPOINT**
+
+     Present to the user:
+     - What was implemented (step description)
+     - Any issues encountered and resolutions
+     - New uncertainties discovered (if any)
+     - ASCII diagram showing current state of the system (if helpful)
+     - What comes next (if not the final step)
+
+     **WAIT for explicit user signal** (e.g., "continue", "next", "proceed")
+
+     The user may want to:
+     - Review the implementation code
+     - Request modifications
+     - Address new uncertainties
+
+     **DO NOT proceed without explicit approval**
 
 ---
 
@@ -1776,25 +1716,23 @@ The user may want to:
 
 **This is a TWO-PHASE process with mandatory stops:**
 
-1. **Phase 1**: Analyze → Implementation Plan → **Open Questions Report (Difficulties + Design Choices) with Resolution Options** → **🛑 STOP**
+1. **Phase 1**: Analyze → Implementation Plan → **Plan-Based Uncertainties** → **🛑 STOP** (await approval)
 2. **Phase 2**: Implement → Code per Step → **🛑 STOP after EACH commit** (await "continue")
 
 **You MUST:**
-- Distinguish between 🔧 Implementation Difficulties (things you don't know) and 🎨 Design Choices (things the user should decide)
-- Always surface 🎨 Design Choices to the user regardless of confidence level — never silently pick a design direction
-- For EVERY open question, provide multiple resolution options with pros, cons, a recommendation, and a default fallback
-- Block Phase 2 on any unresolved 🔴 CRITICAL item
+- Create the implementation plan FIRST, then identify uncertainties based on that specific plan
+- Wait for explicit approval before starting each phase
 - Stop after EVERY commit in Phase 2
 - Never skip checkpoints or assume approval
+- Always present implementation uncertainties prominently
 
-**Remember**: Implementation difficulties are things you're unsure about. Design choices are decisions the user should own. Both deserve options, not just flags — and design choices should never be silently resolved, even when they seem minor.
+**Remember**: Identifying what you don't understand about your specific implementation plan is just as valuable as planning what you do understand. The user EXPECTS and VALUES uncertainty identification based on the concrete plan you've created.
 
-## **User's Goal:**
+### **User's Goal:**
+<Users_Goal>
 <Base_Implementation>
 
-Possible Followup Prompts: 1) Understand Code  2) PR Review
-                
-
+Possible Followup Prompts 1) Understand Code 2) PR Review
                 ]]
               end,
             },
