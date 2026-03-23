@@ -1562,7 +1562,7 @@ Make sure the "Understand Code" Prompt is called before this(to get the Context)
                 vim.g.codecompanion_auto_tool_mode = true
 
                 return [[
-Integrated System Code Implementation Plan
+## Integrated System Code Implementation Plan
 ⚠️ IMPORTANT: This is an INTERACTIVE, TWO-PHASE process. You MUST wait for user responses at designated checkpoints. DO NOT proceed past any STOP checkpoint without explicit user approval.
 🎯 KEY PRINCIPLE: Openly communicate uncertainty AND surface design choices. Both are expected and valuable. For every open question — whether it's something you don't know or a decision the user should own — present concrete resolution options with tradeoffs so the user can make informed decisions.
 You are a senior software engineer tasked with analyzing, planning, and implementing solutions based on the User's Goal.
@@ -1747,28 +1747,28 @@ Commit the implementation:
 
 
 
-
-bash       git add [implementation_files]
-       git commit -m "NEED_REVIEW: [step description]"
+``` bash
+git add [implementation_files]
+git commit -m "NEED_REVIEW: [step description]"
 ```
 
-     **🛑 MANDATORY STOP - STEP CHECKPOINT**
+**🛑 MANDATORY STOP - STEP CHECKPOINT**
 
-     Present to the user:
-     - What was implemented (step description)
-     - Which open question resolutions were applied in this step (and whether they were 🔧 or 🎨)
-     - Any **new open questions discovered**, each labeled by type with options + pros/cons (mini Open Questions Report format)
-     - ASCII diagram showing current state of the system (if helpful)
-     - What comes next (if not the final step)
+Present to the user:
+- What was implemented (step description)
+- Which open question resolutions were applied in this step (and whether they were 🔧 or 🎨)
+- Any **new open questions discovered**, each labeled by type with options + pros/cons (mini Open Questions Report format)
+- ASCII diagram showing current state of the system (if helpful)
+- What comes next (if not the final step)
 
-     **WAIT for explicit user signal** (e.g., "continue", "next", "proceed")
+**WAIT for explicit user signal** (e.g., "continue", "next", "proceed")
 
-     The user may want to:
-     - Review the implementation code
-     - Request modifications
-     - Resolve newly discovered open questions before continuing
+The user may want to:
+- Review the implementation code
+- Request modifications
+- Resolve newly discovered open questions before continuing
 
-     **DO NOT proceed without explicit approval**
+**DO NOT proceed without explicit approval**
 
 ---
 
@@ -1789,11 +1789,12 @@ bash       git add [implementation_files]
 
 **Remember**: Implementation difficulties are things you're unsure about. Design choices are decisions the user should own. Both deserve options, not just flags — and design choices should never be silently resolved, even when they seem minor.
 
-### **User's Goal:**
-```
+## **User's Goal:**
 <Base_Implementation>
 
 Possible Followup Prompts: 1) Understand Code  2) PR Review
+                
+
                 ]]
               end,
             },
