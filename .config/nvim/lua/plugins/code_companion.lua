@@ -749,6 +749,101 @@ Possible Followup Prompts 1) Code Workflow 2) Add Log Line 3) Add Trace ID
             },
           },
         },
+        ["Consider Possible Scenarios"] = {
+          strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
+          description = "AI assisted Understanding",
+          opts = {
+            index = 20, -- Position in the action palette (higher numbers appear lower)
+            is_default = false, -- Not a default prompt
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            short_name = "understand", -- Used for calling via :CodeCompanion /mycustom
+            auto_submit = false, -- Automatically submit to LLM without waiting
+            --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
+            modes = { "n" },
+          },
+          prompts = {
+            {
+              role = "user",
+              opts = { auto_submit = false },
+              content = function()
+                -- Enable turbo mode!!!
+                vim.g.codecompanion_auto_tool_mode = true
+
+                return [[
+You are a senior software engineer performing bug scenario analysis on a codebase.
+Your goal is to generate concrete, triggerable bug scenarios by reasoning over all plausible 
+execution paths simultaneously — do not anchor on the happy path.
+
+### Step 1: Clarify the Bug Domain
+- Identify the subsystem, function, or behavior the user is asking about.
+- If the scope is ambiguous, present a generalized version of the question and ask for 
+  confirmation before proceeding.
+- **WAIT for the user to confirm before continuing.**
+
+### Step 2: Codebase Search & Context Gathering
+- Search the codebase for all code relevant to the domain in question.
+- For each source found, note how it relates to the potential bug surface.
+- Flag code that is:
+  - Handling nulls, errors, or edge cases inconsistently
+  - Using shared or mutable state
+  - Branching on dynamic or runtime values (flags, configs, user input)
+  - Marked TODO/FIXME or appears to be a workaround
+  - Calling external dependencies that can fail or return unexpected values
+- Perform this search in a separate task where possible to avoid cluttering the context window.
+  That task should return only the files most relevant to the bug domain.
+
+### Step 3: Path Enumeration — All Plausible Execution Scenarios
+- Do NOT pick the happy path. Hold all paths open simultaneously and enumerate:
+  - What happens when each branch goes the non-obvious direction?
+  - What happens when external calls fail, return null, return unexpected types, or time out?
+  - What happens when collections are empty, single-element, or very large?
+  - What happens when concurrent paths interleave or race?
+  - What happens under non-default configs, missing env vars, or adversarial input?
+- **RANK your scenarios by likelihood:**
+  - HIGH: Reachable under normal inputs or common environments
+  - MEDIUM: Reachable under edge-case inputs or non-default configs
+  - LOW: Reachable only under adversarial input, races, or exotic environments
+- For each scenario, use the following format:
+
+  **Scenario [N] — [SHORT NAME] — [HIGH / MEDIUM / LOW]**
+
+  Triggering Condition:
+  - Describe the exact input, state, or environment that causes this path
+
+  Production Code Exercised:
+  - Simplified description of what executes
+// Caller or test code that triggers this path
+  What this triggers in production:
+  - From [filename], [function], line [N]
+// Relevant production code snippet
+
+  Expected vs. Actual Behavior:
+  - Expected: [what should happen]
+  - Actual: [what goes wrong]
+
+  **CRITICAL: Do not hallucinate code. Only cite snippets that exist verbatim in the codebase,
+  with filename and line numbers. If a snippet is inferred, explicitly say so.**
+
+### Step 4: Interference Scenarios
+- Separately, identify bugs that only emerge from the *interaction* of multiple paths:
+  - Shared mutable state written by one path, read by another
+  - Invariants that hold on each path individually but break when paths interleave
+  - TOCTOU (time-of-check-time-of-use) races
+  - Inconsistent error handling across parallel branches
+
+### Step 5: SUMMARY
+- Conclude with a `## SUMMARY` section using bullet points covering main findings.
+- Include a relevant visualization: sequence diagram, state machine, ASCII dataflow diagram, 
+  or flowchart showing how the enumerated paths diverge.
+- Use an analogy if it helps clarify the core bug mechanism.
+
+## User's Goal
+The scenario I am trying to recreate should have the following properties:
+]]
+              end,
+            },
+          },
+        },
         ["Explain Architecture"] = {
           strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
           description = "Explain the Architecture of the Codebase",
@@ -1746,12 +1841,12 @@ Possible Followup Prompts 1) Understand Code 2) PR Review
       { "<leader>ah", ":CodeCompanionHistory<cr>", desc = "Toggle CodeCompanionChat History" },
       { "<leader>ap", ":CodeCompanionActions<cr>", desc = "Toggle CodeCompanion Action Palette", mode = { "n", "v" } },
       { "<leader>aa", ":CodeCompanionChat Add<cr>", desc = "Add Visually Selected text to Chat", mode = { "v" } },
-      {
-        "<leader>ac",
-        ":CodeCompanionChat<CR>",
-        desc = "Open a new CodeCompanion Chat",
-        mode = { "n" },
-      },
+      -- {
+      --   "<leader>ac",
+      --   ":CodeCompanionChat<CR>",
+      --   desc = "Open a new CodeCompanion Chat",
+      --   mode = { "n" },
+      -- },
       {
         "<leader>an",
         "}",
@@ -1764,6 +1859,14 @@ Possible Followup Prompts 1) Understand Code 2) PR Review
         "<leader>aN",
         "{",
         desc = "Previous CodeCompanion Chat",
+        mode = { "n" },
+        remap = true,
+        ft = { "codecompanion" },
+      },
+      {
+        "<leader>as",
+        "}",
+        desc = "Consider Possible Scenarios",
         mode = { "n" },
         remap = true,
         ft = { "codecompanion" },
@@ -1788,12 +1891,12 @@ Possible Followup Prompts 1) Understand Code 2) PR Review
         desc = "Generate Unit Tests",
         mode = { "n" },
       },
-      {
-        "<leader>af",
-        ":CodeCompanion /follow<CR>",
-        desc = "Follow Up Questions",
-        mode = { "n" },
-      },
+      -- {
+      --   "<leader>af",
+      --   ":CodeCompanion /follow<CR>",
+      --   desc = "Follow Up Questions",
+      --   mode = { "n" },
+      -- },
       {
         "<leader>aw",
         ":CodeCompanion /code_workflow<CR>",
@@ -1806,12 +1909,12 @@ Possible Followup Prompts 1) Understand Code 2) PR Review
         desc = "PR Review",
         mode = { "n" },
       },
-      {
-        "<leader>ag",
-        ":CodeCompanion /gather<CR>",
-        desc = "Gather Findings from the Conversation",
-        mode = { "n" },
-      },
+      -- {
+      --   "<leader>ag",
+      --   ":CodeCompanion /gather<CR>",
+      --   desc = "Gather Findings from the Conversation",
+      --   mode = { "n" },
+      -- },
       {
         "<leader>au",
         ":CodeCompanion /understand<CR>",
@@ -1824,12 +1927,12 @@ Possible Followup Prompts 1) Understand Code 2) PR Review
         desc = "Debug Code",
         mode = { "n" },
       },
-      {
-        "<leader>as",
-        ":CodeCompanion /summarize<CR>",
-        desc = "Summarize Code block",
-        mode = { "n" },
-      },
+      -- {
+      --   "<leader>as",
+      --   ":CodeCompanion /summarize<CR>",
+      --   desc = "Summarize Code block",
+      --   mode = { "n" },
+      -- },
       {
         "<leader>al",
         ":CodeCompanion /log<CR>",
