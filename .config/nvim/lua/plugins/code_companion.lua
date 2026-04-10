@@ -699,8 +699,8 @@ In your analysis, do the following:
      - Appear to be workarounds or have TODO/FIXME comments
    - Perform this action in a seperate task if possible, so as to not clutter the current context window. This task should return the files it deems most applicable to the User's Question.
 
-3. **Step-by-Step Breakdown:**
-   - Now use the additional context and think hard about the user's question. Decide if there could be multiple possible explainations and if so present both to the user. **Rank your hypotheses in terms of relevance to the issue.**
+3. **Step-by-Step Breakdown of All Possible Explainations:**
+   - Now use the additional context and think hard about the user's question. Decide if there could be multiple possible explainations and if so present both to the user. **RANK YOUR HYPOTHESES in terms of relevance to the issue.**
    - Structure your explanation using Markdown headers for each step.
    - For each step, justify your reasoning with direct code snippets from the input, along with the associated line numbers/filename. In other words, cite sources and do not hallucinate.
    - Demonstrate how code from tests/upstream caller triggers or interacts with code from the main codebase. Use the format below to show the connection:
@@ -742,7 +742,7 @@ Also suggest **specific follow up topics/questions** and explain how they would 
 **My main goal is** <main_goal>
 <first_step> (i.e "Additional Search Folders" in the UI)
 
-Possible Followup Prompts 1) Follow Up Question 2) Add Log Line 3) Add Trace ID
+Possible Followup Prompts 1) Code Workflow 2) Add Log Line 3) Add Trace ID
 
 ]]
               end,
