@@ -818,22 +818,19 @@ execution paths simultaneously — do not anchor on the happy path.
 
   **Scenario [N] — [SHORT NAME] — [HIGH / MEDIUM / LOW]**
 
-  Step-by-Step Walkthrough:
-  - Number each step in the exact sequence required to trigger the scenario.
-  - For each step, specify:
+  Walkthrough:
+  - A sequence diagram, state machine, or ASCII dataflow that shows the exact sequence 
+    of actions across services required to trigger the scenario.
+  - Each step in the diagram should be numbered and specify:
     - Which service / component / thread is acting
     - What it does (with cited code snippet + filename + line number)
     - What state changes as a result
-  - Highlight the exact step where the bug manifests — mark it with ⚠️
-  - Where timing is critical, call out the window explicitly: 
-    e.g. "Steps 3 and 5 must interleave before Step 4 completes"
+  - Mark the exact step where the bug manifests with ⚠️
+  - Where timing is critical, annotate the diagram directly:
+    e.g. "← race window: Steps 3–5 must interleave before Step 4 completes"
 
-  Visualization:
-  - A sequence diagram, state machine, or ASCII dataflow that mirrors the numbered 
-    steps above — making the timing and ordering of interactions visually explicit.
   - Use analogies where helpful to clarify the failure mechanism.
-
-  **CRITICAL: Do not hallucinate code. Only cite snippets that exist verbatim in the 
+  - **CRITICAL: Do not hallucinate code. Only cite snippets that exist verbatim in the 
   codebase, with filename and line numbers. If a snippet is inferred, explicitly say so.**
 
 
@@ -841,7 +838,7 @@ execution paths simultaneously — do not anchor on the happy path.
 - Conclude with a `## SUMMARY` section using bullet points covering main findings.
 
 ## User's Goal
-The scenario I am trying to recreate should have the following properties:
+I would like to create in a unit test a situation where <describe_situation>
 
 ]]
               end,
