@@ -811,15 +811,15 @@ execution paths simultaneously — do not anchor on the happy path.
   - Describe the exact input, state, or environment that causes this path
 
   Production Code Exercised:
-  - Simplified description of what executes
-// Caller or test code that triggers this path
+  - Simplified description of what executes // Caller or test code that triggers this path
   What this triggers in production:
-  - From [filename], [function], line [N]
-// Relevant production code snippet
+  - From [filename], [function], line [N] // Relevant production code snippet
 
-  Expected vs. Actual Behavior:
-  - Expected: [what should happen]
-  - Actual: [what goes wrong]
+  Visualization:
+  - A diagram (sequence, state machine, ASCII dataflow, or flowchart) showing how this 
+    specific path diverges from the happy path and where it breaks down.
+    Use analogies where helpful to clarify the failure mechanism.
+
 
   **CRITICAL: Do not hallucinate code. Only cite snippets that exist verbatim in the codebase,
   with filename and line numbers. If a snippet is inferred, explicitly say so.**
@@ -833,12 +833,10 @@ execution paths simultaneously — do not anchor on the happy path.
 
 ### Step 5: SUMMARY
 - Conclude with a `## SUMMARY` section using bullet points covering main findings.
-- Include a relevant visualization: sequence diagram, state machine, ASCII dataflow diagram, 
-  or flowchart showing how the enumerated paths diverge.
-- Use an analogy if it helps clarify the core bug mechanism.
 
 ## User's Goal
 The scenario I am trying to recreate should have the following properties:
+
 ]]
               end,
             },
