@@ -783,22 +783,33 @@ execution paths simultaneously — do not anchor on the happy path.
 ### Step 2: Codebase Search & Context Gathering
 - Search the codebase for all code relevant to the domain in question.
 - For each source found, note how it relates to the potential bug surface.
-- Flag code that is:
-  - Handling nulls, errors, or edge cases inconsistently
-  - Using shared or mutable state
-  - Branching on dynamic or runtime values (flags, configs, user input)
-  - Marked TODO/FIXME or appears to be a workaround
-  - Calling external dependencies that can fail or return unexpected values
-- Perform this search in a separate task where possible to avoid cluttering the context window.
-  That task should return only the files most relevant to the bug domain.
+- Build an explicit inventory of:
+  - **Services / components involved:** What are the actors in this system? What does 
+    each own and what does each call?
+  - **Shared state & handoff points:** What data is written by one service and read by 
+    another? What queues, DBs, caches, or APIs sit between them?
+  - **Branching on dynamic values:** Where does behavior change based on runtime values 
+    (flags, configs, user input, external responses)?
+  - **Failure surface:** Where are external calls made? What happens on timeout, null, 
+    unexpected type, or partial failure?
+  - **Fragile code signals:** TODOs, FIXMEs, inconsistent error handling, workarounds, 
+    or anything that appears load-bearing but poorly understood
+- Perform this search in a separate task where possible to avoid cluttering the context 
+  window. That task should return only the files most relevant to the bug domain, 
+  along with the inventory above.
 
 ### Step 3: Path Enumeration — All Plausible Execution Scenarios
-- Do NOT pick the happy path. Hold all paths open simultaneously and enumerate:
-  - What happens when each branch goes the non-obvious direction?
-  - What happens when external calls fail, return null, return unexpected types, or time out?
-  - What happens when collections are empty, single-element, or very large?
-  - What happens when concurrent paths interleave or race?
-  - What happens under non-default configs, missing env vars, or adversarial input?
+- Using the service inventory and handoff points from Step 2, enumerate scenarios by 
+  asking: **"What sequence of actions across these specific services could produce 
+  unexpected behavior?"**
+- For each shared state or handoff point identified, consider:
+  - What if Service A writes while Service B is mid-read?
+  - What if the handoff (queue, cache, API) delivers stale, partial, or out-of-order data?
+  - What if one service retries an operation the other already partially completed?
+  - What if a dynamic value (flag, config, user input) causes two services to operate 
+    under inconsistent assumptions simultaneously?
+  - What if a failure in one service leaves shared state in an intermediate form that 
+    another service interprets as valid?
 - **RANK your scenarios by likelihood:**
   - HIGH: Reachable under normal inputs or common environments
   - MEDIUM: Reachable under edge-case inputs or non-default configs
@@ -807,31 +818,26 @@ execution paths simultaneously — do not anchor on the happy path.
 
   **Scenario [N] — [SHORT NAME] — [HIGH / MEDIUM / LOW]**
 
-  Triggering Condition:
-  - Describe the exact input, state, or environment that causes this path
-
-  Production Code Exercised:
-  - Simplified description of what executes // Caller or test code that triggers this path
-  What this triggers in production:
-  - From [filename], [function], line [N] // Relevant production code snippet
+  Step-by-Step Walkthrough:
+  - Number each step in the exact sequence required to trigger the scenario.
+  - For each step, specify:
+    - Which service / component / thread is acting
+    - What it does (with cited code snippet + filename + line number)
+    - What state changes as a result
+  - Highlight the exact step where the bug manifests — mark it with ⚠️
+  - Where timing is critical, call out the window explicitly: 
+    e.g. "Steps 3 and 5 must interleave before Step 4 completes"
 
   Visualization:
-  - A diagram (sequence, state machine, ASCII dataflow, or flowchart) showing how this 
-    specific path diverges from the happy path and where it breaks down.
-    Use analogies where helpful to clarify the failure mechanism.
+  - A sequence diagram, state machine, or ASCII dataflow that mirrors the numbered 
+    steps above — making the timing and ordering of interactions visually explicit.
+  - Use analogies where helpful to clarify the failure mechanism.
+
+  **CRITICAL: Do not hallucinate code. Only cite snippets that exist verbatim in the 
+  codebase, with filename and line numbers. If a snippet is inferred, explicitly say so.**
 
 
-  **CRITICAL: Do not hallucinate code. Only cite snippets that exist verbatim in the codebase,
-  with filename and line numbers. If a snippet is inferred, explicitly say so.**
-
-### Step 4: Interference Scenarios
-- Separately, identify bugs that only emerge from the *interaction* of multiple paths:
-  - Shared mutable state written by one path, read by another
-  - Invariants that hold on each path individually but break when paths interleave
-  - TOCTOU (time-of-check-time-of-use) races
-  - Inconsistent error handling across parallel branches
-
-### Step 5: SUMMARY
+### Step 4: SUMMARY
 - Conclude with a `## SUMMARY` section using bullet points covering main findings.
 
 ## User's Goal
