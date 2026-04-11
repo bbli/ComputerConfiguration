@@ -1869,11 +1869,10 @@ Possible Followup Prompts 1) Understand Code 2) PR Review
       },
       {
         "<leader>ac",
-        ":CodeCompanion /create_scenario ",
+        ":CodeCompanion /create_scenario<CR>",
         desc = "Consider Possible Scenarios",
         mode = { "n" },
         remap = true,
-        ft = { "codecompanion" },
       },
       {
         "<leader>ai",
