@@ -756,7 +756,7 @@ Possible Followup Prompts 1) Code Workflow 2) Add Log Line 3) Add Trace ID
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
             is_slash_cmd = true, -- Whether it should be available as a slash command in chat
-            short_name = "understand", -- Used for calling via :CodeCompanion /mycustom
+            short_name = "create_scenario", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
             modes = { "n" },
@@ -1868,8 +1868,8 @@ Possible Followup Prompts 1) Understand Code 2) PR Review
         ft = { "codecompanion" },
       },
       {
-        "<leader>as",
-        "}",
+        "<leader>ac",
+        ":CodeCompanion /create_scenario ",
         desc = "Consider Possible Scenarios",
         mode = { "n" },
         remap = true,
