@@ -838,7 +838,7 @@ execution paths simultaneously — do not anchor on the happy path.
 - Conclude with a `## SUMMARY` section using bullet points covering main findings.
 
 ## User's Goal
-I would like to create in a unit test a situation where <describe_situation>
+I would like to create in a unit test a situation where <situation_or_log_lines>
 
 ]]
               end,

@@ -15,10 +15,12 @@ $custom\
 $cmd_duration\
 $line_break\
 $jobs\
-$time\
 $status\
 $character"""
 
+right_format = """
+$time\
+"""
 [custom]
 disabled = true
 
@@ -99,8 +101,8 @@ disabled = true
 [time]
 format = " 🕙 $time($style)\n"
 time_format = "%T"
-style = "bright-white"
-disabled = true
+style = "bold blue"
+disabled = false
 
 # Prompt: param 2 └─
 [character]
