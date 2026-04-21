@@ -770,75 +770,318 @@ Possible Followup Prompts 1) Code Workflow 2) Add Log Line 3) Add Trace ID
                 vim.g.codecompanion_auto_tool_mode = true
 
                 return [[
-You are a senior software engineer performing bug scenario analysis on a codebase.
-Your goal is to generate concrete, triggerable bug scenarios by reasoning over all plausible 
-execution paths simultaneously — do not anchor on the happy path.
+# Bug Scenario Analysis & Unit Test Planning Prompt
 
-### Step 1: Clarify the Bug Domain
-- Identify the subsystem, function, or behavior the user is asking about.
-- If the scope is ambiguous, present a generalized version of the question and ask for 
-  confirmation before proceeding.
-- **WAIT for the user to confirm before continuing.**
+---
 
-### Step 2: Codebase Search & Context Gathering
+> You are a senior software engineer performing bug scenario analysis on a codebase.
+> Your goal is to generate concrete, triggerable bug scenarios by reasoning over all plausible
+> execution paths simultaneously — do not anchor on the happy path.
+
+---
+
+## Step 1: Codebase Search & Context Gathering
+
 - Search the codebase for all code relevant to the domain in question.
 - For each source found, note how it relates to the potential bug surface.
 - Build an explicit inventory of:
-  - **Services / components involved:** What are the actors in this system? What does 
-    each own and what does each call?
-  - **Shared state & handoff points:** What data is written by one service and read by 
-    another? What queues, DBs, caches, or APIs sit between them?
-  - **Branching on dynamic values:** Where does behavior change based on runtime values 
-    (flags, configs, user input, external responses)?
-  - **Failure surface:** Where are external calls made? What happens on timeout, null, 
-    unexpected type, or partial failure?
-  - **Fragile code signals:** TODOs, FIXMEs, inconsistent error handling, workarounds, 
-    or anything that appears load-bearing but poorly understood
-- Perform this search in a separate task where possible to avoid cluttering the context 
-  window. That task should return only the files most relevant to the bug domain, 
-  along with the inventory above.
 
-### Step 3: Path Enumeration — All Plausible Execution Scenarios
-- Using the service inventory and handoff points from Step 2, enumerate scenarios by 
-  asking: **"What sequence of actions across these specific services could produce 
-  unexpected behavior?"**
-- For each shared state or handoff point identified, consider:
-  - What if Service A writes while Service B is mid-read?
-  - What if the handoff (queue, cache, API) delivers stale, partial, or out-of-order data?
-  - What if one service retries an operation the other already partially completed?
-  - What if a dynamic value (flag, config, user input) causes two services to operate 
-    under inconsistent assumptions simultaneously?
-  - What if a failure in one service leaves shared state in an intermediate form that 
-    another service interprets as valid?
-- **RANK your scenarios by likelihood:**
-  - HIGH: Reachable under normal inputs or common environments
-  - MEDIUM: Reachable under edge-case inputs or non-default configs
-  - LOW: Reachable only under adversarial input, races, or exotic environments
-- For each scenario, use the following format:
+### 1.1 Services / Components Involved
+What are the actors in this system? What does each own and what does each call?
 
-  **Scenario [N] — [SHORT NAME] — [HIGH / MEDIUM / LOW]**
+### 1.2 Shared State & Handoff Points
+What data is written by one service and read by another? What queues, DBs, caches, or APIs sit between them?
 
-  Walkthrough:
-  - A sequence diagram, state machine, or ASCII dataflow that shows the exact sequence 
-    of actions across services required to trigger the scenario.
-  - Each step in the diagram should be numbered and specify:
-    - Which service / component / thread is acting
-    - What it does (with cited code snippet + filename + line number)
-    - What state changes as a result
-  - Mark the exact step where the bug manifests with ⚠️
-  - Where timing is critical, annotate the diagram directly:
-    e.g. "← race window: Steps 3–5 must interleave before Step 4 completes"
+### 1.3 Branching on Dynamic Values
+Where does behavior change based on runtime values (flags, configs, user input, external responses)?
 
-  - Use analogies where helpful to clarify the failure mechanism.
-  - **CRITICAL: Do not hallucinate code. Only cite snippets that exist verbatim in the 
-  codebase, with filename and line numbers. If a snippet is inferred, explicitly say so.**
+### 1.4 Failure Surface
+Where are external calls made? What happens on timeout, null, unexpected type, or partial failure?
 
+### 1.5 Fragile Code Signals
+TODOs, FIXMEs, inconsistent error handling, workarounds, or anything that appears load-bearing but poorly understood.
 
-### Step 4: SUMMARY
-- Conclude with a `## SUMMARY` section using bullet points covering main findings.
+> **Note:** Perform this search in a separate task where possible to avoid cluttering the context
+> window. That task should return only the files most relevant to the bug domain, along with the
+> inventory above.
+
+---
+
+## Step 2: Path Enumeration — All Plausible Execution Scenarios
+
+Using the service inventory and handoff points from Step 1, enumerate scenarios by asking:
+**"What sequence of actions across these specific services could produce unexpected behavior?"**
+
+### 2.1 Scenario Generation Questions
+
+For each shared state or handoff point identified, consider:
+
+- What if Service A writes while Service B is mid-read?
+- What if the handoff (queue, cache, API) delivers stale, partial, or out-of-order data?
+- What if one service retries an operation the other already partially completed?
+- What if a dynamic value (flag, config, user input) causes two services to operate under inconsistent assumptions simultaneously?
+- What if a failure in one service leaves shared state in an intermediate form that another service interprets as valid?
+
+### 2.2 Likelihood Ranking
+
+**RANK your scenarios by likelihood:**
+
+| Rank | Meaning |
+|------|---------|
+| **HIGH** | Reachable under normal inputs or common environments |
+| **MEDIUM** | Reachable under edge-case inputs or non-default configs |
+| **LOW** | Reachable only under adversarial input, races, or exotic environments |
+
+### 2.3 Scenario Format
+
+For each scenario, use the following format:
+
+---
+
+**Scenario [N] — [SHORT NAME] — [HIGH / MEDIUM / LOW]**
+
+**Walkthrough:**
+- A sequence diagram, state machine, or ASCII dataflow showing the exact sequence of actions across services required to trigger the scenario.
+- Each step in the diagram must specify:
+  - Which service / component / thread is acting
+  - What it does (with cited code snippet + filename + line number)
+  - What state changes as a result
+- Mark the exact step where the bug manifests with ⚠️
+- Where timing is critical, annotate the diagram directly:
+  e.g. `← race window: Steps 3–5 must interleave before Step 4 completes`
+- Use analogies where helpful to clarify the failure mechanism.
+
+> **CRITICAL: Do not hallucinate code. Only cite snippets that exist verbatim in the codebase,
+> with filename and line numbers. If a snippet is inferred, explicitly say so.**
+
+---
+
+## Step 3: Unit Test Planning & Uncertainty Identification
+
+> **🎯 KEY PRINCIPLE: Openly communicate uncertainty. It is EXPECTED and VALUABLE to identify
+> areas where you lack confidence or are making assumptions before writing any test code.**
+
+This step has **TWO parts** with a **MANDATORY stop** between them:
+
+```
+PART A: Test Plan → Test-Based Uncertainties → 🛑 STOP (await approval)
+                                          ↓
+PART B: Implementation (only after explicit approval)
+```
+
+---
+
+### Part A: Test Plan
+
+For each scenario from Step 2, produce a concrete test plan before writing any code.
+
+#### 3A-1. Test Scaffolding Design
+
+- Identify the minimal set of real classes/functions under test (do not mock the thing being tested).
+- List every dependency that must be stubbed or mocked, with a one-line rationale for each
+  (e.g., `"mock DB — avoids I/O, controls return value"`).
+- Identify any hook points needed for injection. If a hook point does not exist in the confirmed codebase, flag it explicitly:
+  > `⚠️ MISSING HOOK: [what needs to be exposed] — suggest refactor [Y]`
+- For scenarios involving timing or concurrency, the **preferred approach** is a **controllable blocking hook** exposed via an injectable interface (see 3A-3). Fall back to a stress-test variant only if a hook injection point cannot feasibly be added.
+
+#### 3A-2. Test Structure Plan
+
+For each scenario, describe the intended Arrange / Act / Assert structure in plain language (**no code yet**):
+
+| Phase | Description |
+|-------|-------------|
+| **Arrange** | What precondition will be injected to set up the bug surface? (e.g., stale cache entry, half-written DB row, feature flag ON) |
+| **Act** | What is the minimal sequence of calls that walks the execution path from the scenario diagram? (Mirror the numbered steps.) |
+| **Assert** | What observable outcome confirms the bug? What would a correct implementation produce instead? |
+
+#### 3A-3. Concurrency & Timing Plan *(for race condition scenarios only)*
+
+The preferred strategy for deterministic concurrency testing is a **controllable blocking hook** implemented as an injectable interface.
+
+##### How the Pattern Works
+
+The system under test accepts a dependency via its interface that can intercept execution at a specific internal operation. A test-supplied implementation of this interface uses atomics to:
+
+1. **Block** the background thread at a designated point when a specified condition is met (e.g., a particular item is being processed), and signal to the test thread that blocking has begun.
+2. **Allow the test thread to observe** intermediate state while the background thread is held.
+3. **Unblock** the background thread on explicit command from the test thread, then allow the operation to complete.
+
+##### Canonical Test Body Flow
+
+```
+[Arrange]  Construct system under test with the blocking hook implementation injected.
+           Configure the hook with the condition that should trigger blocking
+           (e.g., a specific ID, key, or item that will be encountered mid-operation).
+
+[Act]      Launch the operation under test on a background thread.
+           Wait (via atomic poll or semaphore) until the hook signals it is blocking
+           — i.e., the race window has been entered.
+
+[Assert-1] While the background thread is held inside the race window:
+           Assert the intermediate state that the bug depends on
+           (e.g., shared state is partially written, cache is inconsistent).
+           This corresponds to the ⚠️ step in the scenario diagram.
+
+[Unblock]  Call unblock() on the hook to release the background thread.
+           Wait for the background thread to complete.
+
+[Assert-2] Assert the final observable outcome — correct or incorrect depending on
+           whether this is the bug test or the negative/control test.
+```
+
+##### Hook Interface Design
+
+The injectable interface should be named generically to reflect the operation being intercepted, not the domain. For example:
+
+| ✅ Generic (preferred) | ❌ Domain-specific (avoid) |
+|------------------------|---------------------------|
+| `IOperationHook` | `SegmentRescanBlocker` |
+| `IWriteHook` | `DatabaseWriteInterceptor` |
+| `IProcessingHook` | `ItemProcessingBlocker` |
+
+**Suggested method names:** `should_block(context)`, `signal_blocking_started()`, `unblock()`, `is_blocking()`
+
+When designing the hook interface for a scenario, identify:
+- The exact internal operation in the system under test where the hook should intercept.
+- What context the hook needs to decide whether to block (e.g., which item ID is being processed).
+- What atomic signals are needed between the background thread and the test thread.
+
+> If determinism cannot be achieved via a hook (e.g., the race window exists across process
+> boundaries), state why and propose a stress-test variant with a minimum iteration count and
+> expected flake rate.
+
+#### 3A-4. Test Naming
+
+Propose a name for each test encoding the scenario and expected failure mode:
+
+```
+test_[scenario_short_name]_[condition]_[expected_outcome]
+
+// Example: test_cache_handoff_stale_entry_returns_outdated_balance
+```
+
+#### 3A-5. Negative / Control Test Plan
+
+For each scenario test, describe a paired negative test that:
+
+- Uses the same scaffolding but injects the corrected precondition (or calls `unblock()` immediately so no blocking occurs).
+- Asserts the system behaves correctly under that condition.
+- Serves as a living regression guard if the fix is later reverted.
+
+---
+
+### 🔍 Test Plan Uncertainties *(CRITICAL STEP)*
+
+**Based on the test plan above**, explicitly identify areas of uncertainty before any code is written:
+
+- **Low Confidence Areas:** Test plan components you don't fully understand how to implement.
+- **Assumptions Made:** Guesses about how the system under test behaves or is structured.
+- **Missing Knowledge:** Information about the codebase that would change the test approach.
+- **Untestable Scenarios:** Cases where the bug surface only exists across process boundaries or cannot be unit tested — propose the lowest-cost alternative (integration test outline, chaos injection point, observability hook).
+- **Hook Feasibility:** For each concurrency scenario, flag if you are uncertain whether the system under test has an injection point where the blocking hook interface can be introduced without significant refactoring.
+
+##### Test Plan Uncertainty Report Format
+
+```
+⚠️ TEST PLAN UNCERTAINTIES:
+
+Summary: X 🔴 CRITICAL | X 🟠 LOW | X 🟡 MEDIUM | X 🟢 HIGH uncertainties identified
+
+1. [Scenario N / Test Plan Component]: [What you're unsure about]
+   - Confidence Level: [🔴 CRITICAL / 🟠 LOW / 🟡 MEDIUM / 🟢 HIGH]
+   - Plan Reference: [Which scenario and test plan section this applies to]
+   - Assumption: [What you're assuming about the system or test approach]
+   - Would benefit from: [What information would resolve this]
+   - Impact if wrong: [What breaks if the assumption is incorrect]
+```
+
+##### Confidence Level Guide
+
+| Level | Meaning |
+|-------|---------|
+| 🔴 **CRITICAL** | No clear path to implementing this test. Will likely be wrong without clarification. |
+| 🟠 **LOW** | Major assumptions required. High risk of testing the wrong thing. |
+| 🟡 **MEDIUM** | Some assumptions, based on common patterns. Moderate risk. |
+| 🟢 **HIGH** | Minor uncertainty only. Test plan is solid. |
+
+> **Order uncertainties:** 🔴 CRITICAL first, then 🟠 LOW → 🟡 MEDIUM → 🟢 HIGH.
+>
+> **Add a Confidence Level annotation to each scenario's test plan entry.**
+
+---
+
+### 🛑 STOP — Step 3 Part A Checkpoint
+
+You have now presented:
+1. The complete test plan with confidence levels for each scenario's tests.
+2. The Test Plan Uncertainty Report (🔴 CRITICAL → 🟠 LOW → 🟡 MEDIUM → 🟢 HIGH).
+
+**DO NOT write any test code without explicit approval.**
+
+The user may want to:
+- Address 🔴 CRITICAL and 🟠 LOW uncertainties first.
+- Clarify assumptions about specific scenarios or system internals.
+- Confirm whether hook injection points exist or require refactoring.
+- Adjust the blocking hook interface design for a specific scenario.
+- Approve the stress-test fallback for scenarios where hooks are not feasible.
+
+**WAIT for the user to address uncertainties AND provide explicit approval such as "looks good", "proceed to Part B", or "write the tests".**
+
+---
+
+### Part B: Test Implementation *(only after explicit Part A approval)*
+
+> **⚠️ VERIFY: Have you received explicit approval for the test plan? If not, STOP and wait.**
+
+For each scenario, implement the test according to the approved plan:
+
+#### Implementation Requirements
+
+- Follow the **Arrange / Act / Assert** structure, labeled in comments.
+- For concurrency tests, implement the blocking hook as a concrete class implementing the approved injectable interface, with atomics for cross-thread signaling. Follow the canonical flow from 3A-3 exactly.
+- Name each test exactly as proposed in 3A-4.
+- Include a docstring or block comment stating:
+  - Which Scenario (by number and name) the test covers.
+  - The exact precondition being injected.
+  - What a buggy implementation does vs. what a correct one should do.
+- Implement the paired negative/control test immediately after each scenario test. For concurrency negative tests, call `unblock()` immediately in the hook so the background thread is never held.
+
+> **CRITICAL:** Do not reference functions, classes, or fields not confirmed to exist in the
+> codebase from Step 1. If a missing hook was flagged in Part A and not resolved, emit:
+> `// MISSING: need to expose X for testability — suggest refactor Y`
+
+#### Commit Strategy
+
+After implementing each scenario's tests:
+
+```bash
+git add [test_files]
+git commit -m "NEED_REVIEW: Add unit tests for Scenario [N] — [SHORT NAME]"
+```
+
+---
+
+### 🛑 STOP — Test Commit Checkpoint
+
+Present to the user:
+- Which scenario's tests were just implemented.
+- Any issues encountered and how they were resolved.
+- Any new uncertainties discovered during implementation.
+- What comes next (next scenario, or Step 4 if all scenarios are covered).
+
+**WAIT for explicit signal** (e.g., "continue", "next scenario", "proceed") before implementing the next scenario's tests.
+
+---
+
+## Step 4: Summary
+
+Conclude with a `## SUMMARY` section using bullet points covering main findings.
+
+---
 
 ## User's Goal
-I would like to create in a unit test a situation where <situation_or_log_lines>
+
+> I would like to create in a unit test a situation where `<situation_or_log_lines>`
 
 ]]
               end,
