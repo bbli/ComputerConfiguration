@@ -63,12 +63,6 @@ return {
         ft = { "markdown", "codecompanion" },
       },
       { "j-hui/fidget.nvim" },
-      {
-        "Davidyz/VectorCode",
-        version = "*",
-        build = "pipx upgrade vectorcode",
-        dependencies = { "nvim-lua/plenary.nvim" },
-      },
       --{ "echasnovski/mini.pick", config = true },
       { "ibhagwan/fzf-lua" },
     },
