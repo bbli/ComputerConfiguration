@@ -2113,7 +2113,7 @@ Possible Followup Prompts 1) Understand Code 2) PR Review
       },
       {
         "<leader>at",
-        ":CodeCompanion /tests<CR>",
+        ":CodeCompanion /code_workflow<CR>",
         desc = "Generate Unit Tests",
         mode = { "n" },
       },
@@ -2161,7 +2161,7 @@ Possible Followup Prompts 1) Understand Code 2) PR Review
       -- },
       {
         "<leader>al",
-        ":CodeCompanion /log<CR>",
+        ":CodeCompanion /code_workflow<CR>",
         desc = "Add Log Lines",
         mode = { "n" },
       },
