@@ -634,7 +634,7 @@ Use the following checkbox system to track all validation activities:
 I am trying to debug <description>
 
 First, trace the callpath and present to me what is happening in chronological order.
-<Test_Specific_Events>
+<Working Case>
 
 Support your answer with log lines from the log file: <log_file>
 ]]
