@@ -1208,7 +1208,7 @@ Conclude with a `## SUMMARY` section using bullet points covering main findings.
 
 ## User's Goal
 
-> I would like to create in a unit test a situation where `<situation_or_log_lines>`
+I would like to create in a unit test a situation where `<situation_or_log_lines>`
 
 ]]
               end,
@@ -2070,9 +2070,16 @@ PHASE 2: Implementation → Code per Step → 🛑 STOP after each commit
        - Create minimal working version with basic connectivity/structure
        - Establish data flow pathways without complex logic
        - Set up error handling framework
-       - **This step should result in a compilable, testable foundation even if features aren't complete**
+       - **⚡ BASE CASE SIGNAL (REQUIRED):** Include a concrete, observable signal that the plumbing is wired up correctly — e.g., a startup log message, a health-check endpoint returning 200, a console printout, or a test assertion that passes. **The plumbing step is not complete until this signal can be triggered and verified by the user.**
+         - Examples by context:
+           - VS Code extension → `console.log("✅ [ExtensionName] loaded successfully")`
+           - REST API → `GET /health` returns `{ status: "ok" }`
+           - CLI tool → `tool --version` prints name and version
+           - Background service → log line on startup: `"[ServiceName] initialized"`
+           - Library/module → a smoke-test that imports the module and calls a no-op entry point without error
+       - **This step should result in a compilable, runnable foundation where the base case signal confirms connectivity — even if no real features are implemented yet**
        - **Files to modify/create**: [List specific files for the plumbing step]
-       - **Commit message**: "NEED_REVIEW: Add core plumbing for [feature/goal]"
+       - **Commit message**: `"NEED_REVIEW: Add core plumbing for [feature/goal]"`
      - **Step-by-Step Feature Implementation:** After core plumbing, break down remaining features into manageable tasks:
        - For each subsequent step:
          - Describe the specific task to be performed.
@@ -2162,6 +2169,7 @@ PHASE 2: Implementation → Code per Step → 🛑 STOP after each commit
 
      Present to the user:
      - What was implemented (step description)
+     - **For Step 1 only: Instruct the user to verify the base case signal before continuing** (e.g., "Please run the extension and confirm you see ✅ [ExtensionName] loaded successfully in the console.")
      - Any issues encountered and resolutions
      - New uncertainties discovered (if any)
      - ASCII diagram showing current state of the system (if helpful)
@@ -2189,6 +2197,7 @@ PHASE 2: Implementation → Code per Step → 🛑 STOP after each commit
 - Create the implementation plan FIRST, then identify uncertainties based on that specific plan
 - Wait for explicit approval before starting each phase
 - Stop after EVERY commit in Phase 2
+- **After the Step 1 commit, explicitly ask the user to verify the base case signal before proceeding to Step 2**
 - Never skip checkpoints or assume approval
 - Always present implementation uncertainties prominently
 
