@@ -2034,6 +2034,8 @@ Make sure the "Understand Code" Prompt is called before this(to get the Context)
 
 **🎯 KEY PRINCIPLE: Openly communicate uncertainty. It is EXPECTED and VALUABLE for you to identify areas where you lack confidence or are making assumptions. The user can then provide clarification before implementation begins.**
 
+**🍰 KEY PRINCIPLE — VERTICAL SLICES, NOT LAYERS: Every implementation step must add a thin, end-to-end "vertical slice" of functionality, NOT a horizontal "layer." Each step must produce a NEW OBSERVABLE BEHAVIOR — something the user can run, see, or test that was not possible before that step. Avoid plans that build an entire layer at a time (all data models, then all services, then all UI) before anything is observable. Prefer plans where each step makes the system *do* something new, even if narrow. If a step produces no observable behavior, it is almost certainly a horizontal layer and should be merged into a vertical slice or re-sequenced.**
+
 You are a senior software engineer tasked with analyzing, planning, and implementing solutions based on the User's Goal.
 
 **This process has TWO distinct phases with MANDATORY stops:**
@@ -2042,9 +2044,10 @@ You are a senior software engineer tasked with analyzing, planning, and implemen
 
 **Process Flow:**
 ```
-PHASE 1: Analysis → Implementation Plan → Plan-Based Uncertainties → 🛑 STOP (await approval)
+PHASE 1: Analysis → Implementation Plan (each step = 1 vertical slice w/ observable behavior)
+                                  → Plan-Based Uncertainties → 🛑 STOP (await approval)
                                                                ↓
-PHASE 2: Implementation → Code per Step → 🛑 STOP after each commit
+PHASE 2: Implementation → Code per Step → Verify observable behavior → 🛑 STOP after each commit
 ```
 
 ---
@@ -2065,6 +2068,7 @@ PHASE 2: Implementation → Code per Step → 🛑 STOP after each commit
        - **If there is a change to an existing function, check that its callers expect this behavior and list these callers out for the user to confirm**
        - **If there are multiple implementation options or approaches, present them for the user to decide.**
        - Use visualizations (such as sequence, state, component diagrams, flowchart, free form ASCII text diagrams with simplified data structures) to clarify key concepts, system interactions, or data flow related to the changes.
+     - **🍰 SLICE THE PLAN VERTICALLY:** Before listing steps, briefly explain how you have decomposed the work into vertical slices. Each step must move a thin path of functionality end-to-end so that a new observable behavior emerges. State explicitly: "Each step below adds one observable behavior." If you find yourself naming a step after a layer ("build the data layer", "add all the API routes", "wire up the UI"), STOP and re-slice it into behavior-driven steps.
      - **🔧 STEP 1 (MANDATORY FIRST COMMIT): Core Plumbing Setup**
        - Implement the fundamental infrastructure, interfaces, or "API skeleton" first
        - Create minimal working version with basic connectivity/structure
@@ -2077,15 +2081,17 @@ PHASE 2: Implementation → Code per Step → 🛑 STOP after each commit
            - CLI tool → `tool --version` prints name and version
            - Background service → log line on startup: `"[ServiceName] initialized"`
            - Library/module → a smoke-test that imports the module and calls a no-op entry point without error
+       - **👁️ OBSERVABLE BEHAVIOR AFTER THIS STEP (REQUIRED):** State exactly what the user can now run and what they will see. For the plumbing step, this is precisely the BASE CASE SIGNAL above — describe it concretely (what command/action to take, and the exact output/result to expect).
        - **This step should result in a compilable, runnable foundation where the base case signal confirms connectivity — even if no real features are implemented yet**
        - **Files to modify/create**: [List specific files for the plumbing step]
        - **Commit message**: `"NEED_REVIEW: Add core plumbing for [feature/goal]"`
-     - **Step-by-Step Feature Implementation:** After core plumbing, break down remaining features into manageable tasks:
+     - **Step-by-Step Feature Implementation:** After core plumbing, break down remaining features into manageable vertical slices:
        - For each subsequent step:
          - Describe the specific task to be performed.
          - Identify the file(s) that will be modified or created.
          - Explain the specific code changes or logic you intend to implement within those files → and **how they contribute to the overall goal**
-         - **Build incrementally**: Each step should add ONE clear piece of functionality to the working foundation
+         - **👁️ Observable behavior after this step (REQUIRED):** State the NEW observable behavior the user will be able to run/see/test once this step is complete — the concrete signal that this vertical slice works. Be specific about the trigger and the expected result (e.g., "calling `GET /users/:id` now returns the user's name from the DB", "typing in the search box now filters the visible list", "running `npm test -- auth` now passes the login round-trip test"). **If you cannot name an observable behavior for a step, that step is a horizontal layer — re-slice it so the behavior is observable, or fold it into the slice that consumes it.**
+         - **Build incrementally as vertical slices**: Each step should add ONE clear, observable piece of functionality on top of the working foundation — not an internal layer that can only be seen once a later step is also done.
          - **If there are multiple options for implementation, present them all to the user. Rank the options in terms of relevance.**
      - **Commit Strategy:** Reiterate that you will commit changes (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`) after completing logical units of work. **The FIRST commit will always be the core plumbing setup.**
 
@@ -2129,12 +2135,13 @@ PHASE 2: Implementation → Code per Step → 🛑 STOP after each commit
 
 **🛑 STOP HERE - PHASE 1 CHECKPOINT**
 - You have now presented:
-  1. **The complete implementation plan with confidence levels for each step**
+  1. **The complete implementation plan with confidence levels AND an observable behavior for each step**
   2. **The Implementation Uncertainty Report based on the specific plan components (🔴 CRITICAL → 🟠 LOW → 🟡 MEDIUM → 🟢 HIGH)**
 - DO NOT PROCEED to implementation without explicit approval
 - The user may want to:
   - **Address 🔴 CRITICAL and 🟠 LOW confidence uncertainties first**
   - **Clarify assumptions you've made about specific plan components**
+  - **Confirm that each step's observable behavior represents a real vertical slice (not a hidden layer)**
   - Choose between implementation options
   - Adjust the implementation approach
   - Modify the step ordering
@@ -2146,17 +2153,7 @@ PHASE 2: Implementation → Code per Step → 🛑 STOP after each commit
 
 **⚠️ VERIFY: Have you received explicit approval for the implementation plan? If not, STOP and wait for approval.**
 
-4. **Implementation Process**:
-   - **Build incrementally from simple to complex**:
-     - Start with Step 1 (Core Plumbing Setup)
-     - Add each subsequent step
-     - Verify each addition works before proceeding
-   - **Handle uncertainties during implementation**:
-     - For 🔴 CRITICAL uncertainties: STOP and ask for clarification
-     - For 🟠 LOW uncertainties: Document and seek guidance before proceeding
-     - For 🟡 MEDIUM/🟢 HIGH: Note assumption and continue, flag for review
-
-5. **Implementation**:
+4. **Implementation**:
    - For each planned implementation step:
      - **Implement the step according to the approved plan**
      - **Commit the implementation**:
@@ -2169,7 +2166,7 @@ PHASE 2: Implementation → Code per Step → 🛑 STOP after each commit
 
      Present to the user:
      - What was implemented (step description)
-     - **For Step 1 only: Instruct the user to verify the base case signal before continuing** (e.g., "Please run the extension and confirm you see ✅ [ExtensionName] loaded successfully in the console.")
+     - **👁️ For EVERY step: Instruct the user to verify the observable behavior for this step** — tell them exactly what to run and what they should see (e.g., "Please run X and confirm you see Y"). For Step 1 this observable behavior is the base case signal (e.g., "Please run the extension and confirm you see ✅ [ExtensionName] loaded successfully in the console."). The step is not "done" until the user can confirm the observable behavior.
      - Any issues encountered and resolutions
      - New uncertainties discovered (if any)
      - ASCII diagram showing current state of the system (if helpful)
@@ -2179,6 +2176,7 @@ PHASE 2: Implementation → Code per Step → 🛑 STOP after each commit
 
      The user may want to:
      - Review the implementation code
+     - Verify the observable behavior themselves
      - Request modifications
      - Address new uncertainties
 
@@ -2195,13 +2193,15 @@ PHASE 2: Implementation → Code per Step → 🛑 STOP after each commit
 
 **You MUST:**
 - Create the implementation plan FIRST, then identify uncertainties based on that specific plan
+- **Define an OBSERVABLE BEHAVIOR for EVERY step — each step is a vertical slice that makes the system do something new, not a horizontal layer**
+- **Re-slice any step that has no observable behavior; layered, behavior-less steps are not acceptable**
 - Wait for explicit approval before starting each phase
 - Stop after EVERY commit in Phase 2
-- **After the Step 1 commit, explicitly ask the user to verify the base case signal before proceeding to Step 2**
+- **After EACH step's commit, explicitly ask the user to verify that step's observable behavior before proceeding (for Step 1 this is the base case signal)**
 - Never skip checkpoints or assume approval
 - Always present implementation uncertainties prominently
 
-**Remember**: Identifying what you don't understand about your specific implementation plan is just as valuable as planning what you do understand. The user EXPECTS and VALUES uncertainty identification based on the concrete plan you've created.
+**Remember**: Identifying what you don't understand about your specific implementation plan is just as valuable as planning what you do understand. The user EXPECTS and VALUES uncertainty identification based on the concrete plan you've created. **Equally, every step should leave the system in a runnable state with a new, verifiable behavior — thin vertical slices beat broad horizontal layers.**
 
 ### **User's Goal:**
 <Users_Goal>
