@@ -2068,6 +2068,49 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior → �
        - **If there is a change to an existing function, check that its callers expect this behavior and list these callers out for the user to confirm**
        - **If there are multiple implementation options or approaches, present them for the user to decide.**
        - Use visualizations (such as sequence, state, component diagrams, flowchart, free form ASCII text diagrams with simplified data structures) to clarify key concepts, system interactions, or data flow related to the changes.
+
+     - **📞 CALLPATH WORKFLOW DIAGRAM (REQUIRED):** Before listing implementation steps, produce an ASCII callpath diagram that traces the end-to-end execution flow of the proposed change — from the entry point through every major function, module boundary, async handoff, and output. Model it after the style below, showing the nesting of calls, fire-and-forget paths, sync points, and shared writers explicitly.
+
+       **Format template (adapt names and structure to the actual system):**
+
+       ```
+        ├─ entryPoint()  ─── outer loop ────────────────────────────────────────────┐
+        │        │                                                                   │
+        │   [phase_start]                                                     [phase_end]
+        │        │                                                                   │
+        │     primary call     ┌─── async: backgroundWork(params, ctx) ──────────┐  │
+        │        │             │   worker reads state / calls downstream          │  │
+        │        │             │   returns: ResultType | undefined                │  │
+        │        │             └──────────────────────── resolves whenever ───────┘  │
+        │   [phase_end] ──fire-and-forget────────────────────────────────────────── │
+        │        │   stores Promise<ResultType|undefined>                            │
+        │        │   in _pendingWorkPromise                                          │
+        │        │                                                                   │
+        │   [phase_start]  ← caller continues immediately ────────────────────────►─┘
+        │
+        ├─ _handlePostRun() loop
+        │
+        ├─ if (_pendingWorkPromise)
+        │       result = await _pendingWorkPromise          ← sync point
+        │       if result → _applyResult(result)            ← shared writer
+        │                   caller.continue()
+        │                   _handlePostRun() loop
+        │
+        └─ _maybeRunFollowUp()  ← per-run, also calls _applyResult
+                │
+                result = await followUpWork(params, ctx)
+                if result → _applyResult(result)            ← same shared writer
+       ```
+
+       **Requirements for this diagram:**
+       - Trace the **full callpath** from user-facing entry point to final side effect or output
+       - Show **every major function or method** that will be added or modified by this plan
+       - Mark **async/fire-and-forget** paths with `──fire-and-forget──`
+       - Mark **sync/await points** explicitly with `← sync point`
+       - Identify **shared writers** (functions, sinks, or state that multiple paths write to) with `← shared writer`
+       - Label **loop boundaries** and **phase transitions** (`[phase_start]`, `[phase_end]`, etc.)
+       - If there are **multiple implementation options**, draw a diagram for each option
+
      - **🍰 SLICE THE PLAN VERTICALLY:** Before listing steps, briefly explain how you have decomposed the work into vertical slices. Each step must move a thin path of functionality end-to-end so that a new observable behavior emerges. State explicitly: "Each step below adds one observable behavior." If you find yourself naming a step after a layer ("build the data layer", "add all the API routes", "wire up the UI"), STOP and re-slice it into behavior-driven steps.
      - **🔧 STEP 1 (MANDATORY FIRST COMMIT): Core Plumbing Setup**
        - Implement the fundamental infrastructure, interfaces, or "API skeleton" first
@@ -2136,11 +2179,13 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior → �
 **🛑 STOP HERE - PHASE 1 CHECKPOINT**
 - You have now presented:
   1. **The complete implementation plan with confidence levels AND an observable behavior for each step**
-  2. **The Implementation Uncertainty Report based on the specific plan components (🔴 CRITICAL → 🟠 LOW → 🟡 MEDIUM → 🟢 HIGH)**
+  2. **The Callpath Workflow Diagram tracing the full execution flow**
+  3. **The Implementation Uncertainty Report based on the specific plan components (🔴 CRITICAL → 🟠 LOW → 🟡 MEDIUM → 🟢 HIGH)**
 - DO NOT PROCEED to implementation without explicit approval
 - The user may want to:
   - **Address 🔴 CRITICAL and 🟠 LOW confidence uncertainties first**
   - **Clarify assumptions you've made about specific plan components**
+  - **Confirm that the callpath diagram accurately reflects the intended execution flow**
   - **Confirm that each step's observable behavior represents a real vertical slice (not a hidden layer)**
   - Choose between implementation options
   - Adjust the implementation approach
@@ -2169,7 +2214,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior → �
      - **👁️ For EVERY step: Instruct the user to verify the observable behavior for this step** — tell them exactly what to run and what they should see (e.g., "Please run X and confirm you see Y"). For Step 1 this observable behavior is the base case signal (e.g., "Please run the extension and confirm you see ✅ [ExtensionName] loaded successfully in the console."). The step is not "done" until the user can confirm the observable behavior.
      - Any issues encountered and resolutions
      - New uncertainties discovered (if any)
-     - ASCII diagram showing current state of the system (if helpful)
+     - **Updated callpath diagram** showing which paths are now live vs. still pending (mark completed paths with `✅` and pending paths with `⏳`)
      - What comes next (if not the final step)
 
      **WAIT for explicit user signal** (e.g., "continue", "next", "proceed")
@@ -2188,11 +2233,12 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior → �
 
 **This is a TWO-PHASE process with mandatory stops:**
 
-1. **Phase 1**: Analyze → Implementation Plan → **Plan-Based Uncertainties** → **🛑 STOP** (await approval)
-2. **Phase 2**: Implement → Code per Step → **🛑 STOP after EACH commit** (await "continue")
+1. **Phase 1**: Analyze → Implementation Plan + **Callpath Diagram** → **Plan-Based Uncertainties** → **🛑 STOP** (await approval)
+2. **Phase 2**: Implement → Code per Step → **Updated Callpath Diagram** → **🛑 STOP after EACH commit** (await "continue")
 
 **You MUST:**
-- Create the implementation plan FIRST, then identify uncertainties based on that specific plan
+- Create the implementation plan FIRST, then produce the callpath diagram, then identify uncertainties based on that specific plan
+- **The callpath diagram is MANDATORY — it must appear in the plan before the step list, covering the full execution path end-to-end**
 - **Define an OBSERVABLE BEHAVIOR for EVERY step — each step is a vertical slice that makes the system do something new, not a horizontal layer**
 - **Re-slice any step that has no observable behavior; layered, behavior-less steps are not acceptable**
 - Wait for explicit approval before starting each phase
@@ -2201,7 +2247,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior → �
 - Never skip checkpoints or assume approval
 - Always present implementation uncertainties prominently
 
-**Remember**: Identifying what you don't understand about your specific implementation plan is just as valuable as planning what you do understand. The user EXPECTS and VALUES uncertainty identification based on the concrete plan you've created. **Equally, every step should leave the system in a runnable state with a new, verifiable behavior — thin vertical slices beat broad horizontal layers.**
+**Remember**: Identifying what you don't understand about your specific implementation plan is just as valuable as planning what you do understand. The user EXPECTS and VALUES uncertainty identification based on the concrete plan you've created. **Equally, every step should leave the system in a runnable state with a new, verifiable behavior — thin vertical slices beat broad horizontal layers. And the callpath diagram is the shared map everyone navigates by — keep it accurate and up to date throughout Phase 2.**
 
 ### **User's Goal:**
 <Users_Goal>
