@@ -2045,9 +2045,13 @@ You are a senior software engineer tasked with analyzing, planning, and implemen
 **Process Flow:**
 ```
 PHASE 1: Analysis → Implementation Plan (each step = 1 vertical slice w/ observable behavior)
+                                  → Callpath Diagram
+                                  → Proposed Per-Turn Checks (reviewer + experimental)
                                   → Plan-Based Uncertainties → 🛑 STOP (await approval)
                                                                ↓
-PHASE 2: Implementation → Code per Step → Verify observable behavior → 🛑 STOP after each commit
+PHASE 2: 🛡️ Register approved checks (manage_turn_checks + manage_check)
+       → Implement Step 1..N → Verify observable behavior → 🛑 STOP after each commit
+       → 🧹 Clear checks when complete
 ```
 
 ---
@@ -2110,6 +2114,42 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior → �
        - Identify **shared writers** (functions, sinks, or state that multiple paths write to) with `← shared writer`
        - Label **loop boundaries** and **phase transitions** (`[phase_start]`, `[phase_end]`, etc.)
        - If there are **multiple implementation options**, draw a diagram for each option
+
+     - **🛡️ PROPOSED PER-TURN CHECKS (REQUIRED):** Before listing implementation steps, propose the **invariant checks** that will run automatically after every inner agent turn during Phase 2. These come in two flavors and must be presented to the user for review/approval as part of the plan — the user can add, remove, or edit any of them before Phase 2 begins.
+
+       **(a) Reviewer turn checks (subjective / context-dependent invariants)** — evaluated by a reviewer side-session LLM after each turn. Register via `manage_turn_checks` (action=`add`). Use for things like:
+         - `"did you git commit after completing this step?"`
+         - `"did you stop and wait for user approval after the commit (per the Phase 2 checkpoint rule)?"`
+         - `"did you update the callpath diagram to reflect what is live vs. pending?"`
+         - `"did you state the observable behavior the user should verify for this step?"`
+         - Plan-specific invariants (e.g. `"did you keep the existing public API of FooService unchanged?"`)
+
+       **(b) Experimental check command (deterministic bash check)** — a single bash command that runs after each turn; non-zero exit feeds the output back to the agent. Register via `manage_check` (the `command` parameter). Use for things like:
+         - `npm run check`
+         - `npm run lint && npm test`
+         - `cargo check`
+         - `pytest -x` (for fast smoke tests only)
+
+       **Present these as a concrete proposal in this format, so the user can edit before approval:**
+
+       ```
+       🛡️ PROPOSED PER-TURN CHECKS
+
+       Reviewer checks (manage_turn_checks add):
+         1. "did you git commit after completing this step?"
+         2. "did you stop and wait for user approval after the commit?"
+         3. "<plan-specific invariant>"
+         ...
+
+       Experimental check command (manage_check):
+         command: `<bash command>`
+       ```
+
+       **Rules:**
+       - At minimum, propose the two commit/stop reviewer checks above — they enforce the Phase 2 checkpoint rules.
+       - Add plan-specific reviewer checks for invariants this particular change must preserve (e.g. "did you avoid touching file X?", "did you keep function Y backwards-compatible?").
+       - Only propose an experimental check command if the project actually has a fast, reliable check (`npm run check`, `cargo check`, etc.). If unsure, ask the user during the Phase 1 checkpoint rather than guessing.
+       - These checks will be **registered at the start of Phase 2** via the actual tool calls and **cleared after the final step** of Phase 2.
 
      - **🍰 SLICE THE PLAN VERTICALLY:** Before listing steps, briefly explain how you have decomposed the work into vertical slices. Each step must move a thin path of functionality end-to-end so that a new observable behavior emerges. State explicitly: "Each step below adds one observable behavior." If you find yourself naming a step after a layer ("build the data layer", "add all the API routes", "wire up the UI"), STOP and re-slice it into behavior-driven steps.
      - **🔧 STEP 1 (MANDATORY FIRST COMMIT): Core Plumbing Setup**
@@ -2180,12 +2220,15 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior → �
 - You have now presented:
   1. **The complete implementation plan with confidence levels AND an observable behavior for each step**
   2. **The Callpath Workflow Diagram tracing the full execution flow**
-  3. **The Implementation Uncertainty Report based on the specific plan components (🔴 CRITICAL → 🟠 LOW → 🟡 MEDIUM → 🟢 HIGH)**
+  3. **The Proposed Per-Turn Checks (reviewer checks + experimental check command)**
+  4. **The Implementation Uncertainty Report based on the specific plan components (🔴 CRITICAL → 🟠 LOW → 🟡 MEDIUM → 🟢 HIGH)**
 - DO NOT PROCEED to implementation without explicit approval
 - The user may want to:
   - **Address 🔴 CRITICAL and 🟠 LOW confidence uncertainties first**
   - **Clarify assumptions you've made about specific plan components**
   - **Confirm that the callpath diagram accurately reflects the intended execution flow**
+  - **Add, remove, or edit any of the proposed per-turn checks**
+  - **Confirm or change the proposed experimental check command**
   - **Confirm that each step's observable behavior represents a real vertical slice (not a hidden layer)**
   - Choose between implementation options
   - Adjust the implementation approach
@@ -2198,7 +2241,31 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior → �
 
 **⚠️ VERIFY: Have you received explicit approval for the implementation plan? If not, STOP and wait for approval.**
 
-4. **Implementation**:
+4. **🛡️ STEP 0 — Register the Approved Per-Turn Checks (MANDATORY FIRST ACTION OF PHASE 2)**
+
+   Before implementing Step 1 of the plan, register **every approved reviewer check** and the **approved experimental check command** using the tool calls below. Use the exact final text that was approved by the user at the end of Phase 1 — do not invent new checks here.
+
+   **(a) Register each reviewer check (one tool call per check):**
+   ```
+   manage_turn_checks(action="add", check="<approved check 1>")
+   manage_turn_checks(action="add", check="<approved check 2>")
+   ...
+   ```
+
+   **(b) Register the experimental check command (single tool call), if one was approved:**
+   ```
+   manage_check(command="<approved bash command>")
+   ```
+   If no experimental check command was approved, skip this call.
+
+   **(c) Confirm registration by listing:**
+   ```
+   manage_turn_checks(action="list")
+   ```
+
+   **Show the user the registered checks before proceeding to Step 1 of the plan.** Wait for an explicit "continue" / "proceed" / "go" before moving on. This is a real checkpoint — do not auto-advance.
+
+5. **Implementation**:
    - For each planned implementation step:
      - **Implement the step according to the approved plan**
      - **Commit the implementation**:
@@ -2224,8 +2291,21 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior → �
      - Verify the observable behavior themselves
      - Request modifications
      - Address new uncertainties
+     - **Add or remove a per-turn check** (re-run `manage_turn_checks` or `manage_check` as needed)
 
      **DO NOT proceed without explicit approval**
+
+6. **🧹 FINAL STEP — Clear the Per-Turn Checks**
+
+   Once the user confirms the final implementation step is complete and the overall goal has been met, **clear all registered checks** so they do not leak into the next task:
+
+   ```
+   manage_turn_checks(action="list")        # see what is still registered
+   manage_turn_checks(action="remove", check="<each registered check>")  # one call per check
+   manage_check(command="")                  # clear the experimental check
+   ```
+
+   Confirm with a final `manage_turn_checks(action="list")` showing `(no checks registered)` and tell the user the task is complete.
 
 ---
 
@@ -2233,12 +2313,15 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior → �
 
 **This is a TWO-PHASE process with mandatory stops:**
 
-1. **Phase 1**: Analyze → Implementation Plan + **Callpath Diagram** → **Plan-Based Uncertainties** → **🛑 STOP** (await approval)
-2. **Phase 2**: Implement → Code per Step → **Updated Callpath Diagram** → **🛑 STOP after EACH commit** (await "continue")
+1. **Phase 1**: Analyze → Implementation Plan + **Callpath Diagram** + **Proposed Per-Turn Checks** → **Plan-Based Uncertainties** → **🛑 STOP** (await approval)
+2. **Phase 2**: **🛡️ Register approved checks** (`manage_turn_checks` + `manage_check`) → Implement → Code per Step → **Updated Callpath Diagram** → **🛑 STOP after EACH commit** (await "continue") → **🧹 Clear checks at the end**
 
 **You MUST:**
-- Create the implementation plan FIRST, then produce the callpath diagram, then identify uncertainties based on that specific plan
+- Create the implementation plan FIRST, then produce the callpath diagram, then propose the per-turn checks, then identify uncertainties based on that specific plan
 - **The callpath diagram is MANDATORY — it must appear in the plan before the step list, covering the full execution path end-to-end**
+- **The proposed per-turn checks are MANDATORY and must be reviewed/approved by the user during the Phase 1 checkpoint, not invented at Phase 2 start**
+- **Step 0 of Phase 2 is the actual `manage_turn_checks` and `manage_check` tool calls — do not start implementing the plan until these are registered and confirmed**
+- **Clear all registered checks via `manage_turn_checks(action="remove", ...)` and `manage_check(command="")` once the final step is verified complete**
 - **Define an OBSERVABLE BEHAVIOR for EVERY step — each step is a vertical slice that makes the system do something new, not a horizontal layer**
 - **Re-slice any step that has no observable behavior; layered, behavior-less steps are not acceptable**
 - Wait for explicit approval before starting each phase
