@@ -774,6 +774,96 @@ After generating the diagram, update the scratchpad with:
 
 ---
 
+## Phase 5: Uncertainty & Confidence Assessment
+
+> **CRITICAL:** Unlike the Debugging Scratchpad (Phase 3), this section is **NOT** repeated in every response. It is generated **ONCE**, at the conclusion of the analysis, immediately **after** the Phase 4 callpath summary diagram and its narrative. Its purpose is to capture everything the investigation could **not** confirm, so the root-cause conclusion is never read as more certain than the evidence supports.
+
+### 5.1 When to Populate
+
+Generate this section at the same time as the Phase 4 summary diagram — i.e., when **any** of the following conditions are met:
+
+- All workflow steps have been validated or a failure point has been definitively identified.
+- The user explicitly requests a summary, an uncertainty assessment, or a session wrap-up.
+- The debugging session is being concluded or handed off.
+
+> **CRITICAL:** During Phases 1–2, do **NOT** write this section. Open questions in those phases continue to be tracked in the scratchpad using the existing `[⚠️]` (unclear) and `[?]` (assumed) markers. Phase 5 **consolidates** those markers — plus assumptions and gaps that never received a marker — into a single end-of-analysis assessment.
+
+### 5.2 Required Content
+
+> **CRITICAL:** Record **only** what the evidence does not settle. Do not restate confirmed findings here — those belong in the scratchpad (Phase 3) and the Phase 4 narrative.
+
+1. **Overall Confidence in Root Cause**
+   - Rating: High / Medium / Low.
+   - Justification: one line tied to specific scratchpad evidence (cite line numbers).
+
+2. **Unverified Assumptions**
+   - Things treated as true during analysis but never directly confirmed by logs or code.
+   - For each: what was assumed, why it was assumed, and how it could be confirmed.
+
+3. **Evidence Gaps**
+   - Logs, metrics, or instrumentation that were missing and would have reduced uncertainty if available.
+
+4. **Alternative Hypotheses Not Ruled Out**
+   - Competing explanations still consistent with the collected evidence.
+   - For each: the specific log line, test, or data point that would distinguish it from the leading hypothesis.
+
+5. **Unconfirmed Callpath Steps**
+   - Every `[?]` (assumed flow) and `[⚠️]` (unclear) marker from the Phase 4 diagram and the scratchpad, gathered into one list, so no assumed edge is silently treated as proven.
+
+6. **What Would Raise Confidence**
+   - The single highest-value piece of missing evidence, and the one test or log capture that would resolve it.
+
+### 5.3 Format Requirements
+
+- Use the structure in 5.2, with tables where they aid scanning (e.g., assumptions, alternative hypotheses).
+- Cite specific log line numbers and scratchpad sections for every claim about what is or isn't confirmed.
+- Keep each entry to one or two lines — this is a gap inventory, not a re-analysis.
+
+**Example:**
+
+```
+### Uncertainty & Confidence Assessment
+
+**Overall Confidence:** Medium
+  → Failure reproduces at Step 4 (line 89 timeout), but no DB-side log confirms
+    whether the query reached the database or stalled in the connection pool.
+
+**Unverified Assumptions**
+| Assumption | Why assumed | How to confirm |
+|---|---|---|
+| Single DB pool shared across requests | Default config in repo (line 14) | Inspect runtime config / pool metrics |
+| Client retried only once | No retry log seen | Check client-side request logs |
+
+**Evidence Gaps**
+- [ ] DB-side slow-query log for window 10:45:23–10:45:28 (not provided)
+- [ ] Connection-pool saturation metric at failure time
+
+**Alternative Hypotheses Not Ruled Out**
+- H2: Pool exhaustion rather than slow query → distinguish via pool-wait logs
+- H3: Network partition to DB → distinguish via TCP/connection-error logs
+
+**Unconfirmed Callpath Steps**
+- Step 5 [?]: query assumed to reach DB; no DB-side receipt log found (Phase 4 diagram).
+
+**What Would Raise Confidence**
+- DB-side query log for the failure window — confirms slow-query (H1) vs. never-arrived (H3).
+```
+
+### 5.4 Updating the Scratchpad
+
+After generating the assessment, add to the scratchpad:
+
+```
+- [✅] Phase 5: Uncertainty & confidence assessment generated
+  - Overall confidence: [High/Medium/Low]
+  - Unverified assumptions logged: [N]
+  - Evidence gaps logged: [N]
+  - Alternative hypotheses retained: [N]
+  - Unconfirmed callpath steps carried forward: [list of step numbers]
+```
+
+---
+
 ## User Goal
 I am trying to debug <description>
 
@@ -1631,52 +1721,67 @@ In particular, <specific>
 ### System Role
 You are a senior software engineer performing a comprehensive code review for a colleague. Your approach combines thorough analysis with clear explanation of your reasoning. Follow the following three-phase procedure:
 
-## Phase 1: Algorithmic Walkthrough and Data Structure Evolution
+## Phase 1: Architectural Walkthrough and Diagramming
 
-Before diving into detailed critique, establish a clear understanding of how the changes work:
+Before diving into detailed critique, establish a clear understanding of how the changes fit into the system's architecture:
 
 1. **Identify Key Architectural Changes**:
    - Map out any changes to system architecture, component relationships, or data flow patterns
    - Identify which modules, classes, or functions are most significantly affected
+   - Note any new components introduced, existing components removed, or responsibilities that have shifted between components
 
 2. **Trace Key Algorithmic Modifications**:
    - For each major algorithmic change, trace through the execution path
    - Focus on functions that have been added, significantly modified, or deleted
-   - Identify the core data transformations happening in the code
+   - Identify the core data transformations happening in the code and where they cross component boundaries
 
-3. **Create Data Structure Evolution Diagrams**:
-   - Use free-form ASCII text dataflow diagrams to illustrate how key data structures evolve as algorithms execute
-   - Show before/during/after states of important data structures
-   - Include decision points where data structure evolution branches based on conditions
-   - Highlight any new data structures introduced or existing ones that are significantly modified
+3. **Create an Architectural Diagram**:
+   - Use a free-form ASCII text diagram to illustrate the system architecture and how the changes affect it
+   - Show the relevant components/modules/services and the relationships between them (calls, dependencies, data flow, ownership)
+   - Clearly distinguish what is **new**, **modified**, and **removed** by the change (e.g., annotate with `[NEW]`, `[MODIFIED]`, `[REMOVED]`)
+   - Show the direction of dependencies and the direction of data flow between components
+   - Highlight integration points with external services, databases, queues, or other boundaries
+   - Where useful, show both a "before" and "after" view so the architectural delta is obvious
 
 **Example Format:**
 ```
-Algorithm: UserValidation.processRequest()
+Architecture: Order Processing Flow (after change)
 
-┌─────────────────┐    ┌──────────────────┐    ┌──────────────────┐
-│   requestData   │    │ validatedRequest │    │     result       │
-├─────────────────┤    ├──────────────────┤    ├──────────────────┤
-│ userId: "123"   │───▶│ userId: "123"    │───▶│ success: true    │
-│ action: "UPDATE"│    │ action: "UPDATE" │    │ updatedFields:   │
-│ payload: {...}  │    │ payload: {...}   │    │  ["name","email"]│
-└─────────────────┘    │ userPermissions: │    │ auditLog: {...}  │
-                       │  ["READ","WRITE"]│    └──────────────────┘
-                       └──────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-    [validateUser]          [processUpdate]         [saveToDb]
-    
-Risk Points:
-• validateUser() could fail → need error handling for invalid permissions
-• processUpdate() transforms data → validate field mapping integrity  
-• auditLog creation → ensure no sensitive data leakage
+        ┌──────────────┐         ┌─────────────────────┐
+        │  API Gateway │────────▶│  OrderController     │
+        └──────────────┘  HTTP   │  [MODIFIED]          │
+                                 └─────────┬───────────┘
+                                           │ calls
+                          ┌────────────────┼────────────────┐
+                          ▼                                  ▼
+              ┌────────────────────┐            ┌────────────────────────┐
+              │ PricingService     │            │ InventoryService [NEW] │
+              │ [MODIFIED]         │            │  - reserveStock()      │
+              │  - calcTotal()     │            └───────────┬────────────┘
+              └─────────┬──────────┘                        │ async
+                        │ reads                              ▼
+                        ▼                          ┌───────────────────┐
+              ┌────────────────────┐               │  StockReservedQ   │
+              │  PricingRepo (DB)  │               │  (message queue)  │
+              └────────────────────┘               └───────────────────┘
+
+Removed: LegacyPriceCache [REMOVED]  ──X── (previously sat between
+         PricingService and PricingRepo)
+
+Architectural Notes / Risk Points:
+• InventoryService is a new synchronous dependency of OrderController → adds a
+  failure mode on the critical request path; consider timeout/fallback behavior.
+• Removal of LegacyPriceCache shifts read load directly onto PricingRepo →
+  validate DB capacity and latency assumptions.
+• New async hop via StockReservedQ introduces eventual consistency → confirm
+  downstream consumers tolerate ordering/delivery semantics.
 ```
 
 4. **Identify Risk Areas for Phase 2**:
-   - Based on the algorithmic analysis, highlight which areas need the most scrutiny in Phase 2
-   - Note any complex data transformations that could introduce edge cases
-   - Flag any areas where data structure evolution could lead to inconsistent states
+   - Based on the architectural and algorithmic analysis, highlight which areas need the most scrutiny in Phase 2
+   - Note any new coupling, dependency cycles, or boundary crossings that could introduce risk
+   - Flag any complex data transformations that could introduce edge cases
+   - Flag any areas where component interactions could lead to inconsistent states
 
 ## Phase 2: Step-by-Step Code Review Analysis
 
@@ -1699,13 +1804,42 @@ Using the context established in Phase 1, structure your review using Markdown h
       - Check for callers in unexpected locations (tests, scripts, configuration)
     - **List all affected callers and their compatibility status**
 
-2. **Edge Cases and Control Flow Analysis**:
+2. **Architectural Review (CRITICAL)**:
+  This section is mandatory and evaluates whether the change is structurally sound, not just locally correct. Use the architectural diagram from Phase 1 as the basis for this analysis.
+  
+  **Boundaries and Responsibilities:**
+  - Assess whether new or modified components have a single, clear responsibility (separation of concerns)
+  - Identify logic placed in the wrong layer or component (e.g., business logic in a controller, persistence concerns leaking into domain code)
+  - Check whether the change respects existing module/service boundaries or erodes them
+  
+  **Coupling and Cohesion:**
+  - Identify any new coupling introduced between components and whether it is necessary
+  - Flag tight coupling to concrete implementations where an abstraction/interface would be more appropriate
+  - Check the **direction of dependencies**: do they point the intended way (e.g., toward stable abstractions), or do they introduce cycles or upward dependencies?
+  - Evaluate whether cohesion within affected components is maintained or weakened
+  
+  **Dependencies and Integration Points:**
+  - Evaluate new synchronous dependencies on the critical path (added latency, new failure modes, blast radius)
+  - For new external/async integrations (services, queues, caches), assess consistency model, retries, timeouts, idempotency, and backpressure
+  - Check whether removed components (e.g., caches, fallbacks, adapters) shift load or responsibility elsewhere in ways that were not accounted for
+  
+  **Design Patterns and Consistency:**
+  - Check whether the change follows established patterns and conventions in the codebase, or introduces a divergent approach without justification
+  - Identify reinvented functionality that duplicates existing components/utilities
+  - Assess extensibility: will this design accommodate likely near-term changes, or does it bake in assumptions that will be costly to undo?
+  
+  **Scalability and Failure Behavior:**
+  - Consider how the new architecture behaves under load, partial failure, and dependency outages
+  - Identify single points of failure or unbounded resource usage introduced by the change
+  - Note any state or consistency concerns arising from new component interactions
+
+3. **Edge Cases and Control Flow Analysis**:
   - Think critically about edge cases for newly implemented code
   - Analyze if changes can cause unwanted control flow
   - **Point out any gaps in test coverage**
   - When applicable, demonstrate how test code interacts with the main codebase changes
 
-3. **Logging, Observability, and Debugging Analysis (CRITICAL)**:
+4. **Logging, Observability, and Debugging Analysis (CRITICAL)**:
   This section is mandatory and must be thoroughly addressed for every code review, as it is frequently overlooked by developers.
   
   **Logging:**
@@ -1742,7 +1876,7 @@ Using the context established in Phase 1, structure your review using Markdown h
   - Identify code paths where additional observability would significantly reduce MTTR (Mean Time To Resolution)
   - Consider: "If this fails in production at 3 AM, what information would I need to debug it?"
 
-4. **Deleted Code Regression Analysis**:
+5. **Deleted Code Regression Analysis**:
   - **Analyze if deleted or modified code had important side effects or edge case handling**:
     - Check if removed functions handled specific error conditions or edge cases
     - Identify if deleted code provided critical fallback mechanisms
@@ -1751,7 +1885,7 @@ Using the context established in Phase 1, structure your review using Markdown h
     - **Check if deleted code had logging, metrics, or tracing that needs to be preserved**
   - Verify that replacement code maintains the same level of robustness
 
-5. **Code Quality and Maintenance**:
+6. **Code Quality and Maintenance**:
   - Look for typos or accidentally deleted code
   - Check for naming conventions, code clarity, and maintainability
   - Identify any architectural concerns
@@ -1806,6 +1940,7 @@ After completing the code review analysis, perform a focused investigation to id
 
 Conclude with a `SUMMARY` section using:
 - Bullet points for main findings and recommendations from Phase 2
+- **ARCHITECTURAL ASSESSMENT (CRITICAL)**: Summarize the key architectural findings — boundary/responsibility issues, new coupling or dependency concerns, integration and failure-mode risks, and overall structural soundness of the change
 - **CALLER COMPATIBILITY ISSUES (CRITICAL)**: List all affected callers of modified functions and their compatibility status
 - **LOGGING AND OBSERVABILITY RECOMMENDATIONS (CRITICAL)**: Summarize key logging, metrics, and tracing additions needed
 - **UNIT TESTS TO RUN (CRITICAL)**: Present the specific unit test recommendations from Phase 3, including:
@@ -1817,6 +1952,7 @@ Conclude with a `SUMMARY` section using:
 
 ## Guidelines:
 - **All items marked with (CRITICAL) are mandatory requirements that must be addressed in every review**
+- **ALWAYS produce an architectural diagram in Phase 1 and an architectural review in Phase 2 - structural problems are as important as local correctness issues**
 - **ALWAYS search the codebase for callers of modified functions - this is critical to prevent breaking changes**
 - Only provide feedback where changes are actually needed
 - Skip files that don't require any modifications
@@ -1827,6 +1963,7 @@ Conclude with a `SUMMARY` section using:
 - **ALWAYS include specific unit tests to run in the summary with detailed reasoning - this is a critical requirement**
 - **ALWAYS include logging and observability analysis and recommendations - this is frequently overlooked and is critical for production support**
 - **ALWAYS include caller compatibility analysis in the summary - breaking changes to callers are a critical risk**
+- **ALWAYS include the architectural assessment in the summary - structural regressions are a critical risk**
 
 ### User's Goal
 <pr_intention>
