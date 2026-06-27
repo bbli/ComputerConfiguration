@@ -1803,6 +1803,14 @@ Using the context established in Phase 1, structure your review using Markdown h
       - Assess if the new behavior could break existing assumptions
       - Check for callers in unexpected locations (tests, scripts, configuration)
     - **List all affected callers and their compatibility status**
+  - **Concurrency and Race Conditions (CRITICAL)**:
+    - Identify shared mutable state (caches, counters, collections, static/instance fields, files) accessed from more than one thread, request, coroutine, or async task
+    - Flag check-then-act / read-modify-write sequences (TOCTOU) that aren't atomic — e.g. "if not exists → create", get-then-increment, balance checks before debits
+    - Verify locking is correct and complete: consistent lock ordering (deadlock risk), appropriate lock scope (not held across I/O or external calls), and no lost/double unlocks
+    - Check thread-safety of data structures and that concurrent collections / atomics are used where needed
+    - For async code, flag unawaited operations, concurrent mutation of shared objects, and races between callbacks/promises
+    - Assess idempotency and correctness under retries and duplicate/concurrent requests (especially around the integration points and queues noted in Phase 1)
+    - Note visibility/memory-model concerns where one thread may observe stale state written by another
 
 2. **Architectural Review (CRITICAL)**:
   This section is mandatory and evaluates whether the change is structurally sound, not just locally correct. Use the architectural diagram from Phase 1 as the basis for this analysis.
