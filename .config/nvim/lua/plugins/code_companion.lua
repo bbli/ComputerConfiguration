@@ -916,20 +916,20 @@ In your analysis, do the following:
      - Appear to be workarounds or have TODO/FIXME comments
    - Perform this action in a seperate task if possible, so as to not clutter the current context window. This task should return the files it deems most applicable to the User's Question.
 
-3. **Step-by-Step Breakdown of All Possible Explainations:**
-   - Now use the additional context and think hard about the user's question. Decide if there could be multiple possible explainations and if so present both to the user. **RANK YOUR HYPOTHESES in terms of relevance to the issue.**
+3. **Step-by-Step Breakdown of All Possible Explanations:**
+   - Now use the additional context and think hard about the user's question. Decide if there could be multiple possible explanations and if so present both to the user. **RANK YOUR HYPOTHESES in terms of relevance to the issue.**
    - Structure your explanation using Markdown headers for each step.
    - For each step, justify your reasoning with direct code snippets from the input, along with the associated line numbers/filename. In other words, cite sources and do not hallucinate.
-   - Demonstrate how code from tests/upstream caller triggers or interacts with code from the main codebase. Use the format below to show the connection:
-        Production Code Exercised:
-        - Simplified description of the action
-        ```
-        // Relevant code snippet from test or caller
-        What this triggers in production:
-        - From [filename] (the actual code being executed)
-        ```
-        // Relevant code snippet from the triggered function/method
-        ```
+   - **CRITICAL: SIMPLIFY FOR CLARITY — REAL CODEBASES ARE VERBOSE AND MESSY.** The goal of this section is to help the user see the main idea without wading through boilerplate. For each step, in addition to citing the real source snippet, also include at least one of the following simplification aids:
+     * **A diagram** — check whether a "diagram" creation skill is available and use it; only fall back to hand-drawn ASCII/Markdown diagrams if no such skill exists. Choose the diagram type that matches what that step is explaining:
+       - **Sequence diagram** — for call order, request/response flow, or multi-component interaction over time
+       - **State diagram** — for lifecycle transitions, status fields, or anything with distinct before/after states
+       - **Flowchart** — for branching logic, decision trees, or conditional control flow
+       - **Component/architecture diagram** — for how modules, services, or classes depend on and communicate with each other
+       - **Data flow diagram** — for how a data structure is transformed, enriched, or reshaped as it passes through functions
+     * **A simplified code snippet with embedded comments** — a trimmed-down version of the real code (stripped of unrelated branches, logging, error handling, etc.) with inline `//` or `#` comments that call out what matters at each line
+     Use whichever aid (or both) best clarifies that particular step. Never substitute a diagram or simplified snippet for the real code citation — provide both; the simplification supplements the ground-truth reference, it doesn't replace it.
+   - **CRITICAL: SHOW HOW TESTS/UPSTREAM CALLERS TRIGGER PRODUCTION CODE — AS A DIAGRAM.** Rather than pasting raw caller-to-callee code side by side, use a **sequence diagram** (via the "diagram" creation skill if available, otherwise ASCII/Markdown) that traces the path from the triggering call (test or upstream caller) through to the production code it exercises. Label each node/arrow with the file and function name so the user can map the diagram back to real source. If a detail is essential and can't be conveyed in the diagram, a minimal supporting snippet may accompany it, but the diagram — not a code block — should carry the primary explanation of the trigger path.
    - **CRITICAL: PROVIDE CONCRETE, ACTIONABLE EXAMPLES** from the codebase:
      * Show complete, working code snippets that the user could adapt
      * Include multiple patterns/variations from different test files
@@ -937,12 +937,12 @@ In your analysis, do the following:
      * Show the "before and after" state of data structures
      * Include error handling and edge cases
      * Provide template code the user can copy and modify
-   - If any definitions or context are missing, or you do not have strong confidence in any anser, explicitly state this. Do not infer or invent missing information. I repeat, **DO NOT HALLUCINATE**.
+   - If any definitions or context are missing, or you do not have strong confidence in any answer, explicitly state this. Do not infer or invent missing information. I repeat, **DO NOT HALLUCINATE**.
 
 4. **SUMMARY Section:**
    - Conclude your response with a `SUMMARY` section, formatted as a Markdown header.
    - Use bullet points to concisely present the main findings and insights.
-   - Include a relevant visualization (such sequence, state, component diagrams, flowchart, free form ASCII text dataflow diagrams with simplified data structures) to clarify KEY CONCEPTS. **ANALOGIES would be helpful as well**
+   - Include a table that consolidates the key ideas from the breakdown (e.g., columns like Concept / What It Does / Where It Lives / Why It Matters) alongside **ANALOGIES** to make the ideas stick. No visualization/diagram is needed in this section — diagrams belong in the breakdown section above.
 
 After your analysis, suggest log lines to add to the codebase. For each log line, show:
 - The simplified code location (function/method name with minimal context)
