@@ -1565,14 +1565,14 @@ At the end, show the refactored Code Block that calls all the helper functions y
             },
           },
         },
-        ["Find Git Commit"] = {
+        ["Flesh Out Implementation"] = {
           strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
-          description = "Find a git commit using git pickaxe",
+          description = "Flesh out an implementation",
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
             is_slash_cmd = true, -- Whether it should be available as a slash command in chat
-            short_name = "pickaxe", -- Used for calling via :CodeCompanion /mycustom
+            short_name = "flesh", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
             modes = { "n" },
@@ -1583,15 +1583,182 @@ At the end, show the refactored Code Block that calls all the helper functions y
               opts = { auto_submit = false },
               content = function()
                 return [[
-### System Plan
-- Use @cmd_runner to call git pickaxe(git log -S or git log -G) and search the commit history's latest 1000 commits
-- If multiple commits are found, identify the git diff that most pertain to the User's Question
-- Show me that git diff
-- At the end, provide a brief justification of what your reasoning using snippets from that git diff
+# Implementation Fleshing-Out Prompt
 
-### User's Question
-Which commit <question>
+**⚠️ IMPORTANT: This is a DIAGNOSTIC / ELICITATION prompt, not an implementation prompt. Your job in this prompt is to summarize what was built, then surface candidate NEW BEHAVIORS and EXISTING-SCOPE EDGE CASES for the user to decide on. You do NOT implement anything in this prompt — no code changes, no commits. This prompt ends once the user has answered; any resulting implementation happens afterward, in a separate pass (e.g. re-invoking the Code Workflow Prompt).**
 
+**🎯 KEY PRINCIPLE: This prompt exists because the Code Workflow Prompt typically produces a HAPPY-PATH implementation.** Planning in the abstract, before code exists, makes it hard to reason concretely about edge cases and easy to overlook desirable extensions. Once real code exists, both become much easier to spot — you can point at an actual function and ask "what happens here if X?" instead of speculating. This prompt is meant to be run **after** an implementation exists (whether from the Code Workflow Prompt in this same session, or from any prior/external implementation).
+
+**🔀 KEY PRINCIPLE — BEHAVIORS ARE NOT EDGE CASES: These are two distinct categories. Do not blend them.**
+- **BEHAVIORS** = candidate **new/extra functionality** that the current implementation does not attempt at all. These are optional extensions to scope — things the implementation could reasonably grow to do, but doesn't do today. Examples: "add retry-with-backoff to this network call," "support batch input in addition to single-item input," "expose a cancel/abort path for this long-running operation."
+- **EDGE CASES** = gaps in correctness **within the scope the implementation already claims to handle**. These are not new features — they are places where the existing logic's behavior on non-happy-path input is undefined, untested, or looks unintentional. Examples: "this function assumes the array is non-empty — what happens if it's empty?", "this cache has no eviction — what happens under sustained high write volume?", "this retry loop has no max attempts — could it loop forever?"
+- If you find yourself unsure which bucket something belongs in, ask: *"Does this require the system to do something it currently doesn't attempt at all?"* → BEHAVIOR. *"Does this only concern how the system's current logic reacts to an input/state it wasn't obviously built for?"* → EDGE CASE.
+
+**Process Flow:**
+```
+STEP 1: Locate & Understand Implementation
+              │
+              ├─ Implementation history already in conversation? ──► skip re-deriving, reuse known context
+              │
+              └─ No prior context in conversation ──► Read diff/code directly from disk/repo
+              │
+              ▼
+STEP 2: Summarize Implementation (prose + Callpath Diagram)
+              │
+              ▼
+STEP 3: Generate Candidate BEHAVIORS (new functionality, static analysis of code)
+              │
+              ▼
+STEP 4: Generate Candidate EDGE CASES (existing-scope gaps, static analysis of code)
+              │
+              ▼
+STEP 5: Present both lists together ──► 🛑 STOP (await user's selections/answers)
+```
+
+---
+
+## STEP 1: Locate and Understand the Implementation
+
+- **Check the conversation first.** If the implementation history (plan, steps, diffs, commits) from a Code Workflow Prompt run is already present earlier in this conversation, reuse that context directly — do not re-derive it from scratch or re-read files that were already fully shown.
+- **If no such context exists in the conversation** (standalone invocation, prior session, or externally-implemented code), locate the relevant implementation yourself:
+  - Identify the diff/changeset if one is available (e.g. `git diff`, `git log -p` on recent commits, or a specified branch/PR).
+  - If no diff is available, read the relevant files directly to understand current-state behavior.
+  - Try searching in ~/Documents/WorkVault/AI_Knowledge as well, in case related design notes exist.
+- This step should use **static analysis only** — read the code and its structure by inspection. Do not generate or run tests, and do not fan out into broad exploratory codebase search beyond what's needed to understand this implementation and its immediate callers/dependents.
+
+---
+
+## STEP 2: Summarize the Implementation
+
+Before proposing anything new, ground the user (and yourself) in what actually exists now:
+
+- **Prose Summary:** A concise description of what the implementation does today — its entry points, its main logic, what inputs it accepts, what it produces or side-effects it causes, and what it explicitly does *not* attempt.
+- **📞 CALLPATH DIAGRAM (REQUIRED):** Produce an ASCII callpath diagram in the same style as used in the Code Workflow Prompt, tracing the **as-built** execution flow — from entry point through every major function, module boundary, async handoff, and output. Use the same conventions:
+
+  ```
+   ├─ entryPoint()  ─── outer loop ────────────────────────────────────────────┐
+   │        │                                                                   │
+   │   [phase_start]                                                     [phase_end]
+   │        │                                                                   │
+   │     primary call     ┌─── async: backgroundWork(params, ctx) ──────────┐  │
+   │        │             │   worker reads state / calls downstream          │  │
+   │        │             │   returns: ResultType | undefined                │  │
+   │        │             └──────────────────────── resolves whenever ───────┘  │
+   │   [phase_end] ──fire-and-forget────────────────────────────────────────── │
+   │        │   stores Promise<ResultType|undefined>                            │
+   │        │   in _pendingWorkPromise                                          │
+   │        │                                                                   │
+   │   [phase_start]  ← caller continues immediately ────────────────────────►─┘
+   │
+   ├─ _handlePostRun() loop
+   │
+   ├─ if (_pendingWorkPromise)
+   │       result = await _pendingWorkPromise          ← sync point
+   │       if result → _applyResult(result)            ← shared writer
+   │                   caller.continue()
+   │                   _handlePostRun() loop
+   │
+   └─ _maybeRunFollowUp()  ← per-run, also calls _applyResult
+           │
+           result = await followUpWork(params, ctx)
+           if result → _applyResult(result)            ← same shared writer
+  ```
+
+  **Requirements for this diagram:**
+  - Trace the **actual, as-built callpath** — this documents what exists, not what's planned.
+  - Show **every major function or method** the implementation added or touched.
+  - Mark **async/fire-and-forget** paths with `──fire-and-forget──`.
+  - Mark **sync/await points** explicitly with `← sync point`.
+  - Identify **shared writers** (functions, sinks, or state that multiple paths write to) with `← shared writer`.
+  - Label **loop boundaries** and **phase transitions**.
+  - This diagram becomes the shared reference point for Steps 3 and 4 — when you propose a behavior or flag an edge case, you should be able to point at a specific node in this diagram.
+
+---
+
+## STEP 3: Generate Candidate BEHAVIORS (New Functionality)
+
+- Using **static analysis of the diff/code** (no test generation, no execution), identify functionality the implementation could reasonably be extended to support, but currently does not attempt at all.
+- Ground candidates in what you actually observe: an unhandled but clearly-adjacent use case, a parameter/config that's accepted but unused, a natural next capability suggested by the shape of the code or its neighbors, functionality present in similar/sibling code elsewhere in the codebase but absent here, etc.
+- For each candidate behavior, briefly note:
+  - **What new capability it would add** (in one sentence)
+  - **Why it's plausible** (what in the code or its context suggests this is a reasonable extension, not a random guess)
+  - **Rough scope signal** (small addition vs. significant new surface area) — this is a signal for prioritization only, not a commitment to implement
+- Do not editorialize about which behaviors the user "should" want — present them as options.
+- Keep this list to the **highest-signal candidates**. This is not a brainstorming dump; every candidate should be something a reasonable engineer looking at this code would plausibly flag.
+
+---
+
+## STEP 4: Generate Candidate EDGE CASES (Existing-Scope Gaps)
+
+- Using the same static analysis, identify places where the **current implementation's own logic** has undefined, unhandled, or likely-unintended behavior on non-happy-path input or state.
+- Look specifically for things like:
+  - Missing guards on empty/null/undefined/zero/negative input
+  - Unbounded loops, retries, or recursion with no max/backoff
+  - Unhandled failure branches (network errors, partial writes, timeouts)
+  - Concurrency hazards (shared state written from multiple paths without coordination — cross-reference the callpath diagram's shared writers)
+  - Assumptions about ordering, uniqueness, or size that aren't enforced anywhere
+  - Silent failure paths (errors swallowed, defaults substituted without logging/surfacing)
+- For each candidate edge case, briefly note:
+  - **The specific location** (function/file, and where possible, the node in the Step 2 callpath diagram)
+  - **The gap** (what input/state isn't handled)
+  - **Why it's plausible** (why this scenario could realistically occur, not just theoretically)
+  - **Current behavior if triggered**, if inferable from the code (e.g. "would throw an uncaught exception," "would silently no-op," "would loop indefinitely")
+- Do not propose fixes here — this step is about surfacing the gap and asking what behavior is wanted, not prescribing the resolution.
+
+---
+
+## STEP 5: Present Findings and Await Decisions
+
+Present Steps 2–4 together in a single message, structured as:
+
+```
+## Implementation Summary
+[prose summary]
+[callpath diagram]
+
+## 🆕 CANDIDATE BEHAVIORS (New Functionality)
+Summary: N candidates identified
+
+1. [Behavior name]
+   - New capability: ...
+   - Why plausible: ...
+   - Rough scope: [Small / Medium / Large]
+
+2. ...
+
+## ⚠️ CANDIDATE EDGE CASES (Existing-Scope Gaps)
+Summary: N candidates identified
+
+1. [Edge case name]
+   - Location: [file/function, callpath node]
+   - Gap: ...
+   - Why plausible: ...
+   - Current behavior if triggered: ...
+
+2. ...
+```
+
+Keep BEHAVIORS and EDGE CASES in **two clearly separate sections**, in that order — do not interleave or merge them into a single list, since they represent different kinds of decisions (opt-in scope expansion vs. correctness gap acknowledgment).
+
+**🛑 STOP HERE — MANDATORY CHECKPOINT**
+- Do not implement, patch, or write any code in this prompt, regardless of how small or obvious a fix might seem.
+- Ask the user explicitly:
+  - Which candidate BEHAVIORS (if any) they want added to scope
+  - For each candidate EDGE CASE, what the intended behavior should be (this may be "not a real concern, ignore," "should fail loudly," "should default to X," etc. — the point is to get a decision, not assume one)
+- WAIT for the user's explicit answers before doing anything further.
+- Once the user responds, your job in this prompt is done. Do not proceed to implement their answers yourself in this pass — hand off to an implementation prompt (e.g. re-invoke the Code Workflow Prompt) with the user's decisions as new input, unless the user explicitly asks you to continue in this same conversation.
+
+---
+
+**🚨 CRITICAL REMINDERS**
+- Reuse in-conversation implementation context when available; only re-derive from disk/repo when it's genuinely missing.
+- Static analysis only in this prompt — no test generation or execution, and no broad exploratory search beyond understanding this implementation and its direct dependents.
+- Never blend BEHAVIORS (new functionality) with EDGE CASES (existing-scope correctness gaps). Keep them in separate, clearly labeled sections.
+- The callpath diagram in Step 2 documents what was **actually built**, and should be reused as the shared reference when pointing at specific behaviors/edge cases in Steps 3 and 4.
+- Every candidate in Steps 3 and 4 should be traceable to something specific you observed in the code — not a generic checklist item applied without inspection.
+
+# User input
+<user_input>
 ]]
               end,
             },
@@ -2601,12 +2768,12 @@ Possible Followup Prompts 1) Understand Code 2) PR Review
         desc = "Generate Unit Tests",
         mode = { "n" },
       },
-      -- {
-      --   "<leader>af",
-      --   ":CodeCompanion /follow<CR>",
-      --   desc = "Follow Up Questions",
-      --   mode = { "n" },
-      -- },
+      {
+        "<leader>af",
+        ":CodeCompanion /flesh<CR>",
+        desc = "Flesh out Implementation",
+        mode = { "n" },
+      },
       {
         "<leader>aw",
         ":CodeCompanion /code_workflow<CR>",
