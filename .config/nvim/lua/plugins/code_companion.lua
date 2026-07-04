@@ -1470,13 +1470,11 @@ Reasoning: Routing the read through `PricingService` keeps the boundary intact a
 Conclude with a `SUMMARY` section using:
 - **Main Findings and Insights**: concise bullet points of the key architectural findings; use analogies where helpful.
 - **Reading Order / Where to Start**: the handful of files a colleague should read, in order, to understand this area themselves.
-- **ARCHITECTURAL ASSESSMENT (CRITICAL)**: a critique of the architecture — boundary/responsibility issues, coupling and dependency-direction/cycle concerns, integration and failure-mode risks, scalability concerns, and overall structural soundness. Keep this clearly separated from the factual explanation above.
+- **ARCHITECTURAL ASSESSMENT (CRITICAL)**: a critique of the architecture — boundary/responsibility issues, coupling and dependency-direction/cycle concerns, integration and failure-mode risks, scalability concerns, and overall structural soundness. Keep this clearly separated from the factual explanation above. **Compile this information in a table diagram**
 - **UNKNOWNS AND ASSUMPTIONS**: what you could not verify in the codebase and any assumptions you relied on — state these plainly rather than guessing.
 - **SUGGESTED LOG LINES (to illustrate the flow)**: log lines that would help the user *follow the explained flow* as it executes. For each, show the simplified code location (function/method), the log message, and the exact execution sequence in which it fires. (These are a learning aid for tracing the flow, not production instrumentation.)
 - **FOLLOW-UP TOPICS / QUESTIONS**: specific follow-ups and how each would deepen the user's understanding — especially where ambiguities remained.
 - A one-to-two sentence overall assessment of the architecture.
-- If helpful, a free-form ASCII text diagram to clarify a key architectural or flow concept.
-- **Finally, ask the user if they would like to add this newfound understanding to `LEARNINGS.md`.**
 
 ## Guidelines
 - **Answer the actual question first**, at the depth the scope warrants; don't force a narrow question through the full heavyweight structure.
@@ -1572,14 +1570,14 @@ STEP 1: Locate & Understand Implementation
               └─ No prior context in conversation ──► Read diff/code directly from disk/repo
               │
               ▼
-STEP 2: Summarize Implementation (prose + Callpath Diagram)
+STEP 2: Summarize Implementation (prose summary only — no diagram here)
               │
               ▼
 STEP 3: Generate Candidate BEHAVIORS (new functionality, static analysis of code)
-              │
+              │            └─ one focused diagram PER candidate
               ▼
 STEP 4: Generate Candidate EDGE CASES (existing-scope gaps, static analysis of code)
-              │
+              │            └─ one focused diagram PER candidate
               ▼
 STEP 5: Present both lists together ──► 🛑 STOP (await user's selections/answers)
 ```
@@ -1602,45 +1600,50 @@ STEP 5: Present both lists together ──► 🛑 STOP (await user's selections
 Before proposing anything new, ground the user (and yourself) in what actually exists now:
 
 - **Prose Summary:** A concise description of what the implementation does today — its entry points, its main logic, what inputs it accepts, what it produces or side-effects it causes, and what it explicitly does *not* attempt.
-- **📞 CALLPATH DIAGRAM (REQUIRED):** Produce an ASCII callpath diagram in the same style as used in the Code Workflow Prompt, tracing the **as-built** execution flow — from entry point through every major function, module boundary, async handoff, and output. Use the same conventions:
+- Enough of the as-built execution flow (entry points, main functions, module boundaries, async handoffs, outputs) should be conveyed **in prose** here so that the per-candidate diagrams in Steps 3 and 4 have a shared frame of reference.
+- **Do NOT produce a callpath diagram in this step.** Diagrams are now produced per-candidate in Steps 3 and 4 (see the diagramming convention below), so that each diagram is scoped tightly to the specific behavior or edge case it illustrates rather than the whole implementation.
 
-  ```
-   ├─ entryPoint()  ─── outer loop ────────────────────────────────────────────┐
-   │        │                                                                   │
-   │   [phase_start]                                                     [phase_end]
-   │        │                                                                   │
-   │     primary call     ┌─── async: backgroundWork(params, ctx) ──────────┐  │
-   │        │             │   worker reads state / calls downstream          │  │
-   │        │             │   returns: ResultType | undefined                │  │
-   │        │             └──────────────────────── resolves whenever ───────┘  │
-   │   [phase_end] ──fire-and-forget────────────────────────────────────────── │
-   │        │   stores Promise<ResultType|undefined>                            │
-   │        │   in _pendingWorkPromise                                          │
-   │        │                                                                   │
-   │   [phase_start]  ← caller continues immediately ────────────────────────►─┘
-   │
-   ├─ _handlePostRun() loop
-   │
-   ├─ if (_pendingWorkPromise)
-   │       result = await _pendingWorkPromise          ← sync point
-   │       if result → _applyResult(result)            ← shared writer
-   │                   caller.continue()
-   │                   _handlePostRun() loop
-   │
-   └─ _maybeRunFollowUp()  ← per-run, also calls _applyResult
-           │
-           result = await followUpWork(params, ctx)
-           if result → _applyResult(result)            ← same shared writer
-  ```
+---
 
-  **Requirements for this diagram:**
-  - Trace the **actual, as-built callpath** — this documents what exists, not what's planned.
-  - Show **every major function or method** the implementation added or touched.
-  - Mark **async/fire-and-forget** paths with `──fire-and-forget──`.
-  - Mark **sync/await points** explicitly with `← sync point`.
-  - Identify **shared writers** (functions, sinks, or state that multiple paths write to) with `← shared writer`.
-  - Label **loop boundaries** and **phase transitions**.
-  - This diagram becomes the shared reference point for Steps 3 and 4 — when you propose a behavior or flag an edge case, you should be able to point at a specific node in this diagram.
+## 📞 Per-Candidate Diagram Convention (used in Steps 3 and 4)
+
+Every candidate in Step 3 and Step 4 gets its **own focused ASCII diagram**. Each diagram is a *scoped excerpt* of the as-built execution flow — not the whole implementation — highlighting only the function(s), node(s), async handoff(s), or shared writer(s) directly relevant to that one candidate:
+
+- For a **BEHAVIOR**: show where in the existing flow the new capability would attach or hook in (the entry/insertion point and what it would touch).
+- For an **EDGE CASE**: pinpoint the specific node where the gap lives and the flow that reaches it (the un-guarded call, the unbounded loop, the shared write, etc.).
+
+Use the same ASCII conventions as the Code Workflow Prompt:
+
+```
+ ├─ entryPoint()  ─── outer loop ────────────────────────────────────────────┐
+ │        │                                                                   │
+ │   [phase_start]                                                     [phase_end]
+ │        │                                                                   │
+ │     primary call     ┌─── async: backgroundWork(params, ctx) ──────────┐  │
+ │        │             │   worker reads state / calls downstream          │  │
+ │        │             │   returns: ResultType | undefined                │  │
+ │        │             └──────────────────────── resolves whenever ───────┘  │
+ │   [phase_end] ──fire-and-forget────────────────────────────────────────── │
+ │        │   stores Promise<ResultType|undefined>                            │
+ │        │   in _pendingWorkPromise                                          │
+ │        │                                                                   │
+ │   [phase_start]  ← caller continues immediately ────────────────────────►─┘
+ │
+ ├─ _handlePostRun() loop
+ │
+ ├─ if (_pendingWorkPromise)
+ │       result = await _pendingWorkPromise          ← sync point
+ │       if result → _applyResult(result)            ← shared writer
+ │                   caller.continue()
+ │                   _handlePostRun() loop
+ │
+ └─ _maybeRunFollowUp()  ← per-run, also calls _applyResult
+         │
+         result = await followUpWork(params, ctx)
+         if result → _applyResult(result)            ← same shared writer
+```
+
+Keep each per-candidate diagram small and legible — trim it to the relevant slice of the callpath and annotate the specific node the candidate concerns.
 
 ---
 
@@ -1652,6 +1655,7 @@ Before proposing anything new, ground the user (and yourself) in what actually e
   - **What new capability it would add** (in one sentence)
   - **Why it's plausible** (what in the code or its context suggests this is a reasonable extension, not a random guess)
   - **Rough scope signal** (small addition vs. significant new surface area) — this is a signal for prioritization only, not a commitment to implement
+  - **Focused diagram (REQUIRED):** a scoped ASCII diagram per the convention above, showing where the new capability would attach in the existing flow.
 - Do not editorialize about which behaviors the user "should" want — present them as options.
 - Keep this list to the **highest-signal candidates**. This is not a brainstorming dump; every candidate should be something a reasonable engineer looking at this code would plausibly flag.
 
@@ -1664,14 +1668,15 @@ Before proposing anything new, ground the user (and yourself) in what actually e
   - Missing guards on empty/null/undefined/zero/negative input
   - Unbounded loops, retries, or recursion with no max/backoff
   - Unhandled failure branches (network errors, partial writes, timeouts)
-  - Concurrency hazards (shared state written from multiple paths without coordination — cross-reference the callpath diagram's shared writers)
+  - Concurrency hazards (shared state written from multiple paths without coordination)
   - Assumptions about ordering, uniqueness, or size that aren't enforced anywhere
   - Silent failure paths (errors swallowed, defaults substituted without logging/surfacing)
 - For each candidate edge case, briefly note:
-  - **The specific location** (function/file, and where possible, the node in the Step 2 callpath diagram)
+  - **The specific location** (function/file, and the relevant node in the flow)
   - **The gap** (what input/state isn't handled)
   - **Why it's plausible** (why this scenario could realistically occur, not just theoretically)
   - **Current behavior if triggered**, if inferable from the code (e.g. "would throw an uncaught exception," "would silently no-op," "would loop indefinitely")
+  - **Focused diagram (REQUIRED):** a scoped ASCII diagram per the convention above, pinpointing the node where the gap lives and the flow that reaches it.
 - Do not propose fixes here — this step is about surfacing the gap and asking what behavior is wanted, not prescribing the resolution.
 
 ---
@@ -1681,17 +1686,15 @@ Before proposing anything new, ground the user (and yourself) in what actually e
 Present Steps 2–4 together in a single message, structured as:
 
 ```
-## Implementation Summary
-[prose summary]
-[callpath diagram]
-
 ## 🆕 CANDIDATE BEHAVIORS (New Functionality)
 Summary: N candidates identified
 
 1. [Behavior name]
    - New capability: ...
    - Why plausible: ...
-   - Rough scope: [Small / Medium / Large]
+   - Scope signal: ...
+   - Diagram (required):
+       <focused ASCII diagram for THIS behavior>
 
 2. ...
 
@@ -1699,10 +1702,12 @@ Summary: N candidates identified
 Summary: N candidates identified
 
 1. [Edge case name]
-   - Location: [file/function, callpath node]
+   - Location: [file/function, flow node]
    - Gap: ...
    - Why plausible: ...
    - Current behavior if triggered: ...
+   - Diagram (required):
+       <focused ASCII diagram for THIS edge case>
 
 2. ...
 ```
@@ -1723,11 +1728,8 @@ Keep BEHAVIORS and EDGE CASES in **two clearly separate sections**, in that orde
 - Reuse in-conversation implementation context when available; only re-derive from disk/repo when it's genuinely missing.
 - Static analysis only in this prompt — no test generation or execution, and no broad exploratory search beyond understanding this implementation and its direct dependents.
 - Never blend BEHAVIORS (new functionality) with EDGE CASES (existing-scope correctness gaps). Keep them in separate, clearly labeled sections.
-- The callpath diagram in Step 2 documents what was **actually built**, and should be reused as the shared reference when pointing at specific behaviors/edge cases in Steps 3 and 4.
+- Step 2 is prose only — do **not** produce a callpath diagram there. Instead, produce **one focused, scoped diagram per candidate** in Steps 3 and 4, each pointing at the specific node the behavior would attach to or the edge case occurs at.
 - Every candidate in Steps 3 and 4 should be traceable to something specific you observed in the code — not a generic checklist item applied without inspection.
-
-# User input
-<user_input>
 ]]
               end,
             },
