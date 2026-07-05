@@ -920,16 +920,39 @@ In your analysis, do the following:
    - Now use the additional context and think hard about the user's question. Decide if there could be multiple possible explanations and if so present both to the user. **RANK YOUR HYPOTHESES in terms of relevance to the issue.**
    - Structure your explanation using Markdown headers for each step.
    - For each step, justify your reasoning with direct code snippets from the input, along with the associated line numbers/filename. In other words, cite sources and do not hallucinate.
-   - **CRITICAL: SIMPLIFY FOR CLARITY — REAL CODEBASES ARE VERBOSE AND MESSY.** The goal of this section is to help the user see the main idea without wading through boilerplate. For each step, in addition to citing the real source snippet, also include at least one of the following simplification aids:
-     * **A diagram** — check whether a "diagram" creation skill is available and use it; only fall back to hand-drawn ASCII/Markdown diagrams if no such skill exists. Choose the diagram type that matches what that step is explaining:
-       - **Sequence diagram** — for call order, request/response flow, or multi-component interaction over time
-       - **State diagram** — for lifecycle transitions, status fields, or anything with distinct before/after states
-       - **Flowchart** — for branching logic, decision trees, or conditional control flow
-       - **Component/architecture diagram** — for how modules, services, or classes depend on and communicate with each other
-       - **Data flow diagram** — for how a data structure is transformed, enriched, or reshaped as it passes through functions
-     * **A simplified code snippet with embedded comments** — a trimmed-down version of the real code (stripped of unrelated branches, logging, error handling, etc.) with inline `//` or `#` comments that call out what matters at each line
-     Use whichever aid (or both) best clarifies that particular step. Never substitute a diagram or simplified snippet for the real code citation — provide both; the simplification supplements the ground-truth reference, it doesn't replace it.
-   - **CRITICAL: SHOW HOW TESTS/UPSTREAM CALLERS TRIGGER PRODUCTION CODE — AS A DIAGRAM.** Rather than pasting raw caller-to-callee code side by side, use a **sequence diagram** (via the "diagram" creation skill if available, otherwise ASCII/Markdown) that traces the path from the triggering call (test or upstream caller) through to the production code it exercises. Label each node/arrow with the file and function name so the user can map the diagram back to real source. If a detail is essential and can't be conveyed in the diagram, a minimal supporting snippet may accompany it, but the diagram — not a code block — should carry the primary explanation of the trigger path.
+   - **CRITICAL: DIAGRAMS ARE THE PRIMARY EXPLANATORY TOOL — REAL CODEBASES ARE VERBOSE AND MESSY.** Every step in the breakdown must lead with a diagram; the real code citation supports it, not the other way around. Check whether a "diagram" creation skill is available and use it; only fall back to hand-drawn ASCII/Markdown diagrams if no such skill exists. Choose the diagram type that matches what that step is explaining:
+     * **Component/Layer diagram (preferred default for multi-file or multi-module questions)** — use this whenever the question spans more than one layer of the system (e.g. UI → registry → session, or controller → service → data). Draw each layer as its own labeled box, stack them in call/dependency order (top layer calls down into the next), and label every arrow between boxes with what's actually passed across the boundary (a callback, an object, an ID) — not just "calls." Inside each box, name the real file and the specific function/method at the point relevant to the question, e.g.:
+       ```
+       ┌─── TUI layer ────────────────────────────────────────┐
+       │  interactive-mode.ts                                  │
+       │  onRegister(record) {                                  │
+       │    record.shouldDefer = () => focusedId === record.id  │ ← wires focus
+       │  }                                                     │   knowledge down
+       └────────────────────────────┬─────────────────────────┘
+                                    │ shouldDefer callback
+                                    ▼
+       ┌─── Registry layer ──────────────────────────────────┐
+       │  subagent-registry.ts                                 │
+       │  remove(id) {                                         │
+       │    if (record.shouldDefer?.()) return   ← CHECK HERE  │
+       │    abort() → dispose() → delete → onRemove()          │
+       │  }                                                     │
+       └────────────────────────────┬─────────────────────────┘
+                                    │ registry passed in
+                                    ▼
+       ┌─── Branch-session layer ───────────────────────────┐
+       │  branch-session.ts                                   │
+       │  finally { cleanupBranchSession() └─► registry.remove(id) }
+       └───────────────────────────────────────────────────┘
+       ```
+       Add a one-line "Result:" callout beneath the diagram (as above) stating the net behavioral effect the layering produces. This is the default choice whenever the question is "how does X get from A to B" or "why does behavior Y happen" across module boundaries — reach for it before considering the other diagram types below.
+     * **Sequence diagram** — for call order, request/response flow, or multi-component interaction over time where timing/ordering (not layering) is the point.
+     * **State diagram** — for lifecycle transitions, status fields, or anything with distinct before/after states.
+     * **Flowchart** — for branching logic, decision trees, or conditional control flow.
+     * **Data flow diagram** — for how a data structure is transformed, enriched, or reshaped as it passes through functions.
+     * **A simplified code snippet with embedded comments** — a trimmed-down version of the real code (stripped of unrelated branches, logging, error handling, etc.) with inline `//` or `#` comments that call out what matters at each line. Use this to *accompany* a diagram when a diagram alone can't carry a subtle line-level detail — not as a substitute for one.
+     Never substitute a diagram or simplified snippet for the real code citation — provide both; the simplification supplements the ground-truth reference, it doesn't replace it. Conversely, never substitute a code citation for a diagram — if a step involves more than one file or layer, it needs a diagram, full stop.
+   - **CRITICAL: SHOW HOW TESTS/UPSTREAM CALLERS TRIGGER PRODUCTION CODE — AS A DIAGRAM.** Rather than pasting raw caller-to-callee code side by side, use a **sequence diagram** (or a **Component/Layer diagram** if the trigger path crosses architectural layers rather than just call order — via the "diagram" creation skill if available, otherwise ASCII/Markdown) that traces the path from the triggering call (test or upstream caller) through to the production code it exercises. Label each node/arrow with the file and function name so the user can map the diagram back to real source. If a detail is essential and can't be conveyed in the diagram, a minimal supporting snippet may accompany it, but the diagram — not a code block — should carry the primary explanation of the trigger path.
    - **CRITICAL: PROVIDE CONCRETE, ACTIONABLE EXAMPLES** from the codebase:
      * Show complete, working code snippets that the user could adapt
      * Include multiple patterns/variations from different test files
@@ -960,7 +983,6 @@ Also suggest **specific follow up topics/questions** and explain how they would 
 <first_step> (i.e "Additional Search Folders" in the UI)
 
 Possible Followup Prompts 1) Code Workflow 2) Add Log Line 3) Add Trace ID
-
 ]]
               end,
             },
@@ -2398,7 +2420,7 @@ Make sure the "Understand Code" Prompt is called before this(to get the Context)
                 vim.g.codecompanion_auto_tool_mode = true
 
                 return [[
-# Integrated System Code Implementation Plan
+# System Code Implementation Plan
 
 **⚠️ IMPORTANT: This is an INTERACTIVE, THREE-PHASE process. You MUST wait for user responses at designated checkpoints. DO NOT proceed past any STOP checkpoint without explicit user approval.**
 
