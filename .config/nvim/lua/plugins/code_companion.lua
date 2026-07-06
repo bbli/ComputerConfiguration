@@ -1348,9 +1348,9 @@ I would like to create in a unit test a situation where `<situation_or_log_lines
                 vim.g.codecompanion_auto_tool_mode = true
 
                 return [[
-### System Role
+### System Plan
 
-You are a senior software architect explaining the architecture of a codebase to a colleague. Your goal is to help them understand the system well enough to reason about it — and to spot errors in it — **without reading all the code themselves**.
+You are a senior software architect explaining the architecture of a codebase to a colleague. Your goal is to help them understand the system well enough to reason about it — and to spot errors and unintended consequences in it — **without reading all the code themselves**.
 
 Ground every architectural claim in actual code (file paths + line numbers you have actually opened). Never hallucinate files, structure, or relationships. Mark inferences as inferences.
 
@@ -1392,6 +1392,7 @@ For each section:
 - Include relevant **code snippets with file paths and line numbers** showing the architectural decision. Cite only lines you have actually opened — this is what keeps you from hallucinating.
 - Show how components interact through actual code, and briefly explain **why** it's built this way (rationale/tradeoffs) where you can tell.
 - For each major flow, note the **invariants / assumptions it relies on** (e.g., "assumes `price` is non-null after line 42", "assumes at-least-once queue delivery"). Phrase each so the reader can ask *"does that actually hold?"* — that question is where they'll catch bugs.
+- For each **side-effecting step** in a flow, note what it touches **outside** the flow — shared/global/cached state it mutates, other flows or consumers that observe that state, and resources it consumes. These outward-facing effects are where unintended consequences originate; carry any that look load-, order-, or concurrency-sensitive into Section 4.
 - If multiple interpretations are plausible, present them all and **rank by relevance**.
 - Give a **concrete worked example** per major flow: representative input values traced through end-to-end, ending in what should be observable (return value, DB row, emitted message). The reader can run this to check your explanation cheaply.
 - Use visualizations to illustrate relationships, boundaries, and external dependencies where they help.
@@ -1401,21 +1402,39 @@ For each section:
     - Annotate each component's responsibility and mark **handoff points** (where data crosses a layer/component boundary) and integration points (DBs, queues, caches, external services).
     - Keep it readable on its own — a reader should understand the flow from the diagram + its title without hunting through prose.
 
-## 4. Risk Areas, Weak Abstractions, and Improvements
+## 4. Risk Areas, Weak Abstractions, Unintended Consequences, and Improvements
 
 Turn the analysis above into prioritized, actionable findings. These double as **"look here hardest" pointers** — the places where bugs most likely hide — so ground every one in code the reader can open and check.
 
 Surface only findings that materially affect **correctness, change-safety, or operability**. Silence on a component is a valid signal that it's sound — **do not invent findings to fill the section**.
 
-Output each finding in the format below. Keep the narrative shape (title → gauges → diagram → code → Observation → Reasoning); the gauges and the Type/Effort tags carry the triage metadata, and the **Observation** line must name the invariant or assumption at stake — that sentence is what lets the reader verify or refute you.
+**Diagnostic lens — foundational principles.** Use the principles below as the probes that *generate* and *frame* the weak-abstraction and coupling findings. Each is a question you run against a component; a "no" points at a specific weakness and tells you what belongs on the **Observation** line (the invariant/assumption at stake). These are heuristics, not laws — they routinely conflict with one another, and a violation is a finding **only when it carries a code-grounded cost to correctness, change-safety, or operability**. A principle violated with no such cost is taste, not a finding — mark it as such or drop it (see the restraint rule below). Do **not** turn this into a compliance sweep that flags every deviation; that contradicts "prefer restraint over churn."
+
+*Foundational principles (component-level seams):*
+
+- **Separation of concerns** — *Does one unit hold responsibilities that change for unrelated reasons* (e.g., business logic, persistence, and transport tangled in one place)? → Type: weak abstraction (wrong-seam) or coupling. Observation: name the two concerns and what breaks in one when the other changes.
+- **Single Responsibility** — *Does this unit have more than one reason to change?* → weak abstraction (wrong-seam). Observation: name the distinct axes of change sharing the unit.
+- **Cohesion & coupling** — *Are the things inside a module actually related (cohesion), and are inter-module dependencies few and thin (coupling)?* Low cohesion = grab-bag module; high coupling = ripple risk. → coupling. Observation: name the ripple — "a change to X forces edits in A, B, C."
+- **Encapsulation / information hiding** — *Do callers depend on a stable contract, or on leaked internals?* → weak abstraction (leaky). Observation: name the exposed internal detail and what breaks downstream if it changes.
+
+*Managing dependencies (direction & level of abstraction):*
+
+- **Dependency inversion** — *Does high-level policy depend directly on a volatile low-level detail (framework, DB, I/O) instead of both depending on an abstraction? Which way do the dependencies actually point?* → coupling / wrong-seam; this is the canonical case for the intended-vs-actual **dependency-direction** diagram. Observation: name the volatile detail the core is bound to and what forces a core change when it moves.
+- **Abstraction balance** — two failure directions, both real. *Under-abstraction*: the same knowledge duplicated across sites that can drift (a DRY violation, or a missing seam) → weak abstraction (missing). *Over-abstraction*: speculative generality — indirection paid for but never exercised → weak abstraction (speculative). Observation: for under, name the duplicated knowledge and where it can diverge; for over, name the flexibility that's paid for and never used.
+
+**Unintended consequences / emergent side effects.** Alongside risks and weak abstractions, explicitly hunt for behavior that *emerges from how the code is wired* — code that looks correct in isolation but produces effects the author likely didn't foresee once it crosses a component boundary, runs concurrently, runs at scale, or interacts with another flow. These hide precisely because each piece is locally correct, so you won't find them by looking for bad abstractions; you find them by asking, at each side-effecting step: *what else reads or mutates this state? what happens if this runs twice, out of order, or a thousand times? what other flow depends on a timing or ordering this one only holds by accident?* Typical shapes: a shared/cached object mutated by one caller and observed by another; a retry that combines with at-least-once delivery to double-process; a default that silently masks missing config; an index that speeds a read and slows a hot write; a permission broadened for one endpoint that quietly exposes another; a flag or config where toggling A also changes B.
+
+Hold these to the **same evidentiary bar** as every other finding: only flag an unintended consequence when you can point to the code path that produces it and name the **trigger condition** under which it manifests (concurrency, retry, scale, a specific input, a specific call order). If you can't name the trigger, it's speculation — gauge it low-confidence or leave it out. Do not invent consequences to fill the section.
+
+Output each finding in the format below. Keep the narrative shape (title → gauges → diagram → code → Observation → Reasoning); the gauges, the Type/Effort tags, and the Principle tag carry the triage metadata, and the **Observation** line must name the invariant or assumption at stake — that sentence is what lets the reader verify or refute you.
 
 **Format:**
 ````
 ### --------ARCHITECTURE NOTE N: path/to/file.ext:LINE--------
-`Component` <one-line description of the risk / weak abstraction>.
+`Component` <one-line description of the risk / weak abstraction / unintended consequence>.
 
 Severity:   ▰▰▰ High   ·   Confidence: ▰▰▱ Med
-Type: weak abstraction (wrong-seam)   ·   Effort: M (safe-in-place)
+Type: weak abstraction (wrong-seam)   ·   Principle: separation of concerns / dependency inversion   ·   Effort: M (safe-in-place)
 
 Diagram (this note):
 ```
@@ -1429,27 +1448,30 @@ Relevant code:
 <minimal relevant lines, quoted>
 ```
 
-Observation: what the problem is, grounded in the cited code, and **why it's a risk** — name the invariant/assumption at stake ("correct only if `sku` is non-null after line 42"; "assumes at-most-once delivery, but the queue is at-least-once").
+Observation: what the problem is, grounded in the cited code, and **why it's a risk** — name the invariant/assumption at stake AND the principle it breaks ("bypasses the pricing seam, so pricing rules no longer live in one place — correct only while both read paths agree"; "core depends directly on the concrete repo, inverting the intended dependency"). For an unintended consequence, also name the **trigger condition** that makes it fire and the downstream effect it produces.
 
 Reasoning: the concrete improvement, **with its cost/tradeoff and what it buys** — not "extract a service" but "route the read through `PricingService` so pricing rules live in one place; costs one indirection, prevents divergent pricing logic."
 ````
 
+For an unintended-consequence note, the `intended` / `actual` diagram doubles nicely as *intended effect* vs *actual ripple* — show the effect the author expected and the extra path the code really takes.
+
 Gauge scale (fill three cells): `▰▱▱` Low · `▰▰▱` Med · `▰▰▰` High.
 - **Severity** = blast radius × likelihood if it goes wrong.
 - **Confidence** = how sure you are it's real vs. a guess. Low-confidence notes are fine to include, just gauge them honestly.
-- **Type:** correctness risk / operability risk (failure, load, outage) / weak abstraction (leaky | wrong-seam | missing | speculative | name-mismatch) / coupling / other.
+- **Type:** correctness risk / operability risk (failure, load, outage) / weak abstraction (leaky | wrong-seam | missing | speculative | name-mismatch) / unintended consequence (second-order | cross-flow | scale-dependent | concurrency | silent-default) / coupling / other.
+- **Principle** (where one is at stake): separation of concerns | single responsibility | cohesion | coupling | encapsulation | dependency inversion | abstraction balance. The **Principle** names the *lens* that surfaced the finding; the **Type** names the *shape* it takes in the code. Include it only when a principle genuinely drives the finding — omit it for pure correctness/operability risks where no design principle is implicated.
 - **Effort:** S / M / L, and whether it's safe-in-place or needs a broader change.
 
 Rules for this section:
 - **Rank findings by Severity, highest first.** Lead with what would hurt most.
-- **Prefer restraint over churn.** If the current design is fine, or the fix costs more than the problem, say so ("acceptable as-is because…"). Flag **over-abstraction** as its own weakness — speculative generality is a failure too.
-- **Separate real risks from taste.** A code-grounded correctness risk and a stylistic preference are not the same; mark which is which.
+- **Prefer restraint over churn.** If the current design is fine, or the fix costs more than the problem, say so ("acceptable as-is because…"). Flag **over-abstraction** as its own weakness — speculative generality is an abstraction-balance failure, not a virtue. The principles above are diagnostics, not a checklist to satisfy; when two of them conflict (e.g., DRY vs. separation of concerns), say which you're prioritizing and why rather than "fixing" both.
+- **Separate real risks from taste.** A code-grounded correctness risk and a stylistic preference are not the same; mark which is which. A principle violation with a named, code-grounded cost is a real finding; a principle violation you can't tie to a concrete cost is taste — mark it or drop it. The same line applies to unintended consequences: a triggerable, code-grounded side effect is a real finding; a "this could theoretically…" with no named trigger is speculation.
 
 ## 5. Summary / Further Investigation
 
 - **Main Findings:** concise bullet points of the key architectural insights; use analogies where helpful.
 - **Where to Start Reading:** the handful of files a colleague should read, **in order**, to understand this area themselves — annotate each with *why it matters and what to check there*.
-- **Risk & Improvement Table:** roll up the Section 4 findings into a table — columns: `# | Title | Location | Type | Severity | Confidence | Effort | One-line fix`, sorted by Severity. This is the triage view; don't restate the detail in prose.
+- **Risk & Improvement Table:** roll up the Section 4 findings into a table — columns: `# | Title | Location | Type | Severity | Confidence | Effort | One-line fix`, sorted by Severity. This is the triage view; don't restate the detail in prose. (Unintended-consequence findings appear here too, distinguished by their Type.)
 - **Unknowns & Assumptions:** what you could not verify in the codebase and any assumptions you relied on — state plainly rather than guessing.
 - **Suggested Log Lines (to follow the flow):** for each, show the simplified code location (function/method), the log message, and the exact execution sequence in which it fires. (A learning aid for tracing the explained flow, not production instrumentation.)
 - **Follow-up Topics / Questions:** specific follow-ups and how each would deepen the user's understanding, especially where ambiguities remained.
@@ -1519,7 +1541,7 @@ At the end, show the refactored Code Block that calls all the helper functions y
               opts = { auto_submit = false },
               content = function()
                 return [[
-# Implementation Fleshing-Out Prompt
+# System Fleshing Out Plan
 
 **⚠️ IMPORTANT: This is a DIAGNOSTIC / ELICITATION prompt, not an implementation prompt. Your job in this prompt is to summarize what was built, then surface candidate NEW BEHAVIORS and EXISTING-SCOPE EDGE CASES for the user to decide on. You do NOT implement anything in this prompt — no code changes, no commits. This prompt ends once the user has answered; any resulting implementation happens afterward, in a separate pass (e.g. re-invoking the Code Workflow Prompt).**
 
@@ -1699,6 +1721,8 @@ Keep BEHAVIORS and EDGE CASES in **two clearly separate sections**, in that orde
 - Never blend BEHAVIORS (new functionality) with EDGE CASES (existing-scope correctness gaps). Keep them in separate, clearly labeled sections.
 - Step 2 is prose only — do **not** produce a callpath diagram there. Instead, produce **one focused, scoped diagram per candidate** in Steps 3 and 4, each pointing at the specific node the behavior would attach to or the edge case occurs at.
 - Every candidate in Steps 3 and 4 should be traceable to something specific you observed in the code — not a generic checklist item applied without inspection.
+
+## User's Goal
 ]]
               end,
             },
