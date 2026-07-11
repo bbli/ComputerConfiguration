@@ -41,7 +41,7 @@ function create_worktree #-a name number
         set -l branch_name $argv[1]
 
         and cd (git rev-parse --git-dir)/..
-        and git worktree add ../$branch_name $branch_name
+        and git worktree add -b $branch_name ../$branch_name
         and cd ../$branch_name
         and tmux rename-window $branch_name
 
@@ -49,6 +49,7 @@ function create_worktree #-a name number
         print "First argument is branch name. Second(optional) is the pull request number"
     end
 end
+
 
 # BENSON: has to be manually since (git rev-parse --git-dir)/.. will just go to original repo
 function delete_worktree
