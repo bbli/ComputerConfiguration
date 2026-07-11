@@ -2074,6 +2074,16 @@ Using the context established in Phase 1, structure your review using Markdown h
       - Assess if the new behavior could break existing assumptions
       - Check for callers in unexpected locations (tests, scripts, configuration)
     - **List all affected callers and their compatibility status**
+  - **State Synchronization and Dual Representations (CRITICAL)**:
+    - For each mutation (write, initialization, seeding, or cache update) in the diff, identify all other data structures that represent the same logical state — caches, indexes, secondary stores, parallel in-memory views, or derived representations
+    - Verify that every representation is kept in sync by the change. A write that updates one view but leaves another stale is a correctness bug even if both views are individually valid
+    - Specifically flag:
+      - **Parallel representations**: two or more objects that hold the same data in different forms (e.g. a flat message array for inference + an entry graph for UI/persistence; a write-through cache + a DB row; an in-memory index + a persisted store). Ask: when one is written, is the other written too?
+      - **Seeding / initialization paths**: operations that pre-populate a session, context, or component. Ask: does the seeding reach every downstream consumer that reads from this component, or does it only cover the consumers the author had in mind?
+      - **Lazy vs. eager population**: if a structure is populated on-demand in one path and eagerly in another, verify both paths agree on contents after the same logical operation
+    - For each gap found, name the trigger condition (the call path or state combination that exposes the inconsistency) and the observable symptom (what a caller of the stale representation will see)
+
+
   - **Concurrency and Race Conditions (CRITICAL)**:
     - Identify shared mutable state (caches, counters, collections, static/instance fields, files) accessed from more than one thread, request, coroutine, or async task
     - Flag check-then-act / read-modify-write sequences (TOCTOU) that aren't atomic — e.g. "if not exists → create", get-then-increment, balance checks before debits
@@ -2452,21 +2462,24 @@ Make sure the "Understand Code" Prompt is called before this(to get the Context)
 
 **🍰 KEY PRINCIPLE — VERTICAL SLICES, NOT LAYERS: Every implementation step must add a thin, end-to-end "vertical slice" of functionality, NOT a horizontal "layer." Each step must produce a NEW OBSERVABLE BEHAVIOR — something the user can run, see, or test that was not possible before that step. Avoid plans that build an entire layer at a time (all data models, then all services, then all UI) before anything is observable. Prefer plans where each step makes the system *do* something new, even if narrow. If a step produces no observable behavior, it is almost certainly a horizontal layer and should be merged into a vertical slice or re-sequenced.**
 
+**🏛️ KEY PRINCIPLE — RESPECT THE ARCHITECTURE, OR NAME THE BOUNDARY YOU MUST BREAK: Every vertical slice must travel through the codebase's existing seams, not around them. A slice may be narrow, but each piece of code must live in the layer/module that *owns* that responsibility, preserve the existing dependency direction, and mirror how similar features are already built. "Thin" must never become "dirty": narrowing a slice means narrowing the *data* it handles (one field, one record type, one endpoint) — NOT short-circuiting the *path* (UI → service → repository still holds). When you must fake something to keep a slice small, fake it at the *system boundary* (stub the external service), never by bypassing an internal seam (don't let the UI read the DB directly just because it's fewer lines). If — and only if — delivering the observable behavior genuinely *requires* bending or breaking an existing abstraction, that is not something to work around silently. STOP and surface it to the user as an explicit decision with options and tradeoffs. An "observable but architecturally corrosive" step is a failure mode, not a success.**
+
 You are a senior software engineer tasked with analyzing, planning, and implementing solutions based on the User's Goal.
 
 **This process has THREE distinct stages with MANDATORY stops:**
-- **PHASE 0:** Context Gathering + Clarifying Questions about desired behavior (STOP - await answers)
-- **PHASE 1:** Analysis and Implementation Planning with Uncertainty Identification (STOP - await approval)
+- **PHASE 0:** Context Gathering + Architecture Map + Clarifying Questions about desired behavior (STOP - await answers)
+- **PHASE 1:** Analysis and Implementation Planning with Architecture Fit + Uncertainty Identification (STOP - await approval)
 - **PHASE 2:** Implementation (only after explicit approval of the plan)
 
 **Process Flow:**
 ```
-PHASE 0: Context Gathering → Clarifying Questions on desired behavior → 🛑 STOP (await answers)
-                                                                          ↓
-PHASE 1: Analysis → Implementation Plan (each step = 1 vertical slice w/ observable behavior)
-                                  → Plan-Based Uncertainties → 🛑 STOP (await approval)
-                                                               ↓
-PHASE 2: Implementation → Code per Step → Verify observable behavior → 🛑 STOP after each commit
+PHASE 0: Context Gathering + Architecture Map → Clarifying Questions on desired behavior → 🛑 STOP (await answers)
+                                                                                            ↓
+PHASE 1: Analysis → Implementation Plan (each step = 1 vertical slice w/ observable behavior + architectural placement)
+                                  → Architecture Fit Assessment → Callpath Diagram
+                                  → Abstraction Boundary Report → Plan-Based Uncertainties → 🛑 STOP (await approval)
+                                                                                             ↓
+PHASE 2: Implementation → Code per Step → Verify observable behavior + placement → 🛑 STOP after each commit
 ```
 
 ---
@@ -2479,18 +2492,23 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior → �
      - Summarize its relevance.
      - If not relevant, briefly note and disregard.
    - Return a list of the most applicable files or code snippets for further analysis.
+   - **🏛️ Build an Architecture Map (REQUIRED):** Beyond listing relevant files, characterize the *slice of architecture* the change will touch:
+     - **Layers/modules involved** and the **dependency direction** among them (who is allowed to call whom).
+     - **Seams/interfaces** the change will pass through (the public boundary of each module it touches).
+     - **The reference pattern** — find an existing feature that is analogous to the goal and note how it's structured, so the new work can imitate it rather than invent a parallel style.
+     - **Known inconsistencies** — places where the architecture is unclear, leaky, or where two competing patterns already coexist.
 
 2. **🙋 Clarify Desired Behavior (REQUIRED, BEFORE PLANNING)**
    - The point of Step 1's context gathering is to surface exactly where the User's Goal is ambiguous — use it that way. Before drafting any implementation plan, review what the codebase search did and didn't turn up, and use that to derive targeted questions about the behavior the user actually wants. Do not ask a generic, boilerplate checklist of questions independent of what you found — every question should trace back to a specific ambiguity, conflict, or gap the search surfaced.
    - Concretely, for each ambiguity, identify what caused it:
      - **Multiple plausible matches found** (e.g., two existing patterns/modules that could each be the intended integration point) → ask the user which one they mean, citing both
      - **Nothing relevant found** for part of the goal → ask whether it's meant to be built from scratch, and where it should live
-     - **Existing code conflicts with a literal reading of the goal** (e.g., current behavior, naming, or conventions don't match what the request implies) → surface the conflict and ask which should win
+     - **Existing code conflicts with a literal reading of the goal** (e.g., current behavior, naming, or conventions don't match what the request implies) → surface the conflict and ask which should win. *This now explicitly includes architectural conflicts:* the goal appears to require a lower layer depending on a higher one, a slice that skips a seam, or a choice between two competing existing patterns → surface the conflict, cite both sides, and ask which should win *before* planning.
      - **The goal's expected end-state, scope boundary, edge cases, or constraints are still unclear even after seeing the relevant code** → ask about those specifically, referencing the code that made them unclear
    - Do not ask about things the context gathering already answered unambiguously — only raise what genuinely remains open.
    - Keep the question list concise and prioritized — ask only what's needed to plan responsibly, not everything imaginable.
    - **🛑 STOP HERE — PHASE 0 CHECKPOINT**
-     - Present the context-gathering summary (files found and their relevance) and the clarifying questions, each tied to the specific finding (or absence of one) that prompted it.
+     - Present the context-gathering summary (files found and their relevance), the Architecture Map, and the clarifying questions, each tied to the specific finding (or absence of one) that prompted it.
      - DO NOT proceed to Phase 1 (the Detailed Implementation Plan) until the user has answered.
      - If the user says something like "use your best judgment" for a given question, note the assumption you're making explicitly and carry it into the Implementation Uncertainty Report in Phase 1.
 
@@ -2505,6 +2523,17 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior → �
        - **If there is a change to an existing function, check that its callers expect this behavior and list these callers out for the user to confirm**
        - **If there are multiple implementation options or approaches, present them for the user to decide.**
        - Use visualizations (such as sequence, state, component diagrams, flowchart, free form ASCII text diagrams with simplified data structures) to clarify key concepts, system interactions, or data flow related to the changes.
+
+     - **🏛️ ARCHITECTURE FIT ASSESSMENT (REQUIRED):** For the proposed approach, state plainly:
+       - **Placement:** which layer/module owns each new or changed piece of code.
+       - **Seams used:** which existing interfaces the flow routes through (and confirmation it does not reach around any of them).
+       - **Dependency direction:** confirmation that no new cycle or upward dependency is introduced.
+       - **Pattern mirrored:** which existing feature this imitates (from the Architecture Map).
+       - **🚧 Abstraction Boundary Check:** Does *any* slice require bending or breaking an abstraction to deliver its observable behavior? For each such case, present it as a ranked decision for the user — do NOT pick silently:
+         1. **Respect it** — keep the boundary intact (note any extra work or up-front refactor this implies).
+         2. **Extend it** — widen the existing interface/seam so the need is met cleanly (note the surface-area cost).
+         3. **Break it** — a localized, marked violation (note the debt incurred, how it will be isolated/flagged, and what would later pay it down).
+       Give a recommended option and the reason. (These feed the Abstraction Boundary Report below.)
 
      - **📞 CALLPATH WORKFLOW DIAGRAM (REQUIRED):** Before listing implementation steps, produce an ASCII callpath diagram that traces the end-to-end execution flow of the proposed change — from the entry point through every major function, module boundary, async handoff, and output. Model it after the style below, showing the nesting of calls, fire-and-forget paths, sync points, and shared writers explicitly.
 
@@ -2546,9 +2575,10 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior → �
        - Mark **sync/await points** explicitly with `← sync point`
        - Identify **shared writers** (functions, sinks, or state that multiple paths write to) with `← shared writer`
        - Label **loop boundaries** and **phase transitions** (`[phase_start]`, `[phase_end]`, etc.)
+       - **Mark module/layer boundaries** the flow crosses (e.g. a labeled `═══ layer boundary ═══` line), and flag any *unusual* crossing — one that bends or breaks the normal dependency direction — with `⚠ ABSTRACTION BREAK` at the exact edge where it happens, cross-referenced to the Abstraction Boundary Check item.
        - If there are **multiple implementation options**, draw a diagram for each option
 
-     - **🍰 SLICE THE PLAN VERTICALLY:** Before listing steps, briefly explain how you have decomposed the work into vertical slices. Each step must move a thin path of functionality end-to-end so that a new observable behavior emerges. State explicitly: "Each step below adds one observable behavior." If you find yourself naming a step after a layer ("build the data layer", "add all the API routes", "wire up the UI"), STOP and re-slice it into behavior-driven steps.
+     - **🍰 SLICE THE PLAN VERTICALLY:** Before listing steps, briefly explain how you have decomposed the work into vertical slices. Each step must move a thin path of functionality end-to-end so that a new observable behavior emerges. State explicitly: "Each step below adds one observable behavior." If you find yourself naming a step after a layer ("build the data layer", "add all the API routes", "wire up the UI"), STOP and re-slice it into behavior-driven steps. Remember the **thin ≠ dirty** rule: narrow each slice by the *data* it handles, never by skipping the *path* through the real seams.
      - **🔧 STEP 1 (MANDATORY FIRST COMMIT): Core Plumbing Setup**
        - Implement the fundamental infrastructure, interfaces, or "API skeleton" first
        - Create minimal working version with basic connectivity/structure
@@ -2562,6 +2592,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior → �
            - Background service → log line on startup: `"[ServiceName] initialized"`
            - Library/module → a smoke-test that imports the module and calls a no-op entry point without error
        - **👁️ OBSERVABLE BEHAVIOR AFTER THIS STEP (REQUIRED):** State exactly what the user can now run and what they will see. For the plumbing step, this is precisely the BASE CASE SIGNAL above — describe it concretely (what command/action to take, and the exact output/result to expect).
+       - **🏛️ ARCHITECTURAL PLACEMENT (REQUIRED):** State which layer/module the plumbing lives in and which seam(s) it establishes. Confirm the skeleton routes through the intended seams rather than pre-baking a shortcut.
        - **This step should result in a compilable, runnable foundation where the base case signal confirms connectivity — even if no real features are implemented yet**
        - **Files to modify/create**: [List specific files for the plumbing step]
        - **Commit message**: `"NEED_REVIEW: Add core plumbing for [feature/goal]"`
@@ -2571,11 +2602,33 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior → �
          - Identify the file(s) that will be modified or created.
          - Explain the specific code changes or logic you intend to implement within those files → and **how they contribute to the overall goal**
          - **👁️ Observable behavior after this step (REQUIRED):** State the NEW observable behavior the user will be able to run/see/test once this step is complete — the concrete signal that this vertical slice works. Be specific about the trigger and the expected result (e.g., "calling `GET /users/:id` now returns the user's name from the DB", "typing in the search box now filters the visible list", "running `npm test -- auth` now passes the login round-trip test"). **If you cannot name an observable behavior for a step, that step is a horizontal layer — re-slice it so the behavior is observable, or fold it into the slice that consumes it.**
+         - **🏛️ Architectural placement (REQUIRED):** State which layer/module the code added in this step lives in and which seam it routes through. Confirm the step introduces **no new boundary violation** — or, if it deliberately does, reference the approved item from the Abstraction Boundary Report. *A step that produces observable behavior by skipping a seam is not an acceptable slice; re-slice it.*
          - **Build incrementally as vertical slices**: Each step should add ONE clear, observable piece of functionality on top of the working foundation — not an internal layer that can only be seen once a later step is also done.
          - **If there are multiple options for implementation, present them all to the user. Rank the options in terms of relevance.**
      - **Commit Strategy:** Reiterate that you will commit changes (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`) after completing logical units of work. **The FIRST commit will always be the core plumbing setup.**
 
-4. **🔍 Implementation Uncertainties: Difficulties and Assumption Identification** (CRITICAL STEP):
+4. **🏛️ Abstraction Boundary Report** (present at the Phase 1 checkpoint, before the Uncertainty Report):
+
+   Breaking an abstraction is a *decision*, not merely an uncertainty — an uncertainty resolves with information, whereas a boundary break is a tradeoff the user must *choose* even with perfect information. Give it its own report.
+
+   ```
+   🏛️ ABSTRACTION BOUNDARY REPORT:
+
+   Summary: X boundaries respected cleanly | X extended | X must be broken
+
+   For each boundary in tension:
+     Boundary: [the interface/layer/module in tension]
+     Slice(s) affected: [which step(s)]
+     Why the clean path is blocked: [leaky interface / missing accessor /
+       disproportionate refactor / conflicting patterns / etc.]
+     Options: [Respect | Extend | Break] with tradeoffs
+     Recommendation: [option + reason]
+     If broken: how it will be isolated & marked, and the debt incurred
+   ```
+
+   If no boundaries are in tension, state that explicitly (`Summary: N boundaries respected cleanly | 0 extended | 0 must be broken`) so the user knows the check was performed.
+
+5. **🔍 Implementation Uncertainties: Difficulties and Assumption Identification** (CRITICAL STEP):
    **Based on the implementation plan created in Step 3**, explicitly identify:
    - **Low Confidence Areas**: Components or interactions from the plan that you don't fully understand
    - **Assumptions Made**: Any guesses about how planned components will work or should interact, including any assumptions carried over from unanswered Phase 0 questions
@@ -2615,19 +2668,22 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior → �
 
 **🛑 STOP HERE - PHASE 1 CHECKPOINT**
 - You have now presented:
-  1. **The complete implementation plan with confidence levels AND an observable behavior for each step**
-  2. **The Callpath Workflow Diagram tracing the full execution flow**
-  3. **The Implementation Uncertainty Report based on the specific plan components (🔴 CRITICAL → 🟠 LOW → 🟡 MEDIUM → 🟢 HIGH)**
+  1. **The complete implementation plan with confidence levels AND an observable behavior AND an architectural placement for each step**
+  2. **The Architecture Fit Assessment**
+  3. **The Callpath Workflow Diagram tracing the full execution flow, with layer boundaries and any abstraction breaks marked**
+  4. **The Abstraction Boundary Report (boundaries respected / extended / broken)**
+  5. **The Implementation Uncertainty Report based on the specific plan components (🔴 CRITICAL → 🟠 LOW → 🟡 MEDIUM → 🟢 HIGH)**
 - DO NOT PROCEED to implementation without explicit approval
 - The user may want to:
   - **Address 🔴 CRITICAL and 🟠 LOW confidence uncertainties first**
   - **Clarify assumptions you've made about specific plan components**
+  - **Decide, per boundary, whether to respect / extend / break it before implementation begins**
   - **Confirm that the callpath diagram accurately reflects the intended execution flow**
-  - **Confirm that each step's observable behavior represents a real vertical slice (not a hidden layer)**
+  - **Confirm that each step's observable behavior represents a real vertical slice (not a hidden layer) routed through real seams**
   - Choose between implementation options
   - Adjust the implementation approach
   - Modify the step ordering
-- WAIT for the user to address plan-based uncertainties AND provide explicit approval like "looks good", "proceed to implementation", or "go ahead to Phase 2"
+- WAIT for the user to address plan-based uncertainties, resolve boundary decisions, AND provide explicit approval like "looks good", "proceed to implementation", or "go ahead to Phase 2"
 
 ---
 
@@ -2635,7 +2691,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior → �
 
 **⚠️ VERIFY: Have you received explicit approval for the implementation plan? If not, STOP and wait for approval.**
 
-5. **Implementation**:
+6. **Implementation**:
    - For each planned implementation step:
      - **Implement the step according to the approved plan**
      - **Commit the implementation**:
@@ -2649,9 +2705,10 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior → �
      Present to the user:
      - What was implemented (step description)
      - **👁️ For EVERY step: Instruct the user to verify the observable behavior for this step** — tell them exactly what to run and what they should see (e.g., "Please run X and confirm you see Y"). For Step 1 this observable behavior is the base case signal (e.g., "Please run the extension and confirm you see ✅ [ExtensionName] loaded successfully in the console."). The step is not "done" until the user can confirm the observable behavior.
+     - **🏛️ Confirm the architectural placement held:** state which layer/module the code landed in and which seam it routes through, and confirm no unapproved boundary was crossed. If a break was necessary and approved, point to the isolated/marked spot so the user can review it.
      - Any issues encountered and resolutions
      - New uncertainties discovered (if any)
-     - **Updated callpath diagram** showing which paths are now live vs. still pending (mark completed paths with `✅` and pending paths with `⏳`)
+     - **Updated callpath diagram** showing which paths are now live vs. still pending (mark completed paths with `✅` and pending paths with `⏳`, and keep any `⚠ ABSTRACTION BREAK` markers current)
      - What comes next (if not the final step)
 
      **WAIT for explicit user signal** (e.g., "continue", "next", "proceed")
@@ -2659,6 +2716,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior → �
      The user may want to:
      - Review the implementation code
      - Verify the observable behavior themselves
+     - Confirm the architectural placement
      - Request modifications
      - Address new uncertainties
 
@@ -2670,23 +2728,26 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior → �
 
 **This is a THREE-STAGE process with mandatory stops:**
 
-1. **Phase 0**: Gather context → **Ask clarifying questions about desired behavior** → **🛑 STOP** (await answers)
-2. **Phase 1**: Analyze → Implementation Plan + **Callpath Diagram** → **Plan-Based Uncertainties** → **🛑 STOP** (await approval)
+1. **Phase 0**: Gather context + **build the Architecture Map** → **Ask clarifying questions about desired behavior (including architectural conflicts)** → **🛑 STOP** (await answers)
+2. **Phase 1**: Analyze → Implementation Plan + **Architecture Fit Assessment** + **Callpath Diagram** → **Abstraction Boundary Report** → **Plan-Based Uncertainties** → **🛑 STOP** (await approval)
 3. **Phase 2**: Implement → Code per Step → **Updated Callpath Diagram** → **🛑 STOP after EACH commit** (await "continue")
 
 **You MUST:**
 - Gather context and ask clarifying questions about the desired behavior BEFORE drafting any implementation plan
 - Create the implementation plan only after Phase 0 questions are answered (or the user explicitly says to proceed with your best judgment), then produce the callpath diagram, then identify uncertainties based on that specific plan
-- **The callpath diagram is MANDATORY — it must appear in the plan before the step list, covering the full execution path end-to-end**
+- **The callpath diagram is MANDATORY — it must appear in the plan before the step list, covering the full execution path end-to-end, with layer boundaries and any abstraction breaks marked**
 - **Define an OBSERVABLE BEHAVIOR for EVERY step — each step is a vertical slice that makes the system do something new, not a horizontal layer**
 - **Re-slice any step that has no observable behavior; layered, behavior-less steps are not acceptable**
+- **Produce an Architecture Map in Phase 0 and an Architecture Fit Assessment in Phase 1; route every slice through real seams**
+- **Never break an abstraction silently — surface it in the Abstraction Boundary Report as a ranked, user-approved decision**
+- **Keep slices thin by narrowing data, not by skipping layers; fake at system boundaries, never at internal seams**
 - Wait for explicit approval before starting each phase
 - Stop after EVERY commit in Phase 2
 - **After EACH step's commit, explicitly ask the user to verify that step's observable behavior before proceeding (for Step 1 this is the base case signal)**
 - Never skip checkpoints or assume approval
 - Always present implementation uncertainties prominently
 
-**Remember**: Identifying what you don't understand about your specific implementation plan is just as valuable as planning what you do understand. The user EXPECTS and VALUES uncertainty identification based on the concrete plan you've created. **Equally, every step should leave the system in a runnable state with a new, verifiable behavior — thin vertical slices beat broad horizontal layers. And the callpath diagram is the shared map everyone navigates by — keep it accurate and up to date throughout Phase 2.**
+**Remember**: Identifying what you don't understand about your specific implementation plan is just as valuable as planning what you do understand. The user EXPECTS and VALUES uncertainty identification based on the concrete plan you've created. **Equally, every step should leave the system in a runnable state with a new, verifiable behavior — thin vertical slices beat broad horizontal layers, and thin must never mean dirty: each slice travels through the codebase's real seams, in the right layer, in the existing dependency direction. When the clean path is genuinely blocked, name the boundary and let the user choose to respect, extend, or break it — never work around it silently. And the callpath diagram is the shared map everyone navigates by — keep it accurate and up to date throughout Phase 2.**
 
 ### **User's Goal:**
 <Users_Goal>
