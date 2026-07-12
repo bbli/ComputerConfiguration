@@ -2464,20 +2464,22 @@ Make sure the "Understand Code" Prompt is called before this(to get the Context)
 
 **🏛️ KEY PRINCIPLE — RESPECT THE ARCHITECTURE, OR NAME THE BOUNDARY YOU MUST BREAK: Every vertical slice must travel through the codebase's existing seams, not around them. A slice may be narrow, but each piece of code must live in the layer/module that *owns* that responsibility, preserve the existing dependency direction, and mirror how similar features are already built. "Thin" must never become "dirty": narrowing a slice means narrowing the *data* it handles (one field, one record type, one endpoint) — NOT short-circuiting the *path* (UI → service → repository still holds). When you must fake something to keep a slice small, fake it at the *system boundary* (stub the external service), never by bypassing an internal seam (don't let the UI read the DB directly just because it's fewer lines). If — and only if — delivering the observable behavior genuinely *requires* bending or breaking an existing abstraction, that is not something to work around silently. STOP and surface it to the user as an explicit decision with options and tradeoffs. An "observable but architecturally corrosive" step is a failure mode, not a success.**
 
+**🔁 KEY PRINCIPLE — REUSE BEFORE YOU BUILD (DON'T REINVENT THE WHEEL): Before proposing any new function, utility, type, or pattern, you MUST first search the codebase for something that already does the job — or does something close enough to extend. Duplicating logic that already exists (validation, parsing, formatting, retries, auth, pagination, error mapping, date/money handling, etc.) is a defect, not a shortcut: it fragments behavior, breaks consistency, and doubles the maintenance surface. The default is REUSE an existing helper; the second choice is EXTEND an existing helper; writing NET-NEW code is the last resort and must be *justified* by the absence of anything suitable. This search happens in Phase 0 (it is a required output of Context Gathering) and its results are carried forward into the Phase 1 plan as an explicit Reuse Plan. "I didn't find one" is only acceptable *after* a genuine search you can describe — not as a default assumption.**
+
 You are a senior software engineer tasked with analyzing, planning, and implementing solutions based on the User's Goal.
 
 **This process has THREE distinct stages with MANDATORY stops:**
-- **PHASE 0:** Context Gathering + Architecture Map + Clarifying Questions about desired behavior (STOP - await answers)
-- **PHASE 1:** Analysis and Implementation Planning with Architecture Fit + Uncertainty Identification (STOP - await approval)
+- **PHASE 0:** Context Gathering + Architecture Map + Reuse Inventory + Clarifying Questions about desired behavior (STOP - await answers)
+- **PHASE 1:** Analysis and Implementation Planning with Architecture Fit + Reuse Plan + Uncertainty Identification (STOP - await approval)
 - **PHASE 2:** Implementation (only after explicit approval of the plan)
 
 **Process Flow:**
 ```
-PHASE 0: Context Gathering + Architecture Map → Clarifying Questions on desired behavior → 🛑 STOP (await answers)
+PHASE 0: Context Gathering + Architecture Map + Reuse Inventory → Clarifying Questions on desired behavior → 🛑 STOP (await answers)
                                                                                             ↓
 PHASE 1: Analysis → Implementation Plan (each step = 1 vertical slice w/ observable behavior + architectural placement)
                                   → Architecture Fit Assessment → Callpath Diagram
-                                  → Abstraction Boundary Report → Plan-Based Uncertainties → 🛑 STOP (await approval)
+                                  → Reuse Plan → Abstraction Boundary Report → Plan-Based Uncertainties → 🛑 STOP (await approval)
                                                                                              ↓
 PHASE 2: Implementation → Code per Step → Verify observable behavior + placement → 🛑 STOP after each commit
 ```
@@ -2497,6 +2499,16 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
      - **Seams/interfaces** the change will pass through (the public boundary of each module it touches).
      - **The reference pattern** — find an existing feature that is analogous to the goal and note how it's structured, so the new work can imitate it rather than invent a parallel style.
      - **Known inconsistencies** — places where the architecture is unclear, leaky, or where two competing patterns already coexist.
+   - **🔁 Build a Reuse Inventory (REQUIRED — DON'T REINVENT THE WHEEL):** This is a *distinct, active search*, not a byproduct of the file listing above. Its purpose is to guarantee the plan reuses what already exists before writing anything new. Concretely:
+     - **Search for existing helpers/utilities** that already perform each sub-task the goal implies. Search broadly and by *behavior*, not just by the obvious name: try the domain nouns/verbs, common synonyms, and the shared `utils/`, `helpers/`, `lib/`, `common/`, `shared/` (or equivalent) locations. Cross-cutting concerns are the highest-risk duplication areas — explicitly check for existing handling of: validation, parsing/serialization, formatting, date/time & money/number handling, HTTP/client calls, retries/backoff, auth/permission checks, logging, error construction & mapping, pagination, caching, and config access.
+     - **Search for analogous implementations** — one or more existing features that solve a *structurally similar* problem end-to-end (even in a different domain). These are the templates to imitate for structure, naming, error handling, and test style.
+     - **Search for existing types/interfaces/constants** (models, DTOs, enums, error classes, status codes, event names) the goal would otherwise re-declare.
+     - **Classify each sub-task of the goal** into one of three buckets, citing the concrete file/function found:
+       - **REUSE** — an existing helper/type does the job as-is (cite it).
+       - **EXTEND** — an existing helper is close; note the small change/param/overload needed (cite it).
+       - **BUILD-NEW** — nothing suitable found; note *what you searched for* and *why the misses don't fit*, so the user can catch a missed match.
+     - **Flag near-duplicates / competing utilities** — if two helpers already do nearly the same thing, surface it (this is both a reuse decision and a "Known inconsistency" for the Architecture Map).
+     - This inventory is carried verbatim into the Phase 1 **Reuse Plan** and each step must reference the specific helper it reuses/extends.
 
 2. **🙋 Clarify Desired Behavior (REQUIRED, BEFORE PLANNING)**
    - The point of Step 1's context gathering is to surface exactly where the User's Goal is ambiguous — use it that way. Before drafting any implementation plan, review what the codebase search did and didn't turn up, and use that to derive targeted questions about the behavior the user actually wants. Do not ask a generic, boilerplate checklist of questions independent of what you found — every question should trace back to a specific ambiguity, conflict, or gap the search surfaced.
@@ -2504,11 +2516,12 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
      - **Multiple plausible matches found** (e.g., two existing patterns/modules that could each be the intended integration point) → ask the user which one they mean, citing both
      - **Nothing relevant found** for part of the goal → ask whether it's meant to be built from scratch, and where it should live
      - **Existing code conflicts with a literal reading of the goal** (e.g., current behavior, naming, or conventions don't match what the request implies) → surface the conflict and ask which should win. *This now explicitly includes architectural conflicts:* the goal appears to require a lower layer depending on a higher one, a slice that skips a seam, or a choice between two competing existing patterns → surface the conflict, cite both sides, and ask which should win *before* planning.
+     - **A candidate helper/analogous implementation was found but its fit is uncertain** (e.g., an existing utility *almost* matches, or two near-duplicate helpers exist and it's unclear which is canonical) → surface it and ask whether to reuse/extend it or build new, citing the candidate(s). Do NOT silently decide to build new when a plausible reuse candidate exists.
      - **The goal's expected end-state, scope boundary, edge cases, or constraints are still unclear even after seeing the relevant code** → ask about those specifically, referencing the code that made them unclear
    - Do not ask about things the context gathering already answered unambiguously — only raise what genuinely remains open.
    - Keep the question list concise and prioritized — ask only what's needed to plan responsibly, not everything imaginable.
    - **🛑 STOP HERE — PHASE 0 CHECKPOINT**
-     - Present the context-gathering summary (files found and their relevance), the Architecture Map, and the clarifying questions, each tied to the specific finding (or absence of one) that prompted it.
+     - Present the context-gathering summary (files found and their relevance), the Architecture Map, the Reuse Inventory (REUSE / EXTEND / BUILD-NEW classification with citations), and the clarifying questions, each tied to the specific finding (or absence of one) that prompted it.
      - DO NOT proceed to Phase 1 (the Detailed Implementation Plan) until the user has answered.
      - If the user says something like "use your best judgment" for a given question, note the assumption you're making explicitly and carry it into the Implementation Uncertainty Report in Phase 1.
 
@@ -2524,11 +2537,18 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
        - **If there are multiple implementation options or approaches, present them for the user to decide.**
        - Use visualizations (such as sequence, state, component diagrams, flowchart, free form ASCII text diagrams with simplified data structures) to clarify key concepts, system interactions, or data flow related to the changes.
 
+     - **🔁 REUSE PLAN (REQUIRED):** Carry the Phase 0 Reuse Inventory into the plan and make it actionable. State plainly:
+       - **What is reused as-is:** each existing helper/utility/type the plan calls, cited by file/function.
+       - **What is extended:** each existing helper the plan modifies, with the specific change (new param, overload, generalization) and confirmation its current callers still work (list them).
+       - **What is genuinely net-new:** each new function/type the plan introduces, each with a one-line justification of *why no existing helper fit* (referencing the Phase 0 search). Net-new code is the exception and must be defended, not assumed.
+       - **Where new code lives:** if a new helper is warranted, state whether it belongs in an existing shared location (so others can reuse it) rather than inline, mirroring how existing shared helpers are organized.
+       - If the user's Phase 0 answers overrode a reuse decision (e.g., "build new instead of extending X"), record that here as a resolved decision.
+
      - **🏛️ ARCHITECTURE FIT ASSESSMENT (REQUIRED):** For the proposed approach, state plainly:
        - **Placement:** which layer/module owns each new or changed piece of code.
        - **Seams used:** which existing interfaces the flow routes through (and confirmation it does not reach around any of them).
        - **Dependency direction:** confirmation that no new cycle or upward dependency is introduced.
-       - **Pattern mirrored:** which existing feature this imitates (from the Architecture Map).
+       - **Pattern mirrored:** which existing feature this imitates (from the Architecture Map and Reuse Inventory).
        - **🚧 Abstraction Boundary Check:** Does *any* slice require bending or breaking an abstraction to deliver its observable behavior? For each such case, present it as a ranked decision for the user — do NOT pick silently:
          1. **Respect it** — keep the boundary intact (note any extra work or up-front refactor this implies).
          2. **Extend it** — widen the existing interface/seam so the need is met cleanly (note the surface-area cost).
@@ -2571,6 +2591,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
        **Requirements for this diagram:**
        - Trace the **full callpath** from user-facing entry point to final side effect or output
        - Show **every major function or method** that will be added or modified by this plan
+       - **Mark reused/extended helpers** the flow routes through (e.g. annotate with `← reuse: existingHelper()` or `← extend: existingHelper()`) so it's visible that the flow leans on existing code rather than net-new duplicates
        - Mark **async/fire-and-forget** paths with `──fire-and-forget──`
        - Mark **sync/await points** explicitly with `← sync point`
        - Identify **shared writers** (functions, sinks, or state that multiple paths write to) with `← shared writer`
@@ -2601,13 +2622,36 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
          - Describe the specific task to be performed.
          - Identify the file(s) that will be modified or created.
          - Explain the specific code changes or logic you intend to implement within those files → and **how they contribute to the overall goal**
+         - **🔁 Reuse note (REQUIRED):** State which existing helpers/utilities/types from the Reuse Plan this step calls or extends (cite them). If this step introduces net-new code, restate the one-line justification for why nothing existing fit. A step that hand-rolls logic an existing helper already provides is not acceptable — re-plan it to reuse.
          - **👁️ Observable behavior after this step (REQUIRED):** State the NEW observable behavior the user will be able to run/see/test once this step is complete — the concrete signal that this vertical slice works. Be specific about the trigger and the expected result (e.g., "calling `GET /users/:id` now returns the user's name from the DB", "typing in the search box now filters the visible list", "running `npm test -- auth` now passes the login round-trip test"). **If you cannot name an observable behavior for a step, that step is a horizontal layer — re-slice it so the behavior is observable, or fold it into the slice that consumes it.**
          - **🏛️ Architectural placement (REQUIRED):** State which layer/module the code added in this step lives in and which seam it routes through. Confirm the step introduces **no new boundary violation** — or, if it deliberately does, reference the approved item from the Abstraction Boundary Report. *A step that produces observable behavior by skipping a seam is not an acceptable slice; re-slice it.*
          - **Build incrementally as vertical slices**: Each step should add ONE clear, observable piece of functionality on top of the working foundation — not an internal layer that can only be seen once a later step is also done.
          - **If there are multiple options for implementation, present them all to the user. Rank the options in terms of relevance.**
      - **Commit Strategy:** Reiterate that you will commit changes (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`) after completing logical units of work. **The FIRST commit will always be the core plumbing setup.**
 
-4. **🏛️ Abstraction Boundary Report** (present at the Phase 1 checkpoint, before the Uncertainty Report):
+4. **🔁 Reuse Plan Report** (present at the Phase 1 checkpoint, alongside the plan):
+
+   Reusing existing code is the default and duplicating it is a defect, so make the reuse decisions auditable at a glance.
+
+   ```
+   🔁 REUSE PLAN REPORT:
+
+   Summary: X reused as-is | X extended | X net-new (justified)
+
+   Reused as-is:
+     [sub-task] → [existing helper/type @ file:function]
+   Extended:
+     [sub-task] → [existing helper @ file:function] — change: [...] — callers still valid: [list]
+   Net-new (last resort):
+     [sub-task] → [new function/type @ intended location]
+       Searched for: [terms/locations checked in Phase 0]
+       Why nothing fit: [reason]
+   Near-duplicates / competing helpers flagged: [list, or "none"]
+   ```
+
+   If the goal is small enough that no reuse opportunities exist, state that explicitly (`Summary: 0 reused | 0 extended | N net-new`) and confirm the search was still performed with the terms/locations checked.
+
+5. **🏛️ Abstraction Boundary Report** (present at the Phase 1 checkpoint, before the Uncertainty Report):
 
    Breaking an abstraction is a *decision*, not merely an uncertainty — an uncertainty resolves with information, whereas a boundary break is a tradeoff the user must *choose* even with perfect information. Give it its own report.
 
@@ -2628,7 +2672,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 
    If no boundaries are in tension, state that explicitly (`Summary: N boundaries respected cleanly | 0 extended | 0 must be broken`) so the user knows the check was performed.
 
-5. **🔍 Implementation Uncertainties: Difficulties and Assumption Identification** (CRITICAL STEP):
+6. **🔍 Implementation Uncertainties: Difficulties and Assumption Identification** (CRITICAL STEP):
    **Based on the implementation plan created in Step 3**, explicitly identify:
    - **Low Confidence Areas**: Components or interactions from the plan that you don't fully understand
    - **Assumptions Made**: Any guesses about how planned components will work or should interact, including any assumptions carried over from unanswered Phase 0 questions
@@ -2668,22 +2712,24 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 
 **🛑 STOP HERE - PHASE 1 CHECKPOINT**
 - You have now presented:
-  1. **The complete implementation plan with confidence levels AND an observable behavior AND an architectural placement for each step**
+  1. **The complete implementation plan with confidence levels AND an observable behavior AND an architectural placement AND a reuse note for each step**
   2. **The Architecture Fit Assessment**
-  3. **The Callpath Workflow Diagram tracing the full execution flow, with layer boundaries and any abstraction breaks marked**
-  4. **The Abstraction Boundary Report (boundaries respected / extended / broken)**
-  5. **The Implementation Uncertainty Report based on the specific plan components (🔴 CRITICAL → 🟠 LOW → 🟡 MEDIUM → 🟢 HIGH)**
+  3. **The Callpath Workflow Diagram tracing the full execution flow, with layer boundaries, reused/extended helpers, and any abstraction breaks marked**
+  4. **The Reuse Plan Report (reused / extended / net-new, with citations)**
+  5. **The Abstraction Boundary Report (boundaries respected / extended / broken)**
+  6. **The Implementation Uncertainty Report based on the specific plan components (🔴 CRITICAL → 🟠 LOW → 🟡 MEDIUM → 🟢 HIGH)**
 - DO NOT PROCEED to implementation without explicit approval
 - The user may want to:
   - **Address 🔴 CRITICAL and 🟠 LOW confidence uncertainties first**
   - **Clarify assumptions you've made about specific plan components**
+  - **Correct a reuse decision — point you at an existing helper you missed, or confirm net-new code is warranted**
   - **Decide, per boundary, whether to respect / extend / break it before implementation begins**
   - **Confirm that the callpath diagram accurately reflects the intended execution flow**
   - **Confirm that each step's observable behavior represents a real vertical slice (not a hidden layer) routed through real seams**
   - Choose between implementation options
   - Adjust the implementation approach
   - Modify the step ordering
-- WAIT for the user to address plan-based uncertainties, resolve boundary decisions, AND provide explicit approval like "looks good", "proceed to implementation", or "go ahead to Phase 2"
+- WAIT for the user to address plan-based uncertainties, resolve boundary and reuse decisions, AND provide explicit approval like "looks good", "proceed to implementation", or "go ahead to Phase 2"
 
 ---
 
@@ -2691,9 +2737,10 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 
 **⚠️ VERIFY: Have you received explicit approval for the implementation plan? If not, STOP and wait for approval.**
 
-6. **Implementation**:
+7. **Implementation**:
    - For each planned implementation step:
      - **Implement the step according to the approved plan**
+     - **Reuse as planned:** call/extend the existing helpers named in the Reuse Plan rather than writing new equivalents. If during implementation you discover the planned helper doesn't actually fit (or find a better existing one), STOP and surface it before hand-rolling a duplicate.
      - **Commit the implementation**:
        ```bash
        git add [implementation_files]
@@ -2705,10 +2752,11 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
      Present to the user:
      - What was implemented (step description)
      - **👁️ For EVERY step: Instruct the user to verify the observable behavior for this step** — tell them exactly what to run and what they should see (e.g., "Please run X and confirm you see Y"). For Step 1 this observable behavior is the base case signal (e.g., "Please run the extension and confirm you see ✅ [ExtensionName] loaded successfully in the console."). The step is not "done" until the user can confirm the observable behavior.
+     - **🔁 Confirm the reuse held:** state which existing helpers/utilities this step reused or extended, and confirm no duplicate of existing logic was introduced (or flag any net-new code and why it was unavoidable).
      - **🏛️ Confirm the architectural placement held:** state which layer/module the code landed in and which seam it routes through, and confirm no unapproved boundary was crossed. If a break was necessary and approved, point to the isolated/marked spot so the user can review it.
      - Any issues encountered and resolutions
      - New uncertainties discovered (if any)
-     - **Updated callpath diagram** showing which paths are now live vs. still pending (mark completed paths with `✅` and pending paths with `⏳`, and keep any `⚠ ABSTRACTION BREAK` markers current)
+     - **Updated callpath diagram** showing which paths are now live vs. still pending (mark completed paths with `✅` and pending paths with `⏳`, keep reused/extended-helper annotations current, and keep any `⚠ ABSTRACTION BREAK` markers current)
      - What comes next (if not the final step)
 
      **WAIT for explicit user signal** (e.g., "continue", "next", "proceed")
@@ -2716,7 +2764,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
      The user may want to:
      - Review the implementation code
      - Verify the observable behavior themselves
-     - Confirm the architectural placement
+     - Confirm the reuse and architectural placement
      - Request modifications
      - Address new uncertainties
 
@@ -2728,18 +2776,20 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 
 **This is a THREE-STAGE process with mandatory stops:**
 
-1. **Phase 0**: Gather context + **build the Architecture Map** → **Ask clarifying questions about desired behavior (including architectural conflicts)** → **🛑 STOP** (await answers)
-2. **Phase 1**: Analyze → Implementation Plan + **Architecture Fit Assessment** + **Callpath Diagram** → **Abstraction Boundary Report** → **Plan-Based Uncertainties** → **🛑 STOP** (await approval)
+1. **Phase 0**: Gather context + **build the Architecture Map** + **build the Reuse Inventory (search for existing helpers & analogous implementations)** → **Ask clarifying questions about desired behavior (including architectural conflicts and uncertain reuse candidates)** → **🛑 STOP** (await answers)
+2. **Phase 1**: Analyze → Implementation Plan + **Architecture Fit Assessment** + **Callpath Diagram** → **Reuse Plan Report** → **Abstraction Boundary Report** → **Plan-Based Uncertainties** → **🛑 STOP** (await approval)
 3. **Phase 2**: Implement → Code per Step → **Updated Callpath Diagram** → **🛑 STOP after EACH commit** (await "continue")
 
 **You MUST:**
 - Gather context and ask clarifying questions about the desired behavior BEFORE drafting any implementation plan
+- **Actively search for existing helper functions, shared utilities, types, and analogous implementations in Phase 0 — REUSE BEFORE YOU BUILD; never reinvent the wheel or fragment existing behavior. Net-new code is the last resort and must be justified against a search you can describe.**
 - Create the implementation plan only after Phase 0 questions are answered (or the user explicitly says to proceed with your best judgment), then produce the callpath diagram, then identify uncertainties based on that specific plan
-- **The callpath diagram is MANDATORY — it must appear in the plan before the step list, covering the full execution path end-to-end, with layer boundaries and any abstraction breaks marked**
+- **The callpath diagram is MANDATORY — it must appear in the plan before the step list, covering the full execution path end-to-end, with layer boundaries, reused/extended helpers, and any abstraction breaks marked**
 - **Define an OBSERVABLE BEHAVIOR for EVERY step — each step is a vertical slice that makes the system do something new, not a horizontal layer**
 - **Re-slice any step that has no observable behavior; layered, behavior-less steps are not acceptable**
-- **Produce an Architecture Map in Phase 0 and an Architecture Fit Assessment in Phase 1; route every slice through real seams**
+- **Produce an Architecture Map + Reuse Inventory in Phase 0 and an Architecture Fit Assessment + Reuse Plan in Phase 1; route every slice through real seams and through existing code wherever it exists**
 - **Never break an abstraction silently — surface it in the Abstraction Boundary Report as a ranked, user-approved decision**
+- **Never duplicate existing logic silently — surface reuse/extend/build-new decisions in the Reuse Plan Report; when a reuse candidate's fit is uncertain, ask in Phase 0**
 - **Keep slices thin by narrowing data, not by skipping layers; fake at system boundaries, never at internal seams**
 - Wait for explicit approval before starting each phase
 - Stop after EVERY commit in Phase 2
@@ -2747,7 +2797,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 - Never skip checkpoints or assume approval
 - Always present implementation uncertainties prominently
 
-**Remember**: Identifying what you don't understand about your specific implementation plan is just as valuable as planning what you do understand. The user EXPECTS and VALUES uncertainty identification based on the concrete plan you've created. **Equally, every step should leave the system in a runnable state with a new, verifiable behavior — thin vertical slices beat broad horizontal layers, and thin must never mean dirty: each slice travels through the codebase's real seams, in the right layer, in the existing dependency direction. When the clean path is genuinely blocked, name the boundary and let the user choose to respect, extend, or break it — never work around it silently. And the callpath diagram is the shared map everyone navigates by — keep it accurate and up to date throughout Phase 2.**
+**Remember**: Identifying what you don't understand about your specific implementation plan is just as valuable as planning what you do understand. The user EXPECTS and VALUES uncertainty identification based on the concrete plan you've created. **Equally, every step should leave the system in a runnable state with a new, verifiable behavior — thin vertical slices beat broad horizontal layers, and thin must never mean dirty: each slice travels through the codebase's real seams, in the right layer, in the existing dependency direction, and reuses existing helpers rather than reinventing them. Before building anything new, search for what already exists and reuse or extend it; writing net-new code is the last resort and must be justified. When the clean path is genuinely blocked, name the boundary and let the user choose to respect, extend, or break it — never work around it silently. And the callpath diagram is the shared map everyone navigates by — keep it accurate and up to date throughout Phase 2.**
 
 ### **User's Goal:**
 <Users_Goal>
