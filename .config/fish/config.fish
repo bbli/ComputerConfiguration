@@ -31,22 +31,25 @@ function create_worktree #-a name number
     if test (count $argv) = 2
         set -l branch_name $argv[1]
         set -l number $argv[2]
-
-        and cd (git rev-parse --git-dir)/..
+        cd (git rev-parse --git-dir)/..
         and git worktree add ../$branch_name HEAD
         and cd ../$branch_name
         and gh pr checkout $number
+        and git branch start_$branch_name
         and tmux rename-window (string join "" "[pr_" $branch_name "]")
     else if test (count $argv) = 1
         set -l branch_name $argv[1]
-
-        and cd (git rev-parse --git-dir)/..
-        and git worktree add -b $branch_name ../$branch_name
+        cd (git rev-parse --git-dir)/..
+        and if git show-ref --verify --quiet refs/heads/$branch_name
+            git worktree add ../$branch_name $branch_name
+        else
+            git worktree add -b $branch_name ../$branch_name
+        end
         and cd ../$branch_name
+        and git branch start_$branch_name
         and tmux rename-window $branch_name
-
     else
-        print "First argument is branch name. Second(optional) is the pull request number"
+        echo "First argument is branch name. Second(optional) is the pull request number"
     end
 end
 
