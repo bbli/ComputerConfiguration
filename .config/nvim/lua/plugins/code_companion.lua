@@ -1523,14 +1523,14 @@ At the end, show the refactored Code Block that calls all the helper functions y
             },
           },
         },
-        ["Refactor Code"] = {
+        ["Modernize Code"] = {
           strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
-          description = "Refactor Code",
+          description = "Modernize Code",
           opts = {
             index = 20, -- Position in the action palette (higher numbers appear lower)
             is_default = false, -- Not a default prompt
             is_slash_cmd = true, -- Whether it should be available as a slash command in chat
-            short_name = "refactor", -- Used for calling via :CodeCompanion /mycustom
+            short_name = "modernize", -- Used for calling via :CodeCompanion /mycustom
             auto_submit = false, -- Automatically submit to LLM without waiting
             --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
             modes = { "n" },
@@ -1754,6 +1754,8 @@ Conclude with a `SUMMARY` section containing:
 - **Only raise real opportunities.** Skip clean code silently. A short review of well-factored code is a good review.
 - **Be specific and actionable:** exact locations, concrete sketches, honest effort/risk, clear priority.
 - **Stay in your lane.** If you spot a likely bug, mention it in one line and defer it to correctness review — don't turn the refactoring review into a general critique.
+
+## User's Goal
                 ]]
               end,
             },
@@ -3096,9 +3098,9 @@ Possible Followup Prompts 1) Understand Code 2) PR Review
         mode = { "n" },
       },
       {
-        "<leader>ar",
-        ":CodeCompanion /refactor<CR>",
-        desc = "Refactor Code",
+        "<leader>am",
+        ":CodeCompanion /modernize<CR>",
+        desc = "Modernize Code",
         mode = { "n" },
       },
       {
