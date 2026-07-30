@@ -34,6 +34,8 @@ function create_worktree #-a name number
         cd (git rev-parse --git-dir)/..
         and git worktree add ../$branch_name HEAD
         and cd ../$branch_name
+        and mkdir -p .pi
+        and ln -s /home/ir/ir-beli/.pi/learnings .pi/learnings
         and gh pr checkout $number
         and git branch start_$branch_name
         and tmux rename-window (string join "" "[pr_" $branch_name "]")
@@ -46,6 +48,8 @@ function create_worktree #-a name number
             git worktree add -b $branch_name ../$branch_name
         end
         and cd ../$branch_name
+        and mkdir -p .pi
+        and ln -s /home/ir/ir-beli/.pi/learnings .pi/learnings
         and git branch start_$branch_name
         and tmux rename-window $branch_name
     else
