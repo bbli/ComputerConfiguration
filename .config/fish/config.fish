@@ -181,6 +181,7 @@ end
 # set SPACEFISH_GOLANG_SHOW false
 
 set -U fish_user_paths ~/go/bin ~/Scripts/ ~/.local/bin /opt/homebrew/bin ~/.cargo/bin ~/.fzf/bin ~/.config/emacs/bin ~/.emacs.d/bin ~/perl5/bin ~/.gem/ruby/3.0.0/bin ~/LogParser/target/debug
+set -x ARC_API_KEY "179385bb-4d81-4e8a-8679-e9c2fef01e93"
 # ************** SOURCE ************** %%%1
 switch (uname)
     case Linux
