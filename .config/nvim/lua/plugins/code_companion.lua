@@ -916,13 +916,53 @@ In your analysis, do the following:
      - Appear to be workarounds or have TODO/FIXME comments
    - Perform this action in a seperate task if possible, so as to not clutter the current context window. This task should return the files it deems most applicable to the User's Question.
 
-3. **Step-by-Step Breakdown of All Possible Explanations:**
-   - Now use the additional context and think hard about the user's question. Decide if there could be multiple possible explanations and if so present both to the user. **RANK YOUR HYPOTHESES in terms of relevance to the issue.**
-   - Structure your explanation using Markdown headers for each step.
-   - For each step, justify your reasoning with direct code snippets from the input, along with the associated line numbers/filename. In other words, cite sources and do not hallucinate.
-   - **CRITICAL: DIAGRAMS ARE THE PRIMARY EXPLANATORY TOOL — REAL CODEBASES ARE VERBOSE AND MESSY.** Every step in the breakdown must lead with a diagram; the real code citation supports it, not the other way around. Check whether a "diagram" creation skill is available and use it; only fall back to hand-drawn ASCII/Markdown diagrams if no such skill exists. Choose the diagram type that matches what that step is explaining:
+3. **Explanation:**
+   Now use the additional context and think hard about the user's question. Decide if there could be multiple possible explanations and **RANK YOUR HYPOTHESES in terms of relevance to the issue.** Then present your explanation in the following three parts, **in this exact order**: (a) Pseudocode, (b) Step-by-Step Explanation, (c) Diagrams.
+
+   **3a. Pseudocode (present FIRST):**
+   - **CRITICAL: DISTILL THE CODE INTO DECOMPOSED PSEUDOCODE.** Production code buries its essential logic under local variables, logging, error handling, retries, type conversions and boilerplate. Present the code as it *would* read if every non-essential detail were hidden behind a well-named function:
+     * **Key data structures first:** Before any functions, sketch the data structures that matter to the question as minimal type/struct definitions. Include only the relevant fields, each with a one-line comment on what it represents.
+     * **Single Level of Abstraction (Composed Method):** Each pseudocode function should read as a short list of steps at one level of detail. Collapse incidental mechanics (temporaries, null checks, logging, serialization, retries) into a single intention-revealing call, e.g. `validate(request)` instead of the 15 lines that do it.
+     * **Stepdown order:** Start from the entry point that triggers the behavior (the test or upstream caller), then expand only the helpers relevant to the question, one level at a time. Leave irrelevant helpers collapsed as a named call with a `# not relevant: <why>` comment.
+     * **Intention-revealing names:** Keep the real function names when they communicate intent. When a block is inlined or a real name is misleading, invent a descriptive name and mark it, e.g. `apply_retry_policy()  # inlined, foo.ts:120-145`.
+     * **Name each module's secret (Parnas):** For each key function/module, add a one-line comment stating the design decision it hides (e.g. `# secret: how sessions are persisted`).
+     * **Mark the key lines:** Tag the lines most relevant to the User's Question with `# ← KEY` (and a step number, e.g. `# ← KEY (Step 2)`) so the step-by-step explanation in 3b can refer back to them.
+     * **Multiple hypotheses:** If your hypotheses involve different code paths, show the shared pseudocode once and mark where the paths diverge (e.g. `# Hypothesis A: ... / Hypothesis B: ...`).
+     * **Traceability and honesty:** Annotate every pseudocode function with the file:line of the real code it summarizes. Explicitly flag any place where the simplification changes or hides semantics that could matter (ordering, side effects, concurrency, error paths). Do not invent steps that are not in the code.
+     * Example shape:
+```
+       # --- Data structures ---
+       SubagentRecord:            # subagent-registry.ts:12
+         id                       # unique per spawned subagent
+         shouldDefer: () -> bool  # set by TUI; true while user is focused on it
+
+       # --- Entry point ---
+       test_cleanup_defers_when_focused():      # registry.test.ts:88
+         record = registry.register(new_subagent())
+         focus(record)
+         run_branch_session(record)            # → cleanup on exit
+         assert registry.contains(record.id)
+
+       # --- Production code (stepdown) ---
+       run_branch_session(record):             # branch-session.ts:40
+         try: do_work(record)                  # not relevant: work itself
+         finally: registry.remove(record.id)
+
+       registry.remove(id):                    # subagent-registry.ts:61
+         # secret: lifecycle/teardown order of subagents
+         if record.shouldDefer(): return       # ← KEY (Step 2): focused agents survive
+         teardown(record)                      # abort → dispose → delete → notify
+```
+
+   **3b. Step-by-Step Explanation (present SECOND):**
+   - Present your ranked hypotheses, then walk through the explanation using Markdown headers for each step (e.g. `### Step 1: ...`).
+   - For each step, refer back to the relevant lines of the pseudocode in 3a, then justify your reasoning with direct code snippets from the real source, along with the associated line numbers/filename. In other words, cite sources and do not hallucinate. The pseudocode is a summary; the real code citation is the ground truth, so always provide both.
+   - If any definitions or context are missing, or you do not have strong confidence in any answer, explicitly state this. Do not infer or invent missing information. I repeat, **DO NOT HALLUCINATE**.
+
+   **3c. Diagrams (present THIRD):**
+   - **CRITICAL: Every step in 3b that involves more than one file or layer MUST have a matching diagram here.** Label each diagram with the step(s) it illustrates (e.g. `#### Diagram for Step 2`). Check whether a "diagram" creation skill is available and use it; only fall back to hand-drawn ASCII/Markdown diagrams if no such skill exists. Choose the diagram type that matches what that step is explaining:
      * **Component/Layer diagram (preferred default for multi-file or multi-module questions)** — use this whenever the question spans more than one layer of the system (e.g. UI → registry → session, or controller → service → data). Draw each layer as its own labeled box, stack them in call/dependency order (top layer calls down into the next), and label every arrow between boxes with what's actually passed across the boundary (a callback, an object, an ID) — not just "calls." Inside each box, name the real file and the specific function/method at the point relevant to the question, e.g.:
-       ```
+```
        ┌─── TUI layer ────────────────────────────────────────┐
        │  interactive-mode.ts                                  │
        │  onRegister(record) {                                  │
@@ -944,31 +984,21 @@ In your analysis, do the following:
        │  branch-session.ts                                   │
        │  finally { cleanupBranchSession() └─► registry.remove(id) }
        └───────────────────────────────────────────────────┘
-       ```
+```
        Add a one-line "Result:" callout beneath the diagram (as above) stating the net behavioral effect the layering produces. This is the default choice whenever the question is "how does X get from A to B" or "why does behavior Y happen" across module boundaries — reach for it before considering the other diagram types below.
      * **Sequence diagram** — for call order, request/response flow, or multi-component interaction over time where timing/ordering (not layering) is the point.
      * **State diagram** — for lifecycle transitions, status fields, or anything with distinct before/after states.
      * **Flowchart** — for branching logic, decision trees, or conditional control flow.
      * **Data flow diagram** — for how a data structure is transformed, enriched, or reshaped as it passes through functions.
-     * **A simplified code snippet with embedded comments** — a trimmed-down version of the real code (stripped of unrelated branches, logging, error handling, etc.) with inline `//` or `#` comments that call out what matters at each line. Use this to *accompany* a diagram when a diagram alone can't carry a subtle line-level detail — not as a substitute for one.
-     Never substitute a diagram or simplified snippet for the real code citation — provide both; the simplification supplements the ground-truth reference, it doesn't replace it. Conversely, never substitute a code citation for a diagram — if a step involves more than one file or layer, it needs a diagram, full stop.
-   - **CRITICAL: SHOW HOW TESTS/UPSTREAM CALLERS TRIGGER PRODUCTION CODE — AS A DIAGRAM.** Rather than pasting raw caller-to-callee code side by side, use a **sequence diagram** (or a **Component/Layer diagram** if the trigger path crosses architectural layers rather than just call order — via the "diagram" creation skill if available, otherwise ASCII/Markdown) that traces the path from the triggering call (test or upstream caller) through to the production code it exercises. Label each node/arrow with the file and function name so the user can map the diagram back to real source. If a detail is essential and can't be conveyed in the diagram, a minimal supporting snippet may accompany it, but the diagram — not a code block — should carry the primary explanation of the trigger path.
-   - **CRITICAL: PROVIDE CONCRETE, ACTIONABLE EXAMPLES** from the codebase:
-     * Show complete, working code snippets that the user could adapt
-     * Include multiple patterns/variations from different test files
-     * Demonstrate argument construction with real values, not placeholders
-     * Show the "before and after" state of data structures
-     * Include error handling and edge cases
-     * Provide template code the user can copy and modify
-   - If any definitions or context are missing, or you do not have strong confidence in any answer, explicitly state this. Do not infer or invent missing information. I repeat, **DO NOT HALLUCINATE**.
+   - Use the same function names in the diagrams as in the pseudocode (3a), so the user can map between all three parts.
 
 4. **SUMMARY Section:**
    - Conclude your response with a `SUMMARY` section, formatted as a Markdown header.
    - Use bullet points to concisely present the main findings and insights.
-   - Include a table that consolidates the key ideas from the breakdown (e.g., columns like Concept / What It Does / Where It Lives / Why It Matters) alongside **ANALOGIES** to make the ideas stick. No visualization/diagram is needed in this section — diagrams belong in the breakdown section above.
+   - Include a table that consolidates the key ideas from the explanation (e.g., columns like Concept / What It Does / Where It Lives / Why It Matters) alongside **ANALOGIES** to make the ideas stick. No visualization/diagram is needed in this section — diagrams belong in section 3c above.
 
 After your analysis, suggest log lines to add to the codebase. For each log line, show:
-- The simplified code location (function/method name with minimal context)
+- The simplified code location (function/method name with minimal context, matching the pseudocode names in 3a)
 - The log message itself
 - **The exact, step by step execution sequence of these log lines to help the user understand your explanation**
 Then ask the user to verify this behavior experimentally.
