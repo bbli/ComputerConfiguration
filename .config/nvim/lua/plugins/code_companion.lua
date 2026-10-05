@@ -920,39 +920,35 @@ In your analysis, do the following:
    Now use the additional context and think hard about the user's question. Decide if there could be multiple possible explanations and **RANK YOUR HYPOTHESES in terms of relevance to the issue.** Then present your explanation in the following three parts, **in this exact order**: (a) Pseudocode, (b) Step-by-Step Explanation, (c) Diagrams.
 
    **3a. Pseudocode (present FIRST):**
-   - **CRITICAL: DISTILL THE CODE INTO DECOMPOSED PSEUDOCODE.** Production code buries its essential logic under local variables, logging, error handling, retries, type conversions and boilerplate. Present the code as it *would* read if every non-essential detail were hidden behind a well-named function:
-     * **Key data structures first:** Before any functions, sketch the data structures that matter to the question as minimal type/struct definitions. Include only the relevant fields, each with a one-line comment on what it represents.
-     * **Single Level of Abstraction (Composed Method):** Each pseudocode function should read as a short list of steps at one level of detail. Collapse incidental mechanics (temporaries, null checks, logging, serialization, retries) into a single intention-revealing call, e.g. `validate(request)` instead of the 15 lines that do it.
-     * **Stepdown order:** Start from the entry point that triggers the behavior (the test or upstream caller), then expand only the helpers relevant to the question, one level at a time. Leave irrelevant helpers collapsed as a named call with a `# not relevant: <why>` comment.
+   - **CRITICAL: DISTILL THE CODE INTO COMPOSED-METHOD PSEUDOCODE.** Production code buries its essential logic under local variables, logging, error handling, retries, type conversions and boilerplate. Present the code as it *would* read if every non-essential detail were hidden behind a well-named function:
+     * **Single Level of Abstraction (Composed Method) — the primary rule:** Every pseudocode function body must be a short list of calls (ideally 3–7), all at the *same* level of detail, so that it reads like a sentence describing *what* happens. Never mix high-level calls with low-level mechanics (string parsing, index math, SQL, null checks, loops over raw data) in the same function. If a line is lower-level than its neighbors, wrap it in an intention-revealing call. For example:
+```
+       # Real code (mixed levels — do NOT present like this)
+       def handle_signup(form):
+           if "@" not in form["email"] or len(form["password"]) < 8:
+               return error("invalid")
+           if db.query("SELECT 1 FROM users WHERE email=?", form["email"]):
+               return error("taken")
+           hashed = bcrypt.hashpw(form["password"].encode(), bcrypt.gensalt())
+           uid = db.insert("users", email=form["email"], pw=hashed)
+           smtp.send(form["email"], "Welcome!", render("welcome.html", uid=uid))
+           return redirect("/dashboard")
+
+       # Pseudocode (one level of abstraction — present like this)
+       handle_signup(form):                     # signup.py:14-23
+           validate_signup(form)
+           ensure_email_available(form.email)
+           user = create_user(form.email, form.password)
+           send_welcome_email(user)
+           return redirect_to_dashboard()
+```
+     * **Stepdown order:** Start from the entry point that triggers the behavior (the test or upstream caller), written in the same composed style. Then expand only the helpers relevant to the question, one level at a time, each also in composed style. Leave irrelevant helpers collapsed as a named call with a `# not relevant: <why>` comment.
      * **Intention-revealing names:** Keep the real function names when they communicate intent. When a block is inlined or a real name is misleading, invent a descriptive name and mark it, e.g. `apply_retry_policy()  # inlined, foo.ts:120-145`.
+     * **Key data structures:** If a data structure is central to the question, sketch it as a minimal type with only the relevant fields, each with a one-line comment.
      * **Name each module's secret (Parnas):** For each key function/module, add a one-line comment stating the design decision it hides (e.g. `# secret: how sessions are persisted`).
-     * **Mark the key lines:** Tag the lines most relevant to the User's Question with `# ← KEY` (and a step number, e.g. `# ← KEY (Step 2)`) so the step-by-step explanation in 3b can refer back to them.
+     * **Mark the key lines:** Tag the lines most relevant to the User's Question with `# ← KEY (Step N)` so the step-by-step explanation in 3b can refer back to them.
      * **Multiple hypotheses:** If your hypotheses involve different code paths, show the shared pseudocode once and mark where the paths diverge (e.g. `# Hypothesis A: ... / Hypothesis B: ...`).
      * **Traceability and honesty:** Annotate every pseudocode function with the file:line of the real code it summarizes. Explicitly flag any place where the simplification changes or hides semantics that could matter (ordering, side effects, concurrency, error paths). Do not invent steps that are not in the code.
-     * Example shape:
-```
-       # --- Data structures ---
-       SubagentRecord:            # subagent-registry.ts:12
-         id                       # unique per spawned subagent
-         shouldDefer: () -> bool  # set by TUI; true while user is focused on it
-
-       # --- Entry point ---
-       test_cleanup_defers_when_focused():      # registry.test.ts:88
-         record = registry.register(new_subagent())
-         focus(record)
-         run_branch_session(record)            # → cleanup on exit
-         assert registry.contains(record.id)
-
-       # --- Production code (stepdown) ---
-       run_branch_session(record):             # branch-session.ts:40
-         try: do_work(record)                  # not relevant: work itself
-         finally: registry.remove(record.id)
-
-       registry.remove(id):                    # subagent-registry.ts:61
-         # secret: lifecycle/teardown order of subagents
-         if record.shouldDefer(): return       # ← KEY (Step 2): focused agents survive
-         teardown(record)                      # abort → dispose → delete → notify
-```
 
    **3b. Step-by-Step Explanation (present SECOND):**
    - Present your ranked hypotheses, then walk through the explanation using Markdown headers for each step (e.g. `### Step 1: ...`).
