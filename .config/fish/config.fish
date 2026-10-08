@@ -43,7 +43,7 @@ function create_worktree #-a name
   and cd (path dirname $repo_root)/$branch_name
   and mkdir -p .pi
   and ln -s /home/ir/ir-beli/.pi/learnings .pi/learnings
-  and git branch start_$branch_name
+  and git branch -f start_$branch_name
   and tmux rename-window $branch_name
 end
 
