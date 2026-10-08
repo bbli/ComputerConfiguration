@@ -2683,7 +2683,7 @@ Make sure the "Understand Code" Prompt is called before this(to get the Context)
 
 **🍰 KEY PRINCIPLE — VERTICAL SLICES, NOT LAYERS: Every implementation step must add a thin, end-to-end "vertical slice" of functionality, NOT a horizontal "layer." Each step must produce a NEW OBSERVABLE BEHAVIOR — something the user can run, see, or test that was not possible before that step. Avoid plans that build an entire layer at a time (all data models, then all services, then all UI) before anything is observable. Prefer plans where each step makes the system *do* something new, even if narrow. If a step produces no observable behavior, it is almost certainly a horizontal layer and should be merged into a vertical slice or re-sequenced.**
 
-**📐 KEY PRINCIPLE — EXPLAIN EACH SLICE WHERE IT LIVES: Every step carries its own simplified code snippet and its own small diagram, placed directly inside that step. There is NO single big end-to-end diagram for the whole plan. The reader should be able to read one step in isolation and understand exactly what code path it adds, which seams it crosses, and what it reuses — without cross-referencing a giant diagram elsewhere. Each step's code snippet and diagram show only the *delta* that step introduces, with earlier steps' work collapsed to a one-line reference. If a step's diagram or code snippet gets too big to take in at a glance, that is a signal the slice is too fat — split it.**
+**📐 KEY PRINCIPLE — EXPLAIN EACH SLICE WHERE IT LIVES: Every step carries its own pseudocode and its own small diagram, placed directly inside that step. The pseudocode for each function stays at ONE level of abstraction from its first line to its last. There is NO single big end-to-end diagram for the whole plan. The reader should be able to read one step in isolation and understand exactly what code path it adds, which seams it crosses, and what it reuses — without cross-referencing a giant diagram elsewhere. Each step's pseudocode and diagram show only the *delta* that step introduces, with earlier steps' work collapsed to a one-line reference. If a step's diagram or pseudocode gets too big to take in at a glance, that is a signal the slice is too fat — split it.**
 
 **🏛️ KEY PRINCIPLE — RESPECT THE ARCHITECTURE, OR NAME THE BOUNDARY YOU MUST BREAK: Every vertical slice must travel through the codebase's existing seams, not around them. A slice may be narrow, but each piece of code must live in the layer/module that *owns* that responsibility, preserve the existing dependency direction, and mirror how similar features are already built. "Thin" must never become "dirty": narrowing a slice means narrowing the *data* it handles (one field, one record type, one endpoint) — NOT short-circuiting the *path* (UI → service → repository still holds). When you must fake something to keep a slice small, fake it at the *system boundary* (stub the external service), never by bypassing an internal seam (don't let the UI read the DB directly just because it's fewer lines). If — and only if — delivering the observable behavior genuinely *requires* bending or breaking an existing abstraction, that is not something to work around silently. STOP and surface it to the user as an explicit decision with options and tradeoffs. An "observable but architecturally corrosive" step is a failure mode, not a success.**
 
@@ -2693,7 +2693,7 @@ You are a senior software engineer tasked with analyzing, planning, and implemen
 
 **This process has THREE distinct stages with MANDATORY stops:**
 - **PHASE 0:** Context Gathering + Architecture Map + Clarifying Questions about desired behavior (STOP - await answers)
-- **PHASE 1:** Analysis and Implementation Planning with Architecture Fit + per-step Code Snippets & Diagrams + Uncertainty Identification (STOP - await approval)
+- **PHASE 1:** Analysis and Implementation Planning with Architecture Fit + per-step Pseudocode & Diagrams + Uncertainty Identification (STOP - await approval)
 - **PHASE 2:** Implementation (only after explicit approval of the plan)
 
 **Process Flow:**
@@ -2702,11 +2702,11 @@ PHASE 0: Context Gathering + Architecture Map → Clarifying Questions on desire
                                                                                 ↓
 PHASE 1: Analysis → Architecture Fit Assessment → Slice Map (one line per step)
                   → Implementation Plan (each step = 1 vertical slice w/ observable behavior + placement
-                                         + 📝 code snippet + 📐 slice diagram)
+                                         + 📝 pseudocode + 📐 slice diagram)
                   → Plan-Based Uncertainties → 🛑 STOP (await approval)
                                                                                 ↓
 PHASE 2: Implementation → Code per Step → Verify observable behavior + placement
-                        → As-built code snippet/diagram diff → 🛑 STOP after each commit
+                        → As-built pseudocode/diagram diff → 🛑 STOP after each commit
 ```
 
 ---
@@ -2747,9 +2747,9 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 3. **Create a DETAILED IMPLEMENTATION PLAN**
    - Before writing any code, provide a comprehensive plan, informed by the answers gathered in Phase 0. This plan should include:
      - **Problem Overview:** Briefly restate the problem or goal based on the user's request, the gathered context, and the answers from Phase 0.
-     - **Proposed Solution Outline:** Describe the overall technical approach you will take to address the problem, in a short paragraph — the detail belongs in the per-step code snippets and diagrams below, not here.
+     - **Proposed Solution Outline:** Describe the overall technical approach you will take to address the problem, in a short paragraph — the detail belongs in the per-step pseudocode and diagrams below, not here.
        - **If there is a change to an existing function, check that its callers expect this behavior and list these callers out for the user to confirm**
-       - **If there are multiple implementation options or approaches, present them for the user to decide.** Where options diverge only in specific steps, show the alternative code snippet/diagram inside those steps (Option A / Option B) rather than drawing a separate whole-system diagram per option.
+       - **If there are multiple implementation options or approaches, present them for the user to decide.** Where options diverge only in specific steps, show the alternative pseudocode/diagram inside those steps (Option A / Option B) rather than drawing a separate whole-system diagram per option.
 
      - **🏛️ ARCHITECTURE FIT ASSESSMENT (REQUIRED):** For the proposed approach, state plainly:
        - **Placement:** which layer/module owns each new or changed piece of code.
@@ -2774,17 +2774,49 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 
      - **🍰 SLICE THE PLAN VERTICALLY:** Briefly explain how you have decomposed the work into vertical slices. Each step must move a thin path of functionality end-to-end so that a new observable behavior emerges. State explicitly: "Each step below adds one observable behavior." If you find yourself naming a step after a layer ("build the data layer", "add all the API routes", "wire up the UI"), STOP and re-slice it into behavior-driven steps. Remember the **thin ≠ dirty** rule: narrow each slice by the *data* it handles, never by skipping the *path* through the real seams.
 
-     - **📝📐 PER-STEP CODE SNIPPET & DIAGRAM (REQUIRED FOR EVERY STEP, INCLUDING STEP 1):** Every step contains two artifacts, placed inside the step itself:
+     - **⚠️ CRITICAL — 📝📐 PER-STEP PSEUDOCODE & DIAGRAM (REQUIRED FOR EVERY STEP, INCLUDING STEP 1):** Every step contains two artifacts, placed inside the step itself. **A step missing either one is incomplete — do not present the plan until every step has both.**
 
-       **📝 Code Snippet** — a trimmed-down version of the real code this slice adds or changes, so a reviewer can check correctness before the full diff exists.
-       - Write it in the **codebase's actual language**, using the **real file, function, variable, and type names** you intend to use, so the snippet maps 1:1 onto the eventual diff. Group by file, with a `// ── path/to/file ──` header per file.
-       - **Keep:** the signature of every function being added or touched, the lines being added or changed, and the surrounding variables, calls, and control flow those lines depend on or affect — the variable they read, the branch they sit in, the value they return or pass on. Enough context that the change reads correctly in place.
-       - **Remove:** everything in those functions that isn't relevant to the change. Replace each removed chunk with `// ...` (in the language's comment syntax), optionally with a short hint like `// ... existing validation`. Leave out imports, logging, and boilerplate unless the change touches them.
-       - Show **only what this step adds or changes**. Existing helpers it calls appear as a call, not expanded. Code from earlier steps is collapsed to `// ... (from Step N)`.
-       - Mark lines: `// 🆕` new, `// ✏️` changed (show the old line as `// was: ...` when a line is replaced), `// ← reuse: helper()`, `// ← extend: helper() (+param x)`.
-       - Include the **error/edge paths** this slice handles (and say explicitly in a comment which ones are deferred to a later step).
-       - It doesn't need to compile on its own, but it must be valid-looking code in the real language — no invented syntax or prose-as-code.
-       - Mark any approved boundary break at the exact line: `// ⚠ ABSTRACTION BREAK (see Boundary Check #N)`.
+       **📝 Pseudocode** — the logic this slice adds or changes, written so a reviewer can read each function as a short list of named steps.
+
+       **⚠️ CRITICAL — ONE LEVEL OF ABSTRACTION THROUGHOUT EACH FUNCTION.** Every line inside a function's pseudocode must sit at the *same* level of detail, from the first line to the last. This is the single most important rule for the pseudocode: a function that mixes high-level steps with low-level details is wrong and must be rewritten before the plan is presented.
+
+       ✅ Present it like this — every line is a named step at the same level:
+
+       ```
+       # Pseudocode (one level of abstraction — present like this)
+       handle_signup(form):                     # signup.py:14-23
+           validate_signup(form)
+           ensure_email_available(form.email)
+           user = create_user(form.email, form.password)
+           send_welcome_email(user)
+           return redirect_to_dashboard()
+       ```
+
+       ❌ NOT like this — high-level steps mixed with low-level details:
+
+       ```
+       handle_signup(form):                     # signup.py:14-23
+           validate_signup(form)
+           if db.users.where(email=form.email).count() > 0:   # ❌ lower level than its neighbors
+               raise EmailTaken()
+           hashed = bcrypt.hash(form.password, rounds=12)       # ❌ lower level than its neighbors
+           user = create_user(form.email, hashed)
+           send_welcome_email(user)
+           return redirect_to_dashboard()
+       ```
+
+       How to keep every function at one level:
+       - **Test each line against its neighbors.** Ask: "Is this line saying *what* happens at the same level as the lines around it, or is it describing *how* one of them works?" If it's describing how, it's a lower level — move it out.
+       - **Wrap lower-level lines in a named step.** Replace the detail with one call whose name says what it does (`ensure_email_available(form.email)` instead of the DB query and raise). Use the real function name if one exists or will exist.
+       - **Drill down with a separate block, never inline.** If a new or changed function's internals are worth reviewing, give that function its own block below — and that block must also be at one level of abstraction throughout. Only drill into new or changed functions; reused helpers are never expanded.
+       - **Same rule for error/edge paths and control flow.** A guard or branch belongs in the block only if it reads at the same level as its neighbors (`if not order: raise_not_found(id)` next to `order = orderRepo.findOne(id)` is fine; a multi-line retry loop is not — name it `fetch_with_retry(...)`).
+       - **Header line = function + location:** `function_name(args):  # path/to/file:start-end`. Use the real line range for existing code, `# path/to/file (new)` for new functions, and `# path/to/file:14-23 ✏️` for existing functions being changed.
+       - **Use real names** for functions and key variables (the ones you will actually write or call), so each line maps onto the eventual diff. Leave out types, imports, logging, and boilerplate.
+       - **Keep blocks short** — roughly 3–10 lines. A longer block almost always means levels are being mixed; extract a named step.
+       - Show **only what this step adds or changes**. Work from earlier steps appears as a single call with `# (from Step N)`.
+       - Mark lines with short trailing comments where useful: `# 🆕` new, `# ✏️` changed (add `was: ...` when a line is replaced), `# ♻️ reuse`, `# ✏️ extend (+param x)`.
+       - Include the **error/edge paths** this slice handles (at the same level as their neighbors, per the rule above), and add a `# deferred to Step N: ...` line for any that are left for later.
+       - Mark any approved boundary break at the exact line: `# ⚠ ABSTRACTION BREAK (see Boundary Check #N)`.
 
        **📐 Slice Diagram** — a small picture of *this slice's path only*.
        - Pick the diagram type that best fits the slice; don't force one style on every step:
@@ -2802,29 +2834,18 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
        **Example of one step's artifacts** (adapt to the real system):
 
        ```
-       📝 Code Snippet
-       // ── api/routes/orders.ts ──
-       export function registerOrderRoutes(router: Router, orderService: OrderService) {
-         // ... existing GET /orders (list) route
-         router.get("/orders/:id", async (req, res) => {          // 🆕
-           const order = await orderService.getById(req.params.id);
-           res.json(toOrderDto(order));                           // ← reuse: dto/mappers.toOrderDto()
-         });
-       }
+       📝 Pseudocode
+       getOrderRoute(req):                          # api/routes/orders.ts (new)
+           order = orderService.getById(req.params.id)
+           orderDto = toOrderDto(order)              # ♻️ reuse
+           return respondJson(orderDto)
 
-       // ── services/orderService.ts ──
-       export class OrderService {
-         constructor(private orderRepo: OrderRepo) {}
-         // ... existing list()
-
-         async getById(id: string): Promise<Order> {              // 🆕
-           assertValidId(id);                                     // ← reuse: utils/validate.assertValidId()
-           const row = await this.orderRepo.findOne({ id });      // ← reuse: repos/orderRepo.findOne()
-           if (!row) throw new NotFoundError("order", id);        // ← reuse: errors/NotFoundError
-           return row;                                            // { id, status, total }
-           // deferred to Step 4: permission check
-         }
-       }
+       orderService.getById(id):                    # services/orderService.ts (new)
+           assertValidId(id)                        # ♻️ reuse
+           order = orderRepo.findOne(id)            # ♻️ reuse
+           if not order: raise NotFoundError("order", id)   # ♻️ reuse
+           return order
+           # deferred to Step 4: permission check
 
        📐 Slice Diagram (callpath)
        HTTP GET /orders/42
@@ -2854,8 +2875,8 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
            - Library/module → a smoke-test that imports the module and calls a no-op entry point without error
        - **👁️ OBSERVABLE BEHAVIOR AFTER THIS STEP (REQUIRED):** State exactly what the user can now run and what they will see. For the plumbing step, this is precisely the BASE CASE SIGNAL above — describe it concretely (what command/action to take, and the exact output/result to expect).
        - **🏛️ ARCHITECTURAL PLACEMENT (REQUIRED):** State which layer/module the plumbing lives in and which seam(s) it establishes. Confirm the skeleton routes through the intended seams rather than pre-baking a shortcut.
-       - **📝 Code Snippet (REQUIRED):** The skeleton's wiring, trimmed to the relevant lines — registration/entry point, the empty seams it opens, the error-handling framework, and the line that emits the base case signal.
-       - **📐 Slice Diagram (REQUIRED):** The skeleton's path from entry point to base case signal, with every seam it establishes marked as a layer boundary. Later steps will collapse this diagram to `[… — Step 1]`, so label its pieces clearly.
+       - **⚠️ CRITICAL — 📝 Pseudocode (REQUIRED):** The skeleton's wiring — registration/entry point, the empty seams it opens, the error-handling framework, and the line that emits the base case signal.
+       - **⚠️ CRITICAL — 📐 Slice Diagram (REQUIRED):** The skeleton's path from entry point to base case signal, with every seam it establishes marked as a layer boundary. Later steps will collapse this diagram to `[… — Step 1]`, so label its pieces clearly.
        - **This step should result in a compilable, runnable foundation where the base case signal confirms connectivity — even if no real features are implemented yet**
        - **Files to modify/create**: [List specific files for the plumbing step]
        - **Commit message**: `"NEED_REVIEW: Add core plumbing for [feature/goal]"`
@@ -2870,20 +2891,20 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
        🏛️ Placement: [layer/module] via [seam]; boundary violations: none | Boundary Check #N
        🔁 Reuse: [existing helpers reused/extended, cited] | net-new: [item — why nothing fit]
 
-       📝 Code Snippet
+       📝 Pseudocode   ⚠️ CRITICAL — required; one level of abstraction throughout each function
        [per the rules above]
 
-       📐 Slice Diagram ([callpath | sequence | state | data-shape])
+       📐 Slice Diagram ([callpath | sequence | state | data-shape])   ⚠️ CRITICAL — required
        [per the rules above]
 
-       Options (if any): [Option A / Option B, each with its own code snippet/diagram delta, ranked]
+       Options (if any): [Option A / Option B, each with its own pseudocode/diagram delta, ranked]
        ```
 
        - For each subsequent step:
          - Describe the specific task to be performed.
          - Identify the file(s) that will be modified or created.
-         - Explain the specific code changes or logic — **through the code snippet**, not just prose — and **how they contribute to the overall goal**
-         - **🔁 Reuse note:** State which existing helpers/utilities/types this step calls or extends (cite them); these must match the `← reuse` / `← extend` annotations in the code snippet and the `♻️` / `✏️` markers in the diagram. If this step introduces net-new code, give a one-line reason nothing existing fit.
+         - Explain the specific code changes or logic — **through the pseudocode**, not just prose — and **how they contribute to the overall goal**
+         - **🔁 Reuse note:** State which existing helpers/utilities/types this step calls or extends (cite them); these must match the `# ♻️ reuse` / `# ✏️ extend` annotations in the pseudocode and the `♻️` / `✏️` markers in the diagram. If this step introduces net-new code, give a one-line reason nothing existing fit.
          - **👁️ Observable behavior after this step (REQUIRED):** State the NEW observable behavior the user will be able to run/see/test once this step is complete — the concrete signal that this vertical slice works. Be specific about the trigger and the expected result (e.g., "calling `GET /users/:id` now returns the user's name from the DB", "typing in the search box now filters the visible list", "running `npm test -- auth` now passes the login round-trip test"). The slice diagram should end at this behavior (mark it `👁️`). **If you cannot name an observable behavior for a step — or its diagram doesn't reach one — that step is a horizontal layer: re-slice it so the behavior is observable, or fold it into the slice that consumes it.**
          - **🏛️ Architectural placement (REQUIRED):** State which layer/module the code added in this step lives in and which seam it routes through; the diagram's `═══` boundaries should make this visible. Confirm the step introduces **no new boundary violation** — or, if it deliberately does, reference the approved item from the Abstraction Boundary Check. *A step that produces observable behavior by skipping a seam is not an acceptable slice; re-slice it.*
          - **Build incrementally as vertical slices**: Each step should add ONE clear, observable piece of functionality on top of the working foundation — not an internal layer that can only be seen once a later step is also done.
@@ -2898,7 +2919,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
    - **Complex Interactions**: Areas in the plan where the behavior might be non-obvious and challenging
    - **External Dependencies**: Services or systems mentioned in the plan that you're unsure how to integrate
 
-   **⚠️ CRITICAL: Uncertainties must be directly derived from and reference specific aspects of the implementation plan from Step 3 — ideally pointing at the exact code snippet line or diagram edge in question (e.g. "Step 3 code snippet, `orderRepo.findOne` — unsure whether it returns soft-deleted rows").**
+   **⚠️ CRITICAL: Uncertainties must be directly derived from and reference specific aspects of the implementation plan from Step 3 — ideally pointing at the exact pseudocode line or diagram edge in question (e.g. "Step 3 pseudocode, `orderRepo.findOne` — unsure whether it returns soft-deleted rows").**
 
    **Format this as a clear "Implementation Uncertainty Report" with confidence levels:**
    ```
@@ -2908,7 +2929,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 
    1. [Specific Plan Component/Step]: [What you're unsure about in this planned approach]
       - Confidence Level: [🔴 CRITICAL/🟠 LOW/🟡 MEDIUM/🟢 HIGH]
-      - Plan Reference: [Step N — code snippet line / diagram edge]
+      - Plan Reference: [Step N — pseudocode line / diagram edge]
       - Assumption: [What you're assuming about this planned component]
       - Would benefit from: [What information would help implement this part of the plan]
       - Impact if wrong: [What could break if assumption about this plan component is incorrect]
@@ -2917,7 +2938,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
    **Add confidence levels to each step in the implementation plan:**
    - Go back to the implementation plan from Step 3
    - Add **Confidence level**: [🔴 CRITICAL/🟠 LOW/🟡 MEDIUM/🟢 HIGH] to each implementation step header
-   - Where useful, tag the specific uncertain code snippet line with `// ❓ see Uncertainty #N`
+   - Where useful, tag the specific uncertain pseudocode line with `# ❓ see Uncertainty #N`
    - This creates a direct mapping between plan components and uncertainty levels
 
    **Confidence Level Guide:**
@@ -2930,16 +2951,17 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
    - Present this uncertainty analysis clearly to the user, formatted using Markdown.
 
 **🛑 STOP HERE - PHASE 1 CHECKPOINT**
+- **⚠️ CRITICAL SELF-CHECK before presenting:** go through every step, Step 1 included, and confirm it contains BOTH a 📝 Pseudocode and a 📐 Slice Diagram. If any step is missing either, add it before you present the plan. Then reread every pseudocode function line by line: if any line is at a lower (or higher) level of detail than its neighbors, wrap it in a named step or move it to its own block before presenting.
 - You have now presented:
   1. **The Architecture Fit Assessment, including the Abstraction Boundary Check**
   2. **The Slice Map (one line per step)**
-  3. **The complete implementation plan, where EVERY step has: a confidence level, an observable behavior, an architectural placement, a reuse note, 📝 code snippet, and a 📐 slice diagram — with reused/extended helpers, layer boundaries, and any abstraction breaks marked in both**
+  3. **The complete implementation plan, where EVERY step has: a confidence level, an observable behavior, an architectural placement, a reuse note, 📝 pseudocode, and a 📐 slice diagram — with reused/extended helpers, layer boundaries, and any abstraction breaks marked in both**
   4. **The Implementation Uncertainty Report based on the specific plan components (🔴 CRITICAL → 🟠 LOW → 🟡 MEDIUM → 🟢 HIGH)**
 - DO NOT PROCEED to implementation without explicit approval
 - The user may want to:
   - **Address 🔴 CRITICAL and 🟠 LOW confidence uncertainties first**
   - **Clarify assumptions you've made about specific plan components**
-  - **Correct a step's code snippet or diagram** — wrong function, wrong seam, missing edge case, a helper you should have reused
+  - **Correct a step's pseudocode or diagram** — wrong function, wrong seam, missing edge case, a helper you should have reused
   - **Decide, per boundary in tension, whether to respect / extend / break it before implementation begins**
   - **Confirm that each step's observable behavior represents a real vertical slice (not a hidden layer) routed through real seams**
   - Choose between implementation options
@@ -2955,8 +2977,8 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 
 5. **Implementation**:
    - For each planned implementation step:
-     - **Implement the step according to the approved plan — the approved code snippet is the spec for this step's diff**
-     - **Reuse as planned:** call/extend the existing helpers named in the step's code snippet rather than writing new equivalents. If during implementation you discover the planned helper doesn't actually fit (or find a better existing one), STOP and surface it before hand-rolling a duplicate.
+     - **Implement the step according to the approved plan — the approved pseudocode is the spec for this step's diff**
+     - **Reuse as planned:** call/extend the existing helpers named in the step's pseudocode rather than writing new equivalents. If during implementation you discover the planned helper doesn't actually fit (or find a better existing one), STOP and surface it before hand-rolling a duplicate.
      - **Commit the implementation**:
        ```bash
        git add [implementation_files]
@@ -2968,17 +2990,17 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
      Present to the user:
      - What was implemented (step description)
      - **👁️ For EVERY step: Instruct the user to verify the observable behavior for this step** — tell them exactly what to run and what they should see (e.g., "Please run X and confirm you see Y"). For Step 1 this observable behavior is the base case signal (e.g., "Please run the extension and confirm you see ✅ [ExtensionName] loaded successfully in the console."). The step is not "done" until the user can confirm the observable behavior.
-     - **📝📐 As-built vs. planned:** Re-show this step's slice diagram with the actual names from the code, and list every place the implementation diverged from the approved code snippet (renamed function, extra branch, different helper, moved file) with the reason. If nothing diverged, say "Implemented as planned." Point to the real `file:line` for each code snippet block so the user can jump from plan to code.
+     - **⚠️ CRITICAL — 📝📐 As-built vs. planned:** Re-show this step's slice diagram with the actual names from the code, and list every place the implementation diverged from the approved pseudocode (renamed function, extra branch, different helper, moved file) with the reason. If nothing diverged, say "Implemented as planned." Update each pseudocode block's `# file:start-end` header to the real line range so the user can jump from plan to code.
      - **🏛️ Confirm the architectural placement held:** state which layer/module the code landed in and which seam it routes through, and confirm no unapproved boundary was crossed. If a break was necessary and approved, point to the isolated/marked spot so the user can review it.
      - Any issues encountered and resolutions
      - New uncertainties discovered (if any)
      - **Slice Map status:** the one-line-per-step Slice Map with `✅` done and `⏳` pending
-     - **What comes next:** the next step's code snippet and diagram, updated if this step's as-built changes affect it
+     - **What comes next:** the next step's pseudocode and diagram, updated if this step's as-built changes affect it
 
      **WAIT for explicit user signal** (e.g., "continue", "next", "proceed")
 
      The user may want to:
-     - Review the implementation code against the code snippet
+     - Review the implementation code against the pseudocode
      - Verify the observable behavior themselves
      - Confirm the architectural placement
      - Request modifications
@@ -2993,14 +3015,15 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 **This is a THREE-STAGE process with mandatory stops:**
 
 1. **Phase 0**: Gather context + **build the Architecture Map** → **Ask clarifying questions about desired behavior (including architectural conflicts and uncertain reuse candidates)** → **🛑 STOP** (await answers)
-2. **Phase 1**: Analyze → **Architecture Fit Assessment (with Boundary Check)** → **Slice Map** → Implementation Plan with **📝 code snippet + 📐 diagram inside every step** → **Plan-Based Uncertainties** → **🛑 STOP** (await approval)
-3. **Phase 2**: Implement → Code per Step → **As-built vs. planned code snippet/diagram** → **🛑 STOP after EACH commit** (await "continue")
+2. **Phase 1**: Analyze → **Architecture Fit Assessment (with Boundary Check)** → **Slice Map** → Implementation Plan with **📝 pseudocode + 📐 diagram inside every step** → **Plan-Based Uncertainties** → **🛑 STOP** (await approval)
+3. **Phase 2**: Implement → Code per Step → **As-built vs. planned pseudocode/diagram** → **🛑 STOP after EACH commit** (await "continue")
 
 **You MUST:**
 - Gather context and ask clarifying questions about the desired behavior BEFORE drafting any implementation plan
 - Create the implementation plan only after Phase 0 questions are answered (or the user explicitly says to proceed with your best judgment), then identify uncertainties based on that specific plan
-- **Put a simplified code snippet and a small diagram INSIDE EVERY STEP (including Step 1). Do not produce one big end-to-end diagram for the whole plan. Each step's artifacts show only that slice's delta, collapse earlier steps to one-line references, and mark reused/extended helpers, layer boundaries, async/sync points, and any abstraction breaks.**
-- **If a step's diagram or code snippet is too big to take in at a glance, split the step**
+- **⚠️ CRITICAL: Keep every pseudocode function at ONE level of abstraction throughout — never mix high-level steps with low-level details in the same function; push details into named steps or their own block.**
+- **⚠️ CRITICAL: Put pseudocode and a small diagram INSIDE EVERY STEP (including Step 1). Do not produce one big end-to-end diagram for the whole plan. Each step's artifacts show only that slice's delta, collapse earlier steps to one-line references, and mark reused/extended helpers, layer boundaries, async/sync points, and any abstraction breaks.**
+- **If a step's diagram or pseudocode is too big to take in at a glance, split the step**
 - **Define an OBSERVABLE BEHAVIOR for EVERY step — each step is a vertical slice that makes the system do something new, not a horizontal layer — and make its diagram end at that behavior**
 - **Re-slice any step that has no observable behavior; layered, behavior-less steps are not acceptable**
 - **Produce an Architecture Map in Phase 0 and an Architecture Fit Assessment in Phase 1; route every slice through real seams and through existing code wherever it exists**
@@ -3009,11 +3032,17 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 - **Keep slices thin by narrowing data, not by skipping layers; fake at system boundaries, never at internal seams**
 - Wait for explicit approval before starting each phase
 - Stop after EVERY commit in Phase 2
-- **After EACH step's commit, explicitly ask the user to verify that step's observable behavior before proceeding (for Step 1 this is the base case signal), and report any divergence from the approved code snippet**
+- **After EACH step's commit, explicitly ask the user to verify that step's observable behavior before proceeding (for Step 1 this is the base case signal), and report any divergence from the approved pseudocode**
 - Never skip checkpoints or assume approval
 - Always present implementation uncertainties prominently
 
-**Remember**: Identifying what you don't understand about your specific implementation plan is just as valuable as planning what you do understand. The user EXPECTS and VALUES uncertainty identification based on the concrete plan you've created. **Equally, every step should leave the system in a runnable state with a new, verifiable behavior — thin vertical slices beat broad horizontal layers, and thin must never mean dirty: each slice travels through the codebase's real seams, in the right layer, in the existing dependency direction, and reuses existing helpers rather than reinventing them. When the clean path is genuinely blocked, name the boundary and let the user choose to respect, extend, or break it — never work around it silently. And each step's code snippet and diagram are the map for that step — small enough to read in full, specific enough to review against the diff, and kept accurate through Phase 2.**
+**Remember**: Identifying what you don't understand about your specific implementation plan is just as valuable as planning what you do understand. The user EXPECTS and VALUES uncertainty identification based on the concrete plan you've created. **Equally, every step should leave the system in a runnable state with a new, verifiable behavior — thin vertical slices beat broad horizontal layers, and thin must never mean dirty: each slice travels through the codebase's real seams, in the right layer, in the existing dependency direction, and reuses existing helpers rather than reinventing them. When the clean path is genuinely blocked, name the boundary and let the user choose to respect, extend, or break it — never work around it silently. And each step's pseudocode and diagram are the map for that step — small enough to read in full, specific enough to review against the diff, and kept accurate through Phase 2.**
+
+### **User's Goal:**
+<Users_Goal>
+<Base_Implementation>
+
+Possible Followup Prompts 1) Understand Code 2) PR Review
 
 ### **User's Goal:**
 <Users_Goal>
