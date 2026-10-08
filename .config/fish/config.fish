@@ -27,34 +27,24 @@ end
 # Also if no number given -> just chekout as regular worktree [DONE]
 
 # BENSON: remember to check out locally first ->> so don't create "nested" directories
-function create_worktree #-a name number
-    if test (count $argv) = 2
-        set -l branch_name $argv[1]
-        set -l number $argv[2]
-        cd (git rev-parse --git-dir)/..
-        and git worktree add ../$branch_name HEAD
-        and cd ../$branch_name
-        and mkdir -p .pi
-        and ln -s /home/ir/ir-beli/.pi/learnings .pi/learnings
-        and gh pr checkout $number
-        and git branch start_$branch_name
-        and tmux rename-window (string join "" "[pr_" $branch_name "]")
-    else if test (count $argv) = 1
-        set -l branch_name $argv[1]
-        cd (git rev-parse --git-dir)/..
-        and if git show-ref --verify --quiet refs/heads/$branch_name
-            git worktree add ../$branch_name $branch_name
-        else
-            git worktree add -b $branch_name ../$branch_name
-        end
-        and cd ../$branch_name
-        and mkdir -p .pi
-        and ln -s /home/ir/ir-beli/.pi/learnings .pi/learnings
-        and git branch start_$branch_name
-        and tmux rename-window $branch_name
-    else
-        echo "First argument is branch name. Second(optional) is the pull request number"
-    end
+function create_worktree #-a name
+  if test (count $argv) != 1
+    echo "usage: create_worktree <branch_name>"
+    return 1
+  end
+
+  set -l branch_name $argv[1]
+  set -l repo_root (git rev-parse --show-toplevel); or return
+  if git show-ref --verify --quiet refs/heads/$branch_name
+    git worktree add (path dirname $repo_root)/$branch_name $branch_name
+  else
+    git worktree add -b $branch_name (path dirname $repo_root)/$branch_name
+  end
+  and cd (path dirname $repo_root)/$branch_name
+  and mkdir -p .pi
+  and ln -s /home/ir/ir-beli/.pi/learnings .pi/learnings
+  and git branch start_$branch_name
+  and tmux rename-window $branch_name
 end
 
 
