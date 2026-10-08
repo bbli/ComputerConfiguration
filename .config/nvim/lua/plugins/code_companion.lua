@@ -1399,111 +1399,160 @@ Calibrate effort to the question: answer what was actually asked first, and expa
     - Dependency injection or service registration
     - Router/controller definitions
     - Configuration, wiring, and bootstrap code
-- For each source found, explain its **architectural significance** — focus on files that reveal structural decisions, not incidental implementation detail.
+- For each source found, explain its **architectural significance** — focus on files that reveal structural decisions, not incidental implementation detail. If a source turns out not to be relevant, note it briefly and drop it.
+- **Identify critical code segments** — functions, classes, or blocks that are central to the question, have complex or surprising behavior, sit on a layer boundary, or look like workarounds (TODO/FIXME/HACK).
+- Run this search in a **separate subagent/task** if possible, so it doesn't clutter the main context window. It should return the files and line ranges it deems most relevant.
 - Record the file paths and line numbers you'll later cite, so your claims stay verifiable.
 
-## 3. Step-by-Step Architectural Breakdown
+## 3. Explanation — Pseudocode → Step-by-Step → Diagrams
 
-Structure the explanation using these headers (use only those relevant to scope):
+Identify the **distinct flows** in scope (e.g., read path, write path, auth, async/queue consumer, bootstrap). If multiple interpretations are plausible, present them all and **rank them by relevance**. Then present the explanation in three parts, **in this exact order**: (a) Pseudocode, (b) Step-by-Step Explanation with ⚠ risk callouts, (c) Diagrams.
 
-- **System Overview**
-- **Core Components**
-- **Data Flow (CRITICAL)** — especially the "handoff points" where data crosses layer/component boundaries. This is the core deliverable; give it the most depth, and follow the dedicated diagram requirement below.
-- **Key Design Patterns**
-- **Module Dependencies**
-- **Lifecycle of Services**
+Open with a short **System Overview** (3–6 sentences: what the system does, its major components, and where the boundaries are) before 3a.
 
-For each section:
+### 3a. Pseudocode (present FIRST)
 
-- Include relevant **code snippets with file paths and line numbers** showing the architectural decision. Cite only lines you have actually opened — this is what keeps you from hallucinating.
-- Show how components interact through actual code, and briefly explain **why** it's built this way (rationale/tradeoffs) where you can tell.
-- For each major flow, note the **invariants / assumptions it relies on** (e.g., "assumes `price` is non-null after line 42", "assumes at-least-once queue delivery"). Phrase each so the reader can ask *"does that actually hold?"* — that question is where they'll catch bugs.
-- For each **side-effecting step** in a flow, note what it touches **outside** the flow — shared/global/cached state it mutates, other flows or consumers that observe that state, and resources it consumes. These outward-facing effects are where unintended consequences originate; carry any that look load-, order-, or concurrency-sensitive into Section 4.
-- If multiple interpretations are plausible, present them all and **rank by relevance**.
-- Give a **concrete worked example** per major flow: representative input values traced through end-to-end, ending in what should be observable (return value, DB row, emitted message). The reader can run this to check your explanation cheaply.
-- Use visualizations to illustrate relationships, boundaries, and external dependencies where they help.
-- **Data Flow diagrams (CRITICAL — multiple, focused, never one monolith):** draw a **separate diagram for each distinct flow** — e.g., one for the read path, one for the write path, one for auth, one for the async/queue flow, one per subsystem. Do **not** collapse everything into a single giant diagram; one monolith hides the very boundaries and handoffs you are trying to expose. For each diagram:
-    - Scope it to a single flow and give it a short title saying exactly what it depicts.
-    - Show the **direction of data flow** and the **direction of dependencies**.
-    - Annotate each component's responsibility and mark **handoff points** (where data crosses a layer/component boundary) and integration points (DBs, queues, caches, external services).
-    - Keep it readable on its own — a reader should understand the flow from the diagram + its title without hunting through prose.
-
-## 4. Risk Areas, Weak Abstractions, Unintended Consequences, and Improvements
-
-Turn the analysis above into prioritized, actionable findings. These double as **"look here hardest" pointers** — the places where bugs most likely hide — so ground every one in code the reader can open and check.
-
-Surface only findings that materially affect **correctness, change-safety, or operability**. Silence on a component is a valid signal that it's sound — **do not invent findings to fill the section**.
-
-**Diagnostic lens — foundational principles.** Use the principles below as the probes that *generate* and *frame* the weak-abstraction and coupling findings. Each is a question you run against a component; a "no" points at a specific weakness and tells you what belongs on the **Observation** line (the invariant/assumption at stake). These are heuristics, not laws — they routinely conflict with one another, and a violation is a finding **only when it carries a code-grounded cost to correctness, change-safety, or operability**. A principle violated with no such cost is taste, not a finding — mark it as such or drop it (see the restraint rule below). Do **not** turn this into a compliance sweep that flags every deviation; that contradicts "prefer restraint over churn."
-
-*Foundational principles (component-level seams):*
-
-- **Separation of concerns** — *Does one unit hold responsibilities that change for unrelated reasons* (e.g., business logic, persistence, and transport tangled in one place)? → Type: weak abstraction (wrong-seam) or coupling. Observation: name the two concerns and what breaks in one when the other changes.
-- **Single Responsibility** — *Does this unit have more than one reason to change?* → weak abstraction (wrong-seam). Observation: name the distinct axes of change sharing the unit.
-- **Cohesion & coupling** — *Are the things inside a module actually related (cohesion), and are inter-module dependencies few and thin (coupling)?* Low cohesion = grab-bag module; high coupling = ripple risk. → coupling. Observation: name the ripple — "a change to X forces edits in A, B, C."
-- **Encapsulation / information hiding** — *Do callers depend on a stable contract, or on leaked internals?* → weak abstraction (leaky). Observation: name the exposed internal detail and what breaks downstream if it changes.
-
-*Managing dependencies (direction & level of abstraction):*
-
-- **Dependency inversion** — *Does high-level policy depend directly on a volatile low-level detail (framework, DB, I/O) instead of both depending on an abstraction? Which way do the dependencies actually point?* → coupling / wrong-seam; this is the canonical case for the intended-vs-actual **dependency-direction** diagram. Observation: name the volatile detail the core is bound to and what forces a core change when it moves.
-- **Abstraction balance** — two failure directions, both real. *Under-abstraction*: the same knowledge duplicated across sites that can drift (a DRY violation, or a missing seam) → weak abstraction (missing). *Over-abstraction*: speculative generality — indirection paid for but never exercised → weak abstraction (speculative). Observation: for under, name the duplicated knowledge and where it can diverge; for over, name the flexibility that's paid for and never used.
-
-**Unintended consequences / emergent side effects.** Alongside risks and weak abstractions, explicitly hunt for behavior that *emerges from how the code is wired* — code that looks correct in isolation but produces effects the author likely didn't foresee once it crosses a component boundary, runs concurrently, runs at scale, or interacts with another flow. These hide precisely because each piece is locally correct, so you won't find them by looking for bad abstractions; you find them by asking, at each side-effecting step: *what else reads or mutates this state? what happens if this runs twice, out of order, or a thousand times? what other flow depends on a timing or ordering this one only holds by accident?* Typical shapes: a shared/cached object mutated by one caller and observed by another; a retry that combines with at-least-once delivery to double-process; a default that silently masks missing config; an index that speeds a read and slows a hot write; a permission broadened for one endpoint that quietly exposes another; a flag or config where toggling A also changes B.
-
-Hold these to the **same evidentiary bar** as every other finding: only flag an unintended consequence when you can point to the code path that produces it and name the **trigger condition** under which it manifests (concurrency, retry, scale, a specific input, a specific call order). If you can't name the trigger, it's speculation — gauge it low-confidence or leave it out. Do not invent consequences to fill the section.
-
-Output each finding in the format below. Keep the narrative shape (title → gauges → diagram → code → Observation → Reasoning); the gauges, the Type/Effort tags, and the Principle tag carry the triage metadata, and the **Observation** line must name the invariant or assumption at stake — that sentence is what lets the reader verify or refute you.
-
-**Format:**
-````
-### --------ARCHITECTURE NOTE N: path/to/file.ext:LINE--------
-`Component` <one-line description of the risk / weak abstraction / unintended consequence>.
-
-Severity:   ▰▰▰ High   ·   Confidence: ▰▰▱ Med
-Type: weak abstraction (wrong-seam)   ·   Principle: separation of concerns / dependency inversion   ·   Effort: M (safe-in-place)
-
-Diagram (this note):
+- **CRITICAL: DISTILL THE ARCHITECTURE INTO COMPOSED-METHOD PSEUDOCODE.** Production code buries its structure under local variables, logging, error handling, retries, type conversions, and boilerplate. Present each flow as it *would* read if every non-essential detail were hidden behind a well-named function:
+    * **Single Level of Abstraction (Composed Method) — the primary rule:** Every pseudocode function body must be a short list of calls (ideally 3–7), all at the *same* level of detail, so it reads like a sentence describing *what* happens. Never mix high-level calls with low-level mechanics (parsing, SQL, null checks, loops over raw data) in the same function. If a line is lower-level than its neighbors, wrap it in an intention-revealing call. For example:
 ```
-  intended:   OrderController ──▶ PricingService ──reads──▶ PricingRepo
-  actual:     OrderController ───────────direct read──────▶ PricingRepo   ✗ bypasses service
-```
+       # Real code (mixed levels — do NOT present like this)
+       def handle_signup(form):
+           if "@" not in form["email"] or len(form["password"]) < 8:
+               return error("invalid")
+           if db.query("SELECT 1 FROM users WHERE email=?", form["email"]):
+               return error("taken")
+           hashed = bcrypt.hashpw(form["password"].encode(), bcrypt.gensalt())
+           uid = db.insert("users", email=form["email"], pw=hashed)
+           smtp.send(form["email"], "Welcome!", render("welcome.html", uid=uid))
+           return redirect("/dashboard")
 
-Relevant code:
-```<lang>
-// path/to/file.ext:LINE
-<minimal relevant lines, quoted>
+       # Pseudocode (one level of abstraction — present like this)
+       handle_signup(form):                     # signup.py:14-23
+           validate_signup(form)
+           ensure_email_available(form.email)   # ← KEY (Step 2)  ⚠ 1 check-then-insert race
+           user = create_user(form.email, form.password)
+           send_welcome_email(user)             # side effect: SMTP, outside txn
+           return redirect_to_dashboard()
+```
+    * **One block per flow, stepdown order:** Give each distinct flow its own titled pseudocode block. Start from the entry point (handler, consumer, CLI command, bootstrap), then expand only the helpers relevant to the question, one level at a time, each in composed style. Leave irrelevant helpers collapsed as a named call with `# not relevant: <why>`.
+    * **Mark layer boundaries:** Prefix each function with its layer/component (e.g. `[Controller]`, `[Service]`, `[Repo]`, `[Queue]`) so handoff points are visible in the pseudocode itself.
+    * **Name each module's secret (Parnas):** For each key component, add a one-line comment stating the design decision it hides (e.g. `# secret: how sessions are persisted`).
+    * **Mark side effects and invariants inline:** Annotate side-effecting calls with what they touch outside the flow (`# side effect: writes shared cache`), and annotate assumptions the flow relies on (`# assumes: price non-null here`).
+    * **Mark the key lines:** Tag the lines most relevant to the question with `# ← KEY (Step N)`, and lines that carry a risk callout with `# ⚠ N <short label>`, so 3b and 3c can refer back to them.
+    * **Key data structures:** If a data structure crosses a boundary or is central to the question, sketch it as a minimal type with only the relevant fields, each with a one-line comment.
+    * **Multiple interpretations:** If they involve different code paths, show the shared pseudocode once and mark where the paths diverge (`# Interpretation A: ... / Interpretation B: ...`).
+    * **Traceability and honesty:** Annotate every pseudocode function with the file:line of the real code it summarizes. Explicitly flag any place where the simplification hides semantics that could matter (ordering, side effects, concurrency, error paths, transactions). Do not invent steps that are not in the code.
+
+### 3b. Step-by-Step Explanation with ⚠ Risk Callouts (present SECOND)
+
+- Walk through each flow using Markdown headers per step (e.g. `### Step 1: Request enters the controller`). Give the **Data Flow** — especially the handoff points where data crosses a layer/component boundary — the most depth; this is the core deliverable.
+- For each step:
+    - Refer back to the relevant `# ← KEY (Step N)` lines in 3a, then justify the claim with a **direct snippet from the real source** with file path and line numbers. The pseudocode is a summary; the real code citation is the ground truth, so always provide both. Cite only lines you have actually opened.
+    - Explain **why** it's built this way (rationale/tradeoffs) where you can tell; where you can't, say so.
+    - State the **invariants / assumptions** the step relies on (e.g., "assumes `price` is non-null after line 42", "assumes at-least-once queue delivery"). Phrase each so the reader can ask *"does that actually hold?"* — that question is where they'll catch bugs.
+    - For **side-effecting steps**, note what they touch **outside** the flow — shared/global/cached state mutated, other flows or consumers that observe that state, resources consumed.
+    - **If the step carries a real risk, add a ⚠ callout at the end of the step** (format below). The reader should meet the risk at the moment they understand the code it lives in.
+- Close each flow with a **Worked Example**: representative input values traced through the steps end-to-end, ending in what should be observable (return value, DB row, emitted message). The reader can run this to check your explanation cheaply.
+- Where relevant to scope, add brief steps or sub-sections covering **Key Design Patterns**, **Module Dependencies**, and **Lifecycle of Services** (construction, wiring, startup/shutdown order) — in the same step format, with real-code citations and callouts where warranted.
+- After all flows, add a short **Cross-Flow Effects** sub-section **only if** there are consequences that span two or more flows (e.g. one path mutates a cache another path reads; two consumers race on the same row). Use the same callout format, citing code from each flow involved. Omit the sub-section if there are none.
+- If definitions or context are missing, or you lack confidence in an answer, say so explicitly. Do not infer or invent missing information. **DO NOT HALLUCINATE.**
+
+#### ⚠ Callout format
+
+Number callouts sequentially across the whole response (⚠ 1, ⚠ 2, …) and use the same number on the `# ⚠ N` marker in 3a.
+
+```
+> **⚠ 1 — Duplicate signup under concurrent requests**
+> High severity · Med confidence · unintended consequence (concurrency) · Effort: S (safe-in-place)
+>
+> **Trigger:** two signup requests for the same email arrive within the same few ms.
+> **Effect:** both pass `ensure_email_available` before either inserts → two user rows, two welcome emails.
+> **Invariant at stake:** "email is unique in `users`" — held only by the app-level check, not the DB (`schema.sql:12` has no UNIQUE constraint).
+> **Fix & tradeoff:** add a UNIQUE index and catch the constraint error in `create_user`; costs one migration, makes the invariant hold under any concurrency.
 ```
 
-Observation: what the problem is, grounded in the cited code, and **why it's a risk** — name the invariant/assumption at stake AND the principle it breaks ("bypasses the pricing seam, so pricing rules no longer live in one place — correct only while both read paths agree"; "core depends directly on the concrete repo, inverting the intended dependency"). For an unintended consequence, also name the **trigger condition** that makes it fire and the downstream effect it produces.
-
-Reasoning: the concrete improvement, **with its cost/tradeoff and what it buys** — not "extract a service" but "route the read through `PricingService` so pricing rules live in one place; costs one indirection, prevents divergent pricing logic."
-````
-
-For an unintended-consequence note, the `intended` / `actual` diagram doubles nicely as *intended effect* vs *actual ripple* — show the effect the author expected and the extra path the code really takes.
-
-Gauge scale (fill three cells): `▰▱▱` Low · `▰▰▱` Med · `▰▰▰` High.
-- **Severity** = blast radius × likelihood if it goes wrong.
-- **Confidence** = how sure you are it's real vs. a guess. Low-confidence notes are fine to include, just gauge them honestly.
-- **Type:** correctness risk / operability risk (failure, load, outage) / weak abstraction (leaky | wrong-seam | missing | speculative | name-mismatch) / unintended consequence (second-order | cross-flow | scale-dependent | concurrency | silent-default) / coupling / other.
-- **Principle** (where one is at stake): separation of concerns | single responsibility | cohesion | coupling | encapsulation | dependency inversion | abstraction balance. The **Principle** names the *lens* that surfaced the finding; the **Type** names the *shape* it takes in the code. Include it only when a principle genuinely drives the finding — omit it for pure correctness/operability risks where no design principle is implicated.
+- Include an extra real-code snippet in the callout only if the step's main citation doesn't already show the problem.
+- **Severity** = blast radius × likelihood. **Confidence** = how sure you are it's real vs. a guess (low-confidence callouts are fine if gauged honestly).
+- **Type:** correctness risk / operability risk / weak abstraction (leaky | wrong-seam | missing | speculative | name-mismatch) / unintended consequence (second-order | cross-flow | scale-dependent | concurrency | silent-default) / coupling / other. If a design principle (below) drove the callout, name it after the type, e.g. `weak abstraction (wrong-seam) · dependency inversion`.
 - **Effort:** S / M / L, and whether it's safe-in-place or needs a broader change.
 
-Rules for this section:
-- **Rank findings by Severity, highest first.** Lead with what would hurt most.
-- **Prefer restraint over churn.** If the current design is fine, or the fix costs more than the problem, say so ("acceptable as-is because…"). Flag **over-abstraction** as its own weakness — speculative generality is an abstraction-balance failure, not a virtue. The principles above are diagnostics, not a checklist to satisfy; when two of them conflict (e.g., DRY vs. separation of concerns), say which you're prioritizing and why rather than "fixing" both.
-- **Separate real risks from taste.** A code-grounded correctness risk and a stylistic preference are not the same; mark which is which. A principle violation with a named, code-grounded cost is a real finding; a principle violation you can't tie to a concrete cost is taste — mark it or drop it. The same line applies to unintended consequences: a triggerable, code-grounded side effect is a real finding; a "this could theoretically…" with no named trigger is speculation.
+#### When a step deserves a callout
 
-## 5. Summary / Further Investigation
+Add a callout only when the risk materially affects **correctness, change-safety, or operability**. Most steps should have none — **silence is a valid signal that a step is sound; do not invent risks to fill space.**
 
-- **Main Findings:** concise bullet points of the key architectural insights; use analogies where helpful.
-- **Where to Start Reading:** the handful of files a colleague should read, **in order**, to understand this area themselves — annotate each with *why it matters and what to check there*.
-- **Risk & Improvement Table:** roll up the Section 4 findings into a table — columns: `# | Title | Location | Type | Severity | Confidence | Effort | One-line fix`, sorted by Severity. This is the triage view; don't restate the detail in prose. (Unintended-consequence findings appear here too, distinguished by their Type.)
-- **Unknowns & Assumptions:** what you could not verify in the codebase and any assumptions you relied on — state plainly rather than guessing.
-- **Suggested Log Lines (to follow the flow):** for each, show the simplified code location (function/method), the log message, and the exact execution sequence in which it fires. (A learning aid for tracing the explained flow, not production instrumentation.)
+**Probes to run at each step.** These generate callouts; they are heuristics, not laws. A violation earns a callout **only when it carries a code-grounded cost** — never run them as a compliance sweep.
+
+- **Separation of concerns / Single Responsibility** — does this unit hold responsibilities that change for unrelated reasons? Name the axes of change and what breaks in one when the other moves.
+- **Cohesion & coupling** — are the module's contents related, and are its dependencies few and thin? Name the ripple: "a change to X forces edits in A, B, C."
+- **Encapsulation** — do callers depend on a stable contract or on leaked internals? Name the exposed detail and what breaks downstream if it changes.
+- **Dependency inversion** — does high-level policy depend directly on a volatile detail (framework, DB, I/O)? Which way do dependencies actually point?
+- **Abstraction balance** — *under*: the same knowledge duplicated across sites that can drift; *over*: speculative generality — indirection paid for but never exercised.
+- **Unintended consequences** — at each side-effecting step, ask: *what else reads or mutates this state? what if this runs twice, out of order, or a thousand times? what other flow depends on a timing or ordering this one holds only by accident?* Typical shapes: a shared/cached object mutated by one caller and observed by another; a retry combined with at-least-once delivery that double-processes; a default that silently masks missing config; a permission broadened for one endpoint that quietly exposes another.
+
+**Rules:**
+- **Name the trigger.** A callout must point to the code path and the condition that makes it fire (concurrency, retry, scale, a specific input, a call order). No trigger → speculation; gauge it low-confidence or leave it out.
+- **Prefer restraint over churn.** If the design is fine, or the fix costs more than the problem, say so in the step ("acceptable as-is because…") rather than adding a callout. Over-abstraction is its own weakness, not a virtue. When two principles conflict (e.g., DRY vs. separation of concerns), say which you're prioritizing and why.
+- **Separate real risks from taste.** A principle violation with no named cost is taste — mention it in passing as taste or drop it; don't give it a callout.
+
+### 3c. Diagrams (present THIRD)
+
+- **CRITICAL: Every step in 3b that crosses more than one file or layer MUST have a matching diagram here — and diagrams must be multiple and focused, never one monolith.** Draw a **separate diagram per distinct flow** (and per step where useful). One giant diagram hides the very boundaries and handoffs you are trying to expose.
+- Label each diagram with the flow and step(s) it illustrates (e.g. `#### Write Path — Steps 2–4`). Check whether a diagram-creation skill is available and use it; fall back to hand-drawn ASCII/Markdown diagrams only if none exists.
+- Mark ⚠ callouts on the diagrams at the point where they occur (e.g. `← ⚠ 1`), using the same numbers as 3a/3b.
+- Choose the diagram type that matches what the step explains:
+    * **Component/Layer diagram (preferred default for multi-layer flows)** — draw each layer as its own labeled box, stacked in call/dependency order. Label every arrow with **what actually crosses the boundary** (a DTO, an ID, a callback, a message) — not just "calls." Inside each box, name the real file and the specific function at the point relevant to the question. Mark integration points (DBs, queues, caches, external services) and handoff points. For example:
+```
+       ┌─── Controller layer ───────────────────────────────┐
+       │  order_controller.py                                │
+       │  create_order(req) {                                │
+       │    order = OrderService.place(req.to_dto())         │ ← validation
+       │  }                                                  │   happens here only
+       └───────────────────────┬────────────────────────────┘
+                               │ OrderDTO (price may be null)
+                               ▼
+       ┌─── Service layer ──────────────────────────────────┐
+       │  order_service.py                                   │
+       │  place(dto) {                                       │
+       │    price = pricing.quote(dto)     ← ASSUMES non-null│
+       │    repo.save(Order(dto, price))                     │
+       │    bus.publish(OrderPlaced)       ← ⚠ 2 outside txn │
+       │  }                                                  │
+       └──────────┬──────────────────────────┬──────────────┘
+                  │ Order row                │ OrderPlaced msg
+                  ▼                          ▼
+          ┌── Postgres ──┐          ┌── Kafka: orders ──┐
+          └──────────────┘          └───────────────────┘
+       Result: orders are persisted before the event is published, so a crash
+               between the two leaves a row with no event (⚠ 2).
+```
+      Add a one-line **"Result:"** callout beneath each diagram stating the net behavioral effect the layering produces.
+    * **Sequence diagram** — when timing/ordering across components (not layering) is the point: request/response, retries, async callbacks, race conditions behind a ⚠ callout.
+    * **State diagram** — for lifecycle transitions, status fields, or service lifecycle (init → ready → draining → stopped).
+    * **Flowchart** — for branching logic or routing decisions.
+    * **Data flow diagram** — for how a data structure is transformed or reshaped as it passes through layers.
+    * **Intended vs. actual diagram** — for a ⚠ callout whose point is a bypassed seam, an inverted dependency, or an effect that ripples further than the author expected. Show the intended path and the actual one side by side.
+- Use the **same function names** in the diagrams as in the pseudocode (3a) and the steps (3b), so the reader can map between all three parts. Each diagram should be readable on its own from its title + Result line.
+
+## 4. SUMMARY
+
+Conclude with a `SUMMARY` section, formatted as a Markdown header:
+
+- **Main Findings:** concise bullets of the key architectural insights.
+- **Concept Table:** consolidate the key ideas — columns `Concept | What It Does | Where It Lives | Why It Matters | Analogy` — so the ideas stick. No diagrams here; they belong in 3c.
+- **Risk Table:** roll up every ⚠ callout — columns `⚠ | Title | Step | Location | Type | Severity | Confidence | Effort | One-line fix`, sorted by Severity, highest first. This is the triage view; don't restate the detail. If there were no callouts, say so in one line.
+- **Where to Start Reading:** the handful of files a colleague should read, **in order**, each annotated with *why it matters and what to check there*.
+- **Unknowns & Assumptions:** what you could not verify and any assumptions you relied on — stated plainly.
+
+After the summary:
+
+- **Suggested Log Lines:** for each, show the simplified code location (using the same function names as the pseudocode in 3a), the log message, and **the exact, step-by-step execution sequence in which these log lines fire** for the worked example(s) in 3b. Where useful, include a log line that would make a ⚠ callout's trigger visible. Then ask the user to verify this behavior experimentally. (A learning aid for tracing the flow, not production instrumentation.)
 - **Follow-up Topics / Questions:** specific follow-ups and how each would deepen the user's understanding, especially where ambiguities remained.
-- Finally, **ask the user if they'd like to add this understanding to `LEARNINGS.md`**.
+- **Finally, ask the user if they'd like to add this understanding to `LEARNINGS.md`.**
+
+**NOTE: Always prioritize and thoroughly address any bullets marked CRITICAL — these are essential requirements for a complete response.**
 
 ### User's Question
+**My main goal is** <main_goal>
 <architecture_question>
 
 ]]
@@ -2679,7 +2728,7 @@ Make sure the "Understand Code" Prompt is called before this(to get the Context)
 
 **⚠️ IMPORTANT: This is an INTERACTIVE, THREE-PHASE process. You MUST wait for user responses at designated checkpoints. DO NOT proceed past any STOP checkpoint without explicit user approval.**
 
-**🎯 KEY PRINCIPLE: Openly communicate uncertainty. It is EXPECTED and VALUABLE for you to identify areas where you lack confidence or are making assumptions. The user can then provide clarification before implementation begins.**
+**🎯 KEY PRINCIPLE: Openly communicate uncertainty. It is EXPECTED and VALUABLE for you to identify areas where you lack confidence or are making assumptions. The user can then provide clarification before implementation begins. Raise each question or assumption inside the step/slice it concerns, right next to the pseudocode it's about — not in a combined list at the end.**
 
 **🍰 KEY PRINCIPLE — VERTICAL SLICES, NOT LAYERS: Every implementation step must add a thin, end-to-end "vertical slice" of functionality, NOT a horizontal "layer." Each step must produce a NEW OBSERVABLE BEHAVIOR — something the user can run, see, or test that was not possible before that step. Avoid plans that build an entire layer at a time (all data models, then all services, then all UI) before anything is observable. Prefer plans where each step makes the system *do* something new, even if narrow. If a step produces no observable behavior, it is almost certainly a horizontal layer and should be merged into a vertical slice or re-sequenced.**
 
@@ -2693,7 +2742,7 @@ You are a senior software engineer tasked with analyzing, planning, and implemen
 
 **This process has THREE distinct stages with MANDATORY stops:**
 - **PHASE 0:** Context Gathering + Architecture Map + Clarifying Questions about desired behavior (STOP - await answers)
-- **PHASE 1:** Analysis and Implementation Planning with Architecture Fit + per-step Pseudocode & Diagrams + Uncertainty Identification (STOP - await approval)
+- **PHASE 1:** Analysis and Implementation Planning with Architecture Fit + per-step Pseudocode, Diagrams & Questions (STOP - await approval)
 - **PHASE 2:** Implementation (only after explicit approval of the plan)
 
 **Process Flow:**
@@ -2702,8 +2751,8 @@ PHASE 0: Context Gathering + Architecture Map → Clarifying Questions on desire
                                                                                 ↓
 PHASE 1: Analysis → Architecture Fit Assessment → Slice Map (one line per step)
                   → Implementation Plan (each step = 1 vertical slice w/ observable behavior + placement
-                                         + 📝 pseudocode + 📐 slice diagram)
-                  → Plan-Based Uncertainties → 🛑 STOP (await approval)
+                                         + 📝 pseudocode + 📐 slice diagram + ❓ questions & assumptions)
+                  → 🛑 STOP (await approval)
                                                                                 ↓
 PHASE 2: Implementation → Code per Step → Verify observable behavior + placement
                         → As-built pseudocode/diagram diff → 🛑 STOP after each commit
@@ -2738,7 +2787,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
    - **🛑 STOP HERE — PHASE 0 CHECKPOINT**
      - Present the context-gathering summary (files found and their relevance), the Architecture Map, and the clarifying questions, each tied to the specific finding (or absence of one) that prompted it.
      - DO NOT proceed to Phase 1 (the Detailed Implementation Plan) until the user has answered.
-     - If the user says something like "use your best judgment" for a given question, note the assumption you're making explicitly and carry it into the Implementation Uncertainty Report in Phase 1.
+     - If the user says something like "use your best judgment" for a given question, note the assumption you're making explicitly and carry it into the ❓ Questions & Assumptions block of whichever Phase 1 step(s) it affects.
 
 ---
 
@@ -2877,6 +2926,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
        - **🏛️ ARCHITECTURAL PLACEMENT (REQUIRED):** State which layer/module the plumbing lives in and which seam(s) it establishes. Confirm the skeleton routes through the intended seams rather than pre-baking a shortcut.
        - **⚠️ CRITICAL — 📝 Pseudocode (REQUIRED):** The skeleton's wiring — registration/entry point, the empty seams it opens, the error-handling framework, and the line that emits the base case signal.
        - **⚠️ CRITICAL — 📐 Slice Diagram (REQUIRED):** The skeleton's path from entry point to base case signal, with every seam it establishes marked as a layer boundary. Later steps will collapse this diagram to `[… — Step 1]`, so label its pieces clearly.
+       - **❓ Questions & Assumptions (REQUIRED):** This step's own block, per section 4 below.
        - **This step should result in a compilable, runnable foundation where the base case signal confirms connectivity — even if no real features are implemented yet**
        - **Files to modify/create**: [List specific files for the plumbing step]
        - **Commit message**: `"NEED_REVIEW: Add core plumbing for [feature/goal]"`
@@ -2898,6 +2948,10 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
        [per the rules above]
 
        Options (if any): [Option A / Option B, each with its own pseudocode/diagram delta, ranked]
+
+       ❓ Questions & Assumptions — Step N   (per section 4 below; "❓ None — [why]" if there are none)
+       SN-Q1 [🔴/🟠/🟡/🟢] [what you're unsure about]   ← [pseudocode line / diagram edge]
+             Assumption: [...]  ·  Question for you: [...]  ·  Impact if wrong: [...]
        ```
 
        - For each subsequent step:
@@ -2907,39 +2961,37 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
          - **🔁 Reuse note:** State which existing helpers/utilities/types this step calls or extends (cite them); these must match the `# ♻️ reuse` / `# ✏️ extend` annotations in the pseudocode and the `♻️` / `✏️` markers in the diagram. If this step introduces net-new code, give a one-line reason nothing existing fit.
          - **👁️ Observable behavior after this step (REQUIRED):** State the NEW observable behavior the user will be able to run/see/test once this step is complete — the concrete signal that this vertical slice works. Be specific about the trigger and the expected result (e.g., "calling `GET /users/:id` now returns the user's name from the DB", "typing in the search box now filters the visible list", "running `npm test -- auth` now passes the login round-trip test"). The slice diagram should end at this behavior (mark it `👁️`). **If you cannot name an observable behavior for a step — or its diagram doesn't reach one — that step is a horizontal layer: re-slice it so the behavior is observable, or fold it into the slice that consumes it.**
          - **🏛️ Architectural placement (REQUIRED):** State which layer/module the code added in this step lives in and which seam it routes through; the diagram's `═══` boundaries should make this visible. Confirm the step introduces **no new boundary violation** — or, if it deliberately does, reference the approved item from the Abstraction Boundary Check. *A step that produces observable behavior by skipping a seam is not an acceptable slice; re-slice it.*
+         - **❓ Questions & Assumptions (REQUIRED):** End the step with its own block, per section 4 below — only about this slice, each item tied to a pseudocode line or diagram edge.
          - **Build incrementally as vertical slices**: Each step should add ONE clear, observable piece of functionality on top of the working foundation — not an internal layer that can only be seen once a later step is also done.
          - **If there are multiple options for implementation, present them all to the user. Rank the options in terms of relevance.**
      - **Commit Strategy:** Reiterate that you will commit changes (`git add [files_you_added_or_changed] && git commit -m "NEED_REVIEW: [descriptive message]"`) after completing logical units of work. **The FIRST commit will always be the core plumbing setup.**
 
-4. **🔍 Implementation Uncertainties: Difficulties and Assumption Identification** (CRITICAL STEP):
-   **Based on the implementation plan created in Step 3**, explicitly identify:
-   - **Low Confidence Areas**: Components or interactions from the plan that you don't fully understand
-   - **Assumptions Made**: Any guesses about how planned components will work or should interact, including any assumptions carried over from unanswered Phase 0 questions
-   - **Missing Knowledge**: Information about the planned approach that would help create better implementation
-   - **Complex Interactions**: Areas in the plan where the behavior might be non-obvious and challenging
-   - **External Dependencies**: Services or systems mentioned in the plan that you're unsure how to integrate
+4. **❓ Per-Step Questions & Assumptions** (CRITICAL — lives INSIDE each step, never compiled at the end):
+   Every step, Step 1 included, ends with its own **❓ Questions & Assumptions** block covering only that slice. There is **no combined uncertainty report** at the end of the plan — the reader should meet each question right next to the pseudocode and diagram it's about.
 
-   **⚠️ CRITICAL: Uncertainties must be directly derived from and reference specific aspects of the implementation plan from Step 3 — ideally pointing at the exact pseudocode line or diagram edge in question (e.g. "Step 3 pseudocode, `orderRepo.findOne` — unsure whether it returns soft-deleted rows").**
+   **What to look for in each step:**
+   - **Low Confidence Areas**: parts of this slice you don't fully understand
+   - **Assumptions Made**: guesses about how this slice's pieces work or interact — including any "use your best judgment" answers from Phase 0 that affect this slice
+   - **Missing Knowledge**: information that would make this slice's implementation better
+   - **Complex Interactions**: places in this slice where behavior might be non-obvious
+   - **External Dependencies**: services or systems this slice touches that you're unsure how to integrate
 
-   **Format this as a clear "Implementation Uncertainty Report" with confidence levels:**
+   **⚠️ CRITICAL: Each item must point at something specific in THAT step — the exact pseudocode line or diagram edge it's about** (e.g. "`orderRepo.findOne(id)` — unsure whether it returns soft-deleted rows"). Tag that pseudocode line with `# ❓ S3-Q1` so the question and the line point at each other.
+
+   **Format (inside each step):**
    ```
-   ⚠️ IMPLEMENTATION UNCERTAINTIES (Based on the Implementation Plan):
-
-   Summary: X 🔴 CRITICAL | X 🟠 LOW | X 🟡 MEDIUM | X 🟢 HIGH uncertainties identified
-
-   1. [Specific Plan Component/Step]: [What you're unsure about in this planned approach]
-      - Confidence Level: [🔴 CRITICAL/🟠 LOW/🟡 MEDIUM/🟢 HIGH]
-      - Plan Reference: [Step N — pseudocode line / diagram edge]
-      - Assumption: [What you're assuming about this planned component]
-      - Would benefit from: [What information would help implement this part of the plan]
-      - Impact if wrong: [What could break if assumption about this plan component is incorrect]
+   ❓ Questions & Assumptions — Step N
+   SN-Q1 [🔴/🟠/🟡/🟢] [what you're unsure about]        ← [pseudocode line / diagram edge]
+         Assumption: [what you'll do if the user doesn't answer]
+         Question for you: [the specific thing you need confirmed or decided]
+         Impact if wrong: [what breaks in this slice — or later slices — if the assumption is wrong]
+   SN-Q2 ...
    ```
-
-   **Add confidence levels to each step in the implementation plan:**
-   - Go back to the implementation plan from Step 3
-   - Add **Confidence level**: [🔴 CRITICAL/🟠 LOW/🟡 MEDIUM/🟢 HIGH] to each implementation step header
-   - Where useful, tag the specific uncertain pseudocode line with `# ❓ see Uncertainty #N`
-   - This creates a direct mapping between plan components and uncertainty levels
+   - **Number items per step** (`S2-Q1`, `S2-Q2`, …) so the user can answer them by ID.
+   - **Order items within the step** by confidence: 🔴 CRITICAL first, then 🟠 LOW, 🟡 MEDIUM, 🟢 HIGH.
+   - **If a question affects several steps**, put it in the **earliest** step it affects, and in later steps add a one-line pointer (`See S2-Q1 — also affects [what] here`) instead of repeating it.
+   - **If a step has no open questions**, write `❓ None — [one line on why you're confident]` so it's clear the check was done.
+   - **The step's header confidence** (`Confidence: 🟠`) is the lowest confidence among that step's items.
 
    **Confidence Level Guide:**
    - **🔴 CRITICAL**: No understanding of this planned approach, pure guessing. Implementation will likely be wrong without clarification.
@@ -2947,27 +2999,23 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
    - **🟡 MEDIUM**: Some assumptions about planned approach but based on common patterns. Moderate risk.
    - **🟢 HIGH**: Minor uncertainty about this plan component only. Low risk but clarification would still help.
 
-   - **Order uncertainties by confidence level** (🔴 CRITICAL first, then 🟠 LOW, 🟡 MEDIUM, 🟢 HIGH)
-   - Present this uncertainty analysis clearly to the user, formatted using Markdown.
-
 **🛑 STOP HERE - PHASE 1 CHECKPOINT**
-- **⚠️ CRITICAL SELF-CHECK before presenting:** go through every step, Step 1 included, and confirm it contains BOTH a 📝 Pseudocode and a 📐 Slice Diagram. If any step is missing either, add it before you present the plan. Then reread every pseudocode function line by line: if any line is at a lower (or higher) level of detail than its neighbors, wrap it in a named step or move it to its own block before presenting.
+- **⚠️ CRITICAL SELF-CHECK before presenting:** go through every step, Step 1 included, and confirm it contains BOTH a 📝 Pseudocode and a 📐 Slice Diagram. If any step is missing either, add it before you present the plan. Also confirm every step ends with its own ❓ Questions & Assumptions block (or `❓ None — [why]`), and that nothing is collected into a combined list at the end. Then reread every pseudocode function line by line: if any line is at a lower (or higher) level of detail than its neighbors, wrap it in a named step or move it to its own block before presenting.
 - You have now presented:
   1. **The Architecture Fit Assessment, including the Abstraction Boundary Check**
   2. **The Slice Map (one line per step)**
-  3. **The complete implementation plan, where EVERY step has: a confidence level, an observable behavior, an architectural placement, a reuse note, 📝 pseudocode, and a 📐 slice diagram — with reused/extended helpers, layer boundaries, and any abstraction breaks marked in both**
-  4. **The Implementation Uncertainty Report based on the specific plan components (🔴 CRITICAL → 🟠 LOW → 🟡 MEDIUM → 🟢 HIGH)**
+  3. **The complete implementation plan, where EVERY step has: a confidence level, an observable behavior, an architectural placement, a reuse note, 📝 pseudocode, a 📐 slice diagram, and its own ❓ Questions & Assumptions block — with reused/extended helpers, layer boundaries, and any abstraction breaks marked in both**
 - DO NOT PROCEED to implementation without explicit approval
 - The user may want to:
-  - **Address 🔴 CRITICAL and 🟠 LOW confidence uncertainties first**
-  - **Clarify assumptions you've made about specific plan components**
+  - **Answer each step's questions by ID (e.g. "S2-Q1: yes, include soft-deleted rows"), starting with 🔴 CRITICAL and 🟠 LOW items**
+  - **Correct assumptions listed in a specific step**
   - **Correct a step's pseudocode or diagram** — wrong function, wrong seam, missing edge case, a helper you should have reused
   - **Decide, per boundary in tension, whether to respect / extend / break it before implementation begins**
   - **Confirm that each step's observable behavior represents a real vertical slice (not a hidden layer) routed through real seams**
   - Choose between implementation options
   - Adjust the implementation approach
   - Modify the step ordering, or split a step whose diagram is too big
-- WAIT for the user to address plan-based uncertainties, resolve boundary decisions, AND provide explicit approval like "looks good", "proceed to implementation", or "go ahead to Phase 2"
+- WAIT for the user to answer the per-step questions, resolve boundary decisions, AND provide explicit approval like "looks good", "proceed to implementation", or "go ahead to Phase 2"
 
 ---
 
@@ -2993,7 +3041,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
      - **⚠️ CRITICAL — 📝📐 As-built vs. planned:** Re-show this step's slice diagram with the actual names from the code, and list every place the implementation diverged from the approved pseudocode (renamed function, extra branch, different helper, moved file) with the reason. If nothing diverged, say "Implemented as planned." Update each pseudocode block's `# file:start-end` header to the real line range so the user can jump from plan to code.
      - **🏛️ Confirm the architectural placement held:** state which layer/module the code landed in and which seam it routes through, and confirm no unapproved boundary was crossed. If a break was necessary and approved, point to the isolated/marked spot so the user can review it.
      - Any issues encountered and resolutions
-     - New uncertainties discovered (if any)
+     - New questions or assumptions discovered (if any) — added to the ❓ block of the step they affect (this step or an upcoming one), not to a separate list
      - **Slice Map status:** the one-line-per-step Slice Map with `✅` done and `⏳` pending
      - **What comes next:** the next step's pseudocode and diagram, updated if this step's as-built changes affect it
 
@@ -3004,7 +3052,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
      - Verify the observable behavior themselves
      - Confirm the architectural placement
      - Request modifications
-     - Address new uncertainties
+     - Answer new questions by ID
 
      **DO NOT proceed without explicit approval**
 
@@ -3015,12 +3063,12 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 **This is a THREE-STAGE process with mandatory stops:**
 
 1. **Phase 0**: Gather context + **build the Architecture Map** → **Ask clarifying questions about desired behavior (including architectural conflicts and uncertain reuse candidates)** → **🛑 STOP** (await answers)
-2. **Phase 1**: Analyze → **Architecture Fit Assessment (with Boundary Check)** → **Slice Map** → Implementation Plan with **📝 pseudocode + 📐 diagram inside every step** → **Plan-Based Uncertainties** → **🛑 STOP** (await approval)
+2. **Phase 1**: Analyze → **Architecture Fit Assessment (with Boundary Check)** → **Slice Map** → Implementation Plan with **📝 pseudocode + 📐 diagram + ❓ questions & assumptions inside every step** → **🛑 STOP** (await approval)
 3. **Phase 2**: Implement → Code per Step → **As-built vs. planned pseudocode/diagram** → **🛑 STOP after EACH commit** (await "continue")
 
 **You MUST:**
 - Gather context and ask clarifying questions about the desired behavior BEFORE drafting any implementation plan
-- Create the implementation plan only after Phase 0 questions are answered (or the user explicitly says to proceed with your best judgment), then identify uncertainties based on that specific plan
+- Create the implementation plan only after Phase 0 questions are answered (or the user explicitly says to proceed with your best judgment), with each step's questions and assumptions written inside that step
 - **⚠️ CRITICAL: Keep every pseudocode function at ONE level of abstraction throughout — never mix high-level steps with low-level details in the same function; push details into named steps or their own block.**
 - **⚠️ CRITICAL: Put pseudocode and a small diagram INSIDE EVERY STEP (including Step 1). Do not produce one big end-to-end diagram for the whole plan. Each step's artifacts show only that slice's delta, collapse earlier steps to one-line references, and mark reused/extended helpers, layer boundaries, async/sync points, and any abstraction breaks.**
 - **If a step's diagram or pseudocode is too big to take in at a glance, split the step**
@@ -3034,15 +3082,9 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 - Stop after EVERY commit in Phase 2
 - **After EACH step's commit, explicitly ask the user to verify that step's observable behavior before proceeding (for Step 1 this is the base case signal), and report any divergence from the approved pseudocode**
 - Never skip checkpoints or assume approval
-- Always present implementation uncertainties prominently
+- **⚠️ CRITICAL: Put questions and assumptions inside the step they belong to, tied to a specific pseudocode line or diagram edge — never compile them into one list at the end**
 
 **Remember**: Identifying what you don't understand about your specific implementation plan is just as valuable as planning what you do understand. The user EXPECTS and VALUES uncertainty identification based on the concrete plan you've created. **Equally, every step should leave the system in a runnable state with a new, verifiable behavior — thin vertical slices beat broad horizontal layers, and thin must never mean dirty: each slice travels through the codebase's real seams, in the right layer, in the existing dependency direction, and reuses existing helpers rather than reinventing them. When the clean path is genuinely blocked, name the boundary and let the user choose to respect, extend, or break it — never work around it silently. And each step's pseudocode and diagram are the map for that step — small enough to read in full, specific enough to review against the diff, and kept accurate through Phase 2.**
-
-### **User's Goal:**
-<Users_Goal>
-<Base_Implementation>
-
-Possible Followup Prompts 1) Understand Code 2) PR Review
 
 ### **User's Goal:**
 <Users_Goal>
