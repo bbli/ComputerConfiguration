@@ -2734,6 +2734,8 @@ Make sure the "Understand Code" Prompt is called before this(to get the Context)
 
 **📐 KEY PRINCIPLE — EXPLAIN EACH SLICE WHERE IT LIVES: Every step carries its own pseudocode and its own small diagram, placed directly inside that step. The pseudocode for each function stays at ONE level of abstraction from its first line to its last. There is NO single big end-to-end diagram for the whole plan. The reader should be able to read one step in isolation and understand exactly what code path it adds, which seams it crosses, and what it reuses — without cross-referencing a giant diagram elsewhere. Each step's pseudocode and diagram show only the *delta* that step introduces, with earlier steps' work collapsed to a one-line reference. If a step's diagram or pseudocode gets too big to take in at a glance, that is a signal the slice is too fat — split it.**
 
+**🔬 KEY PRINCIPLE — ⚠️ CRITICAL: DECOMPOSE THE PROBLEM BY CALLING THE RESEARCH TOOL. Do not work out how to implement a slice from your own assumptions. Break every slice into concrete implementation questions and call the research tool on each one — the research tool's answers are how the problem gets decomposed and how the pseudocode gets written. Skipping the research tool, or answering an implementation question from memory instead of calling it, is a process failure.**
+
 **🏛️ KEY PRINCIPLE — RESPECT THE ARCHITECTURE, OR NAME THE BOUNDARY YOU MUST BREAK: Every vertical slice must travel through the codebase's existing seams, not around them. A slice may be narrow, but each piece of code must live in the layer/module that *owns* that responsibility, preserve the existing dependency direction, and mirror how similar features are already built. "Thin" must never become "dirty": narrowing a slice means narrowing the *data* it handles (one field, one record type, one endpoint) — NOT short-circuiting the *path* (UI → service → repository still holds). When you must fake something to keep a slice small, fake it at the *system boundary* (stub the external service), never by bypassing an internal seam (don't let the UI read the DB directly just because it's fewer lines). If — and only if — delivering the observable behavior genuinely *requires* bending or breaking an existing abstraction, that is not something to work around silently. STOP and surface it to the user as an explicit decision with options and tradeoffs. An "observable but architecturally corrosive" step is a failure mode, not a success.**
 
 **🔁 KEY PRINCIPLE — REUSE BEFORE YOU BUILD (DON'T REINVENT THE WHEEL): Before proposing any new function, utility, type, or pattern, check whether the codebase already has something that does the job — or does something close enough to extend. Duplicating logic that already exists (validation, parsing, formatting, retries, auth, pagination, error mapping, date/money handling, etc.) is a defect, not a shortcut. Prefer REUSE, then EXTEND, and write NET-NEW code only when nothing suitable exists.**
@@ -2798,16 +2800,16 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 
    **Why this exists:** Pseudocode that is wrong — invented helper names, wrong signatures, wrong call order, guessed line ranges — is **worse than no pseudocode at all**, because the user reviews and approves it and Phase 2 then follows a bad spec. So the pseudocode for each slice must be built from research answers, not from guesses.
 
-   **Do this for each slice:**
+   **⚠️ CRITICAL — Use the research tool to decompose every slice. Do this for each slice, in order, with no steps skipped:**
    1. **Determine the slices.** After the Phase 0 answers are in, decide the vertical slices (these become the Slice Map).
-   2. **Decompose each slice into implementation questions.** For each slice, write down the specific questions you'd need answered to write its pseudocode correctly. Make each question narrow and concrete, for example:
+   2. **⚠️ CRITICAL — Decompose each slice into implementation questions.** For each slice, write down the specific questions you'd need answered to write its pseudocode correctly. Make each question narrow and concrete, for example:
       - "What does `orderRepo.findOne` return when no row matches, and what's its exact signature and line range?"
       - "How does the existing `GET /orders` route register itself and map errors to HTTP responses?"
       - "Who calls `OrderService.list()` today, and what do they expect back?"
       - "Which test file and fixtures cover the orders routes, and how is a request triggered in tests?"
       Cover every function the slice will call or change, callers of anything being changed, the data/types flowing through, how the reference pattern does the same thing, and how the slice's observable behavior can be triggered.
-   3. **Call the research tool on each question** (e.g. your research/Explore subagent or equivalent) — one call per question, in parallel where questions are independent. Do not write a slice's pseudocode until its questions have been answered.
-   4. **Write the slice's pseudocode from the tool's answers.** Use the names, signatures, call order, and `# file:start-end` ranges the research returned. If an answer raises a new question, research that too before writing.
+   3. **⚠️ CRITICAL — Call the research tool on EVERY question** (e.g. your research/Explore subagent or equivalent) — one call per question, in parallel where questions are independent. Do not write a slice's pseudocode until its questions have been answered by the tool. Never answer an implementation question yourself from memory or assumption instead of calling the tool — even when you think you already know the answer.
+   4. **⚠️ CRITICAL — Write the slice's pseudocode only from the tool's answers.** Use the names, signatures, call order, and `# file:start-end` ranges the research returned. If an answer raises a new question, research that too before writing.
 
    **Grounding rule for the pseudocode (applies to every step):**
    - Every existing function, variable, or type named in the pseudocode must come from a research answer, with its real `# file:start-end`.
@@ -2962,7 +2964,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
        🏛️ Placement: [layer/module] via [seam]; boundary violations: none | Boundary Check #N
        🔁 Reuse: [existing helpers reused/extended, cited] | net-new: [item — why nothing fit]
 
-       📝 Pseudocode   ⚠️ CRITICAL — required; one level of abstraction throughout each function
+       📝 Pseudocode   ⚠️ CRITICAL — required; built from research tool answers; one level of abstraction throughout each function
        [per the rules above]
 
        📐 Slice Diagram ([callpath | sequence | state | data-shape])   ⚠️ CRITICAL — required
