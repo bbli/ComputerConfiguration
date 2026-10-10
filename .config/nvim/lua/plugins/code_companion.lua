@@ -317,13 +317,59 @@ You are a senior software engineer debugging issues based on the User's Problem.
 
 > **CRITICAL:** Begin building the Debugging Scratchpad (Phase 3) from your first response and update it throughout this phase.
 
-### 1.1 Codebase Search and Analysis
+### 1.1 Codebase Search and Analysis (Parallel Research Subagents)
 
-Search for files, functions, references, or tests relevant to the User's Problem:
+#### 1.1a Research Decomposition
 
-- **Show Actual Code:** Include actual code snippets, not descriptions, to verify relevance.
+Before searching the codebase yourself, decompose the User's Problem into **2–5 independent research areas** (e.g., by component, service, layer, or subsystem — such as API entry point, business logic, storage/IO path, and relevant tests).
+
+- Record the areas in the scratchpad before launching subagents.
+- Areas should be independent enough to investigate without coordination; overlap at boundaries is acceptable.
+
+#### 1.1b Launch Research Subagents
+
+> **CRITICAL:** Launch one research subagent per area, all in parallel, in a single message. Subagents are READ-ONLY: no code edits, no state-changing commands.
+
+**Context packet — each subagent receives:**
+- The User's Problem description
+- The log file path(s) and log format (if known)
+- Its assigned research area, plus a one-line list of the other areas (for awareness only — it investigates its own area)
+- Any keywords, identifiers, or components already provided by the user
+
+**Subagent instructions:**
+1. Search for files, functions, references, and tests relevant to the User's Problem within the assigned area.
+2. Extract every log statement emitted by the relevant code, as the literal format string.
+3. Trace upstream callers and downstream callees so the area can be stitched into the end-to-end callpath.
+4. Return results in the schema below — verbatim code and log strings only, no paraphrase.
+
+**Required return schema:**
+
+```
+AREA: <assigned area>
+RELEVANT CODE:
+  - [src file:line] <verbatim code snippet>
+    → Relevance: <one line on how this relates to the User's Problem>
+LOG STATEMENTS:
+  - [src file:line] "<literal log format string>" (level: INFO/WARN/ERROR/...)
+CALLPATH:
+  - Upstream callers:   [file:line] <function>
+  - Downstream callees: [file:line] <function>
+  - Entry from / exit to other areas: <description>
+TESTS:
+  - [test file:line] <test name> — <what it exercises>
+OPEN QUESTIONS:
+  - [?] <anything unresolved or assumed>
+```
+
+#### 1.1c Merge and Analyze
+
+After all subagents return, merge their results into the scratchpad and present the analysis:
+
+- **Show Actual Code:** Include actual code snippets returned by subagents, not descriptions, to verify relevance.
 - **Relevance Analysis:** Explain how code relates to the bug based on actual implementation.
-- **Callpath Integration:** Identify how code fits into execution paths from tests or main functions.
+- **Callpath Integration:** Stitch each area's callers/callees together to identify how the code fits into execution paths from tests or main functions.
+- **Verification:** Spot-check cited `file:line` references before relying on them. If a subagent returned summaries instead of verbatim code, re-search that area yourself.
+- **Gap Filling:** If the merged callpath has gaps between areas, run targeted follow-up searches yourself and mark any remaining unknown connections with `[?]`.
 
 ### 1.2 Strategic Log Analysis Keywords
 
@@ -333,7 +379,7 @@ Develop a comprehensive strategy for searching log files, covering:
 - **Service/Component/Class names**
 - Timing markers
 
-> **CRITICAL:** Keyword suggestions must come from log lines found in the codebase. Cite your sources for each keyword.
+> **CRITICAL:** Keyword suggestions must come from log lines found in the codebase. Build keywords ONLY from the `LOG STATEMENTS` returned by the Phase 1.1 subagents (plus any you found in gap-filling searches). Cite the source `file:line` for each keyword.
 
 ### 1.3 Apply Log Analysis Plan
 
@@ -540,11 +586,70 @@ Re-evaluate step validation
 3. **Root Cause Hypothesis Formation**
    - Based on all validated steps + first failure point.
    - **CRITICAL: Must reference specific scratchpad evidence.**
-   - Present 2–3 most likely root causes with supporting evidence.
+   - Formulate 2–3 hypotheses (max 3). For each, record in the scratchpad:
+     - H[N] statement (one sentence, specific mechanism — not "something in the DB layer")
+     - Scratchpad evidence that motivated it (section + log line numbers)
 
-4. **Verification Strategy**
-   - Design targeted tests or additional log analysis to confirm each hypothesis.
-   - Collaborative decision with user on which hypothesis to test first.
+4. **Parallel Hypothesis Investigation (Subagents)**
+
+   > **CRITICAL:** Launch one research subagent per hypothesis, all in parallel, in a single message. Subagents are READ-ONLY: no code edits, no state-changing commands, no test runs that mutate shared environments.
+
+   **4a. Context packet — each subagent receives:**
+   - The User's Problem and log file path(s)
+   - The failure step (Step N) and its failure evidence (verbatim log lines)
+   - The validated steps before it (step names + evidence line numbers)
+   - Relevant code locations from Phase 1 (`file:line`)
+   - Its assigned hypothesis H[N], plus a one-line list of the competing hypotheses (for awareness only — it investigates H[N] alone)
+
+   **4b. Subagent instructions:**
+   1. Before searching, write down predictions:
+      - "If H[N] is true, we should see: …" (specific log patterns, timing, values)
+      - "If H[N] is true, we should NOT see: …"
+   2. Search for disconfirming evidence FIRST, then supporting evidence.
+   3. Identify the discriminator: the one log line, code path, or data point that would separate H[N] from the competing hypotheses.
+   4. Return results in the schema below — verbatim evidence only, no paraphrase.
+
+   **4c. Required return schema:**
+
+   ```
+   HYPOTHESIS: H[N] — <statement>
+   VERDICT: SUPPORTED | REFUTED | INCONCLUSIVE
+   PREDICTIONS:
+     - Expected present: <pattern> → FOUND / NOT FOUND
+     - Expected absent:  <pattern> → ABSENT / PRESENT
+   SUPPORTING EVIDENCE:
+     - [log file:line, timestamp] "<verbatim log line>"
+     - [src file:line] <verbatim code snippet>
+   DISCONFIRMING EVIDENCE:
+     - (same format, or "None found — searched: <queries used>")
+   DISCRIMINATOR: <evidence that would separate H[N] from the others>
+   UNVERIFIED ASSUMPTIONS: <list, marked [?]>
+   ```
+
+   **4d. Main agent adjudication:**
+   - Present a comparison table to the user:
+
+     | Hypothesis | Verdict | Strongest support | Strongest contradiction | Discriminator |
+     |---|---|---|---|---|
+
+   - Do NOT accept a subagent's verdict on faith: re-check each cited log line and quote it directly in the table.
+   - If a subagent returns summaries instead of verbatim lines, treat its verdict as INCONCLUSIVE.
+   - **If all hypotheses are REFUTED:** return to Boundary Investigation (2.4.2), re-examine Step N-1, and form new hypotheses. Do not force-fit the least-bad one.
+
+5. **Verification Strategy**
+   - Rank the surviving hypotheses by evidence strength.
+   - For each, design the targeted test or additional log analysis that would confirm it, using the subagent's DISCRIMINATOR.
+   - **CRITICAL:** Collaborative decision with the user on which hypothesis to test first. Do not proceed without their choice.
+
+   **Scratchpad update:**
+
+   ```
+   - [✅] Hypothesis investigation (parallel subagents)
+     - H1: <statement> — [✅ SUPPORTED / ❌ REFUTED / ⚠️ INCONCLUSIVE] (key evidence: line X)
+     - H2: ...
+     - Discriminating test proposed: <test>
+     - Awaiting user selection
+   ```
 
 ### 2.5 Evidence-Driven Progress Tracking
 
@@ -573,6 +678,8 @@ Step 6: Response Transmission    [ ]  PENDING
 ### 3.1 Scratchpad as Single Source of Truth
 
 Every validation decision, investigation strategy, and step analysis must be justified by referencing specific scratchpad items.
+
+> **CRITICAL:** Only the main agent maintains the scratchpad. Subagent results are merged into it after verification; subagents never write to it directly.
 
 ### 3.2 Required Content
 
@@ -622,6 +729,11 @@ Use the following checkbox system to track all validation activities:
 **Example:**
 ```
 #### Incremental Validation Progress
+- [✅] Phase 1.1: Parallel codebase research (4 areas, 4 subagents returned)
+  - [✅] Area: API entry point
+  - [✅] Area: Business logic
+  - [✅] Area: Storage path
+  - [⚠️] Area: Tests — gap-filled manually
 - [✅] Phase 1: Complete end-to-end workflow mapping (7 steps identified)
 - [✅] Step 1 Validation: Request Reception confirmed
 - [✅] Step 2 Validation: Authentication confirmed
@@ -2794,7 +2906,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 
 ---
 
-## PHASE 1: Analysis and Implementation Planning
+## PHASE 1: Research Decomposition and Implementation Planning
 
 3. **🔬 Pre-Plan Research (⚠️ CRITICAL — REQUIRED BEFORE WRITING THE PLAN)**
 
