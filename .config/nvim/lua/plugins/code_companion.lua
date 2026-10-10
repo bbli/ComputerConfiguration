@@ -1018,15 +1018,58 @@ In your analysis, do the following:
   - Center your explanation specifically on the User's Question, avoiding general or unrelated information.
   - Try to understand the user's motivation and present the user with a generalized version of their question, as they can often times have tunnel vision and ask questions that are not strictly necessary for their goal. To do so, ask the user clarifying questions, especially if there is anything unclear or could be interpreted in multiple ways in the User's Question. **WAIT UNTIL THEY HAVE RESPONDED** before proceeding with the plan below.
 
-2. **Context Gathering via Codebase Search:**
-   - Conduct a search of the codebase to collect relevant context that directly informs the User's Question.
-   - For each source found, summarize how it relates to the User's Question. If a source is not relevant, briefly note and disregard it.
-   - **Identify Critical Code Segments:** As you analyze the code, identify specific functions, classes, or code blocks that are:
-     - Central to answering the user's question
-     - Potentially problematic or confusing
-     - Have complex logic or unexpected behavior
-     - Appear to be workarounds or have TODO/FIXME comments
-   - Perform this action in a seperate task if possible, so as to not clutter the current context window. This task should return the files it deems most applicable to the User's Question.
+2. **Context Gathering via Parallel Codebase Search (Subagents):**
+
+   **2a. Decompose the Search:**
+   - Using the clarified question from Step 1, break the codebase search into **2–5 independent research areas**. Choose the split that best fits the question, for example:
+     * By layer (e.g. UI → service → data/storage)
+     * By component or module the behavior passes through
+     * By role in the question (e.g. entry point/trigger, core logic, configuration, tests that exercise it)
+   - List the areas and a one-line reason for each before launching subagents, so the user can see how the question was decomposed.
+
+   **2b. Launch Research Subagents:**
+   - **CRITICAL: Launch one research subagent per area, all in parallel, in a single message.** This keeps raw search results out of the main context window. Subagents are READ-ONLY: no code edits, no state-changing commands.
+   - **Context packet — each subagent receives:**
+     * The User's Question **and the clarified/generalized version** agreed on in Step 1
+     * Its assigned research area, plus a one-line list of the other areas (for awareness only — it searches its own area)
+     * Any file paths, folders, or names the user already mentioned
+   - **Subagent instructions:**
+     1. Search its area for files, functions, classes, types, configuration, and tests that directly inform the User's Question.
+     2. For each source found, summarize how it relates to the User's Question. If a source is not relevant, briefly note it and disregard it.
+     3. **Identify Critical Code Segments** — specific functions, classes, or code blocks that are:
+        - Central to answering the user's question
+        - Potentially problematic or confusing
+        - Have complex logic or unexpected behavior
+        - Appear to be workarounds or have TODO/FIXME comments
+     4. Trace entry points and callers into its area, and calls out to other areas, so the main agent can build the stepdown order for the pseudocode in 3a.
+     5. Return results in the schema below — **verbatim code only, no paraphrase**.
+   - **Required return schema:**
+```
+AREA: <assigned area>
+MOST APPLICABLE FILES (ranked):
+  1. <file path> — <one line: why it matters to the question>
+CRITICAL CODE SEGMENTS:
+  - [file:line-line] <function/class name>
+    Category: CENTRAL | CONFUSING | COMPLEX/UNEXPECTED | WORKAROUND/TODO/FIXME
+    Relevance: <one line>
+    Code: <verbatim snippet>
+KEY DATA STRUCTURES:
+  - [file:line] <type name> — relevant fields only, verbatim
+ENTRY POINTS & CALLPATH:
+  - Triggered by: [file:line] <test or upstream caller>
+  - Calls into other areas: [file:line] <function> → <target area>
+DISREGARDED SOURCES:
+  - <file> — <why not relevant>
+OPEN QUESTIONS:
+  - [?] <anything unresolved, missing definitions, or assumed>
+```
+
+   **2c. Merge and Verify:**
+   - Combine the subagents' results into one ranked list of the files most applicable to the User's Question, and one consolidated list of Critical Code Segments.
+   - Stitch each area's entry points and outgoing calls into a single end-to-end callpath. This becomes the stepdown order for the pseudocode in 3a.
+   - **Spot-check** the `file:line` citations you plan to rely on. If a subagent returned summaries instead of verbatim code, re-search that area yourself.
+   - **Fill gaps:** If the stitched callpath has missing links between areas, run targeted follow-up searches yourself. Carry anything still unresolved forward as an explicit uncertainty in 3b.
+   - Briefly present the merged findings (ranked files + critical segments, with one-line relevance each) before moving to the Explanation.
 
 3. **Explanation:**
    Now use the additional context and think hard about the user's question. Decide if there could be multiple possible explanations and **RANK YOUR HYPOTHESES in terms of relevance to the issue.** Then present your explanation in the following three parts, **in this exact order**: (a) Pseudocode, (b) Step-by-Step Explanation, (c) Diagrams.
