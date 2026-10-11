@@ -48,14 +48,85 @@ function create_worktree #-a name
 end
 
 
-# BENSON: has to be manually since (git rev-parse --git-dir)/.. will just go to original repo
 function delete_worktree
-    # 1. first cd to proj root
-    cd (git rev-parse --git-dir)/..
-    git worktree remove .
-    # 2. now exit the tmux window
-    # tmux kill-window
+  if test (count $argv) != 1
+    echo "usage: delete_worktree <branch_to_merge_into>"
+    return 1
+  end
+
+  set -l target $argv[1]
+  set -l branch_name (git branch --show-current); or return
+  set -l wt_root (git rev-parse --show-toplevel); or return
+  set -l main_root (path dirname (git rev-parse --path-format=absolute --git-common-dir)); or return
+
+  # --- sanity checks ---------------------------------------------------------
+  if test "$wt_root" = "$main_root"
+    echo "delete_worktree: not inside a linked worktree"
+    return 1
+  end
+  if test -z "$branch_name"
+    echo "delete_worktree: detached HEAD, can't determine branch"
+    return 1
+  end
+  if test "$target" = "$branch_name"
+    echo "delete_worktree: can't merge $branch_name into itself"
+    return 1
+  end
+  if not git show-ref --verify --quiet refs/heads/$target
+    echo "delete_worktree: branch '$target' does not exist"
+    return 1
+  end
+
+  # Current worktree must be clean (ignoring the .pi/learnings symlink)
+  set -l dirty (git status --porcelain --untracked-files=all | string match -v -- '?? .pi/learnings')
+  if test -n "$dirty"
+    echo "delete_worktree: uncommitted changes in $wt_root:"
+    printf '  %s\n' $dirty
+    return 1
+  end
+
+  # --- find where $target is checked out (git won't merge into it elsewhere) -
+  set -l target_wt
+  set -l cur_wt
+  for line in (git worktree list --porcelain)
+    if string match -q 'worktree *' -- $line
+      set cur_wt (string replace 'worktree ' '' -- $line)
+    else if test "$line" = "branch refs/heads/$target"
+      set target_wt $cur_wt
+      break
+    end
+  end
+  if test -z "$target_wt"
+    echo "delete_worktree: '$target' isn't checked out in any worktree; check it out somewhere first"
+    return 1
+  end
+
+  # --- merge -----------------------------------------------------------------
+  if not git -C $target_wt merge --no-edit $branch_name
+    echo "delete_worktree: merge failed, aborting merge in $target_wt"
+    git -C $target_wt merge --abort 2>/dev/null
+    return 1
+  end
+  if not git merge-base --is-ancestor $branch_name $target
+    echo "delete_worktree: $branch_name doesn't appear merged into $target, stopping"
+    return 1
+  end
+
+  # --- tear down -------------------------------------------------------------
+  test -L $wt_root/.pi/learnings; and rm $wt_root/.pi/learnings
+  rmdir $wt_root/.pi 2>/dev/null
+
+  cd $main_root; or return
+  git worktree remove $wt_root; or return
+
+  # -D is safe here: we just verified $branch_name is an ancestor of $target
+  git branch -D $branch_name
+  git show-ref --verify --quiet refs/heads/start_$branch_name
+  and git branch -D start_$branch_name
+
+  tmux kill-window
 end
+
 # ************** COMMAND ALIASES ************** %%%1
 function j
     z $argv
@@ -272,3 +343,9 @@ end
 
 # opencode
 fish_add_path /home/bensonli/.opencode/bin
+
+function mp --description "local pi for development"
+    set -lx PI_CODING_AGENT_DIR /home/ir/Documents/pi/.pi
+    command /home/ir/Documents/pi/pi-test.sh -e "$HOME/.config/everpure-foundry/foundry-provider" --provider anthropic --model claude-sonnet-4-6 $argv
+end
+
