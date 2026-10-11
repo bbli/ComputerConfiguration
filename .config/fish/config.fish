@@ -28,103 +28,103 @@ end
 
 # BENSON: remember to check out locally first ->> so don't create "nested" directories
 function create_worktree #-a name
-  if test (count $argv) != 1
-    echo "usage: create_worktree <branch_name>"
-    return 1
-  end
+    if test (count $argv) != 1
+        echo "usage: create_worktree <branch_name>"
+        return 1
+    end
 
-  set -l branch_name $argv[1]
-  set -l repo_root (git rev-parse --show-toplevel); or return
-  if git show-ref --verify --quiet refs/heads/$branch_name
-    git worktree add (path dirname $repo_root)/$branch_name $branch_name
-  else
-    git worktree add -b $branch_name (path dirname $repo_root)/$branch_name
-  end
-  and cd (path dirname $repo_root)/$branch_name
-  and mkdir -p .pi
-  and ln -s /home/ir/ir-beli/.pi/learnings .pi/learnings
-  and git branch -f start_$branch_name
-  and tmux rename-window $branch_name
+    set -l branch_name $argv[1]
+    set -l repo_root (git rev-parse --show-toplevel); or return
+    if git show-ref --verify --quiet refs/heads/$branch_name
+        git worktree add (dirname $repo_root)/$branch_name $branch_name
+    else
+        git worktree add -b $branch_name (dirname $repo_root)/$branch_name
+    end
+    and cd (dirname $repo_root)/$branch_name
+    and mkdir -p .pi
+    and ln -s /home/ir/ir-beli/.pi/learnings .pi/learnings
+    and git branch -f start_$branch_name
+    and tmux rename-window $branch_name
 end
 
 
 function delete_worktree
-  if test (count $argv) != 1
-    echo "usage: delete_worktree <branch_to_merge_into>"
-    return 1
-  end
-
-  set -l target $argv[1]
-  set -l branch_name (git branch --show-current); or return
-  set -l wt_root (git rev-parse --show-toplevel); or return
-  set -l main_root (path dirname (git rev-parse --path-format=absolute --git-common-dir)); or return
-
-  # --- sanity checks ---------------------------------------------------------
-  if test "$wt_root" = "$main_root"
-    echo "delete_worktree: not inside a linked worktree"
-    return 1
-  end
-  if test -z "$branch_name"
-    echo "delete_worktree: detached HEAD, can't determine branch"
-    return 1
-  end
-  if test "$target" = "$branch_name"
-    echo "delete_worktree: can't merge $branch_name into itself"
-    return 1
-  end
-  if not git show-ref --verify --quiet refs/heads/$target
-    echo "delete_worktree: branch '$target' does not exist"
-    return 1
-  end
-
-  # Current worktree must be clean (ignoring the .pi/learnings symlink)
-  set -l dirty (git status --porcelain --untracked-files=all | string match -v -- '?? .pi/learnings')
-  if test -n "$dirty"
-    echo "delete_worktree: uncommitted changes in $wt_root:"
-    printf '  %s\n' $dirty
-    return 1
-  end
-
-  # --- find where $target is checked out (git won't merge into it elsewhere) -
-  set -l target_wt
-  set -l cur_wt
-  for line in (git worktree list --porcelain)
-    if string match -q 'worktree *' -- $line
-      set cur_wt (string replace 'worktree ' '' -- $line)
-    else if test "$line" = "branch refs/heads/$target"
-      set target_wt $cur_wt
-      break
+    if test (count $argv) != 1
+        echo "usage: delete_worktree <branch_to_merge_into>"
+        return 1
     end
-  end
-  if test -z "$target_wt"
-    echo "delete_worktree: '$target' isn't checked out in any worktree; check it out somewhere first"
-    return 1
-  end
 
-  # --- merge -----------------------------------------------------------------
-  if not git -C $target_wt merge --no-edit $branch_name
-    echo "delete_worktree: merge failed, aborting merge in $target_wt"
-    git -C $target_wt merge --abort 2>/dev/null
-    return 1
-  end
-  if not git merge-base --is-ancestor $branch_name $target
-    echo "delete_worktree: $branch_name doesn't appear merged into $target, stopping"
-    return 1
-  end
+    set -l target $argv[1]
+    set -l branch_name (git branch --show-current); or return
+    set -l wt_root (git rev-parse --show-toplevel); or return
+    set -l main_root (dirname (git rev-parse --path-format=absolute --git-common-dir)); or return
 
-  # --- tear down -------------------------------------------------------------
-  test -L $wt_root/.pi/learnings; and rm $wt_root/.pi/learnings
-  rmdir $wt_root/.pi 2>/dev/null
+    # --- sanity checks ---------------------------------------------------------
+    if test "$wt_root" = "$main_root"
+        echo "delete_worktree: not inside a linked worktree"
+        return 1
+    end
+    if test -z "$branch_name"
+        echo "delete_worktree: detached HEAD, can't determine branch"
+        return 1
+    end
+    if test "$target" = "$branch_name"
+        echo "delete_worktree: can't merge $branch_name into itself"
+        return 1
+    end
+    if not git show-ref --verify --quiet refs/heads/$target
+        echo "delete_worktree: branch '$target' does not exist"
+        return 1
+    end
 
-  cd $main_root; or return
-  git worktree remove $wt_root; or return
+    # Current worktree must be clean (ignoring the .pi/learnings symlink)
+    set -l dirty (git status --porcelain --untracked-files=all | string match -v -- '?? .pi/learnings')
+    if test -n "$dirty"
+        echo "delete_worktree: uncommitted changes in $wt_root:"
+        printf '  %s\n' $dirty
+        return 1
+    end
 
-  # -D is safe here: we just verified $branch_name is an ancestor of $target
-  git branch -D $branch_name
-  git show-ref --verify --quiet refs/heads/start_$branch_name
-  and git branch -D start_$branch_name
+    # --- find where $target is checked out (git won't merge into it elsewhere) -
+    set -l target_wt
+    set -l cur_wt
+    for line in (git worktree list --porcelain)
+        if string match -q 'worktree *' -- $line
+            set cur_wt (string replace 'worktree ' '' -- $line)
+        else if test "$line" = "branch refs/heads/$target"
+            set target_wt $cur_wt
+            break
+        end
+    end
+    if test -z "$target_wt"
+        echo "delete_worktree: '$target' isn't checked out in any worktree; check it out somewhere first"
+        return 1
+    end
 
-  tmux kill-window
+    # --- merge -----------------------------------------------------------------
+    if not git -C $target_wt merge --no-edit $branch_name
+        echo "delete_worktree: merge failed, aborting merge in $target_wt"
+        git -C $target_wt merge --abort 2>/dev/null
+        return 1
+    end
+    if not git merge-base --is-ancestor $branch_name $target
+        echo "delete_worktree: $branch_name doesn't appear merged into $target, stopping"
+        return 1
+    end
+
+    # --- tear down -------------------------------------------------------------
+    test -L $wt_root/.pi/learnings; and rm $wt_root/.pi/learnings
+    rmdir $wt_root/.pi 2>/dev/null
+
+    cd $main_root; or return
+    git worktree remove $wt_root; or return
+
+    # -D is safe here: we just verified $branch_name is an ancestor of $target
+    git branch -D $branch_name
+    git show-ref --verify --quiet refs/heads/start_$branch_name
+    and git branch -D start_$branch_name
+
+    tmux kill-window
 end
 
 # ************** COMMAND ALIASES ************** %%%1
@@ -242,7 +242,7 @@ end
 # set SPACEFISH_GOLANG_SHOW false
 
 set -U fish_user_paths ~/go/bin ~/Scripts/ ~/.local/bin /opt/homebrew/bin ~/.cargo/bin ~/.fzf/bin ~/.config/emacs/bin ~/.emacs.d/bin ~/perl5/bin ~/.gem/ruby/3.0.0/bin ~/LogParser/target/debug
-set -x ARC_API_KEY "179385bb-4d81-4e8a-8679-e9c2fef01e93"
+set -x ARC_API_KEY 179385bb-4d81-4e8a-8679-e9c2fef01e93
 # ************** SOURCE ************** %%%1
 switch (uname)
     case Linux
@@ -348,4 +348,3 @@ function mp --description "local pi for development"
     set -lx PI_CODING_AGENT_DIR /home/ir/Documents/pi/.pi
     command /home/ir/Documents/pi/pi-test.sh -e "$HOME/.config/everpure-foundry/foundry-provider" --provider anthropic --model claude-sonnet-4-6 $argv
 end
-
