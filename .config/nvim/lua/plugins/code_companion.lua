@@ -1546,18 +1546,29 @@ Calibrate effort to the question: answer what was actually asked first, and expa
 - Ask **specific** clarifying questions grounded in what you found (e.g., "there look to be two request paths — an HTTP one and a queue consumer — which are you asking about?").
 - **Hard-stop only for consequential forks** — ambiguities where the two readings would lead to substantially different analyses. To hard-stop, end your turn and wait for the reply. For minor ambiguity, **state the assumption you're making and proceed**. Over-asking is as costly as under-asking.
 
-## 2. Context Gathering via Codebase Search
+## 2. Context Gathering via Parallel Codebase Search (Subagents)
 
-- Search for key architectural indicators, as relevant to the confirmed scope:
-    - Entry and exit points (main files, RPC handlers, interfaces, CLI/HTTP handlers)
-    - Core abstractions and base classes
-    - Dependency injection or service registration
-    - Router/controller definitions
-    - Configuration, wiring, and bootstrap code
-- For each source found, explain its **architectural significance** — focus on files that reveal structural decisions, not incidental implementation detail. If a source turns out not to be relevant, note it briefly and drop it.
-- **Identify critical code segments** — functions, classes, or blocks that are central to the question, have complex or surprising behavior, sit on a layer boundary, or look like workarounds (TODO/FIXME/HACK).
-- Run this search in a **separate subagent/task** if possible, so it doesn't clutter the main context window. It should return the files and line ranges it deems most relevant.
-- Record the file paths and line numbers you'll later cite, so your claims stay verifiable.
+### 2a. Decompose the Search
+- Using the recon pass and confirmed scope from Step 1, split the search into **1–5 independent research areas**, scaled to scope (a narrow question may need one; "explain this system" may need five). Pick the split that best fits:
+    * **By flow (default)** — read path, write path, auth, async consumer, bootstrap. Each area then maps directly to one pseudocode block in 3a.
+    * By layer — controller → service → repo → storage
+    * By component / module boundary
+    * By concern — wiring/DI & bootstrap, configuration, cross-cutting (auth/logging/errors)
+- List the areas with a one-line reason each **before** launching, so the user can see the decomposition.
+
+### 2b. Launch Research Subagents
+- **CRITICAL: Launch one subagent per area, all in parallel, in a single message.** This keeps raw search results out of the main context window. Subagents are READ-ONLY: no edits, no state-changing commands.
+- **Context packet — each subagent receives:**
+    * The User's Question, the clarified/generalized version, and any assumptions stated in Step 1
+    * Its assigned area, plus a one-line list of the other areas (awareness only — it searches its own area)
+    * Any files, folders, or names the user mentioned
+- **Subagent instructions:**
+    1. Search its area for architectural indicators: entry/exit points, core abstractions/base classes, DI/service registration, routers/controllers, configuration/wiring/bootstrap, and tests that exercise boundaries.
+    2. For each source, state its **architectural significance** — structural decisions, not incidental implementation detail. Note irrelevant sources briefly and drop them.
+    3. **Identify critical code segments** — central to the question, sitting on a layer boundary, confusing, complex/surprising, or workarounds (TODO/FIXME/HACK).
+    4. Trace entry points into its area and calls out to other areas, recording **what crosses each boundary** (DTO, ID, callback, message).
+    5. Record shared state touched and invariants assumed — as **raw observations, not verdicts**.
+    6. Return the files and line ranges it deems most relevant, with **verbatim code snippets — no paraphrase**, and any open questions it couldn't resolve.
 
 ## 3. Explanation — Pseudocode → Step-by-Step → Diagrams
 
@@ -1709,7 +1720,6 @@ After the summary:
 ### User's Question
 **My main goal is** <main_goal>
 <architecture_question>
-
 ]]
               end,
             },
