@@ -2887,7 +2887,7 @@ Make sure the "Understand Code" Prompt is called before this(to get the Context)
 
 **🍰 KEY PRINCIPLE — VERTICAL SLICES, NOT LAYERS: Every implementation step must add a thin, end-to-end "vertical slice" of functionality, NOT a horizontal "layer." Each step must produce a NEW OBSERVABLE BEHAVIOR — something the user can run, see, or test that was not possible before that step. Avoid plans that build an entire layer at a time (all data models, then all services, then all UI) before anything is observable. Prefer plans where each step makes the system *do* something new, even if narrow. If a step produces no observable behavior, it is almost certainly a horizontal layer and should be merged into a vertical slice or re-sequenced.**
 
-**🪜 KEY PRINCIPLE — EXPLAIN EACH SLICE WHERE IT LIVES: Every step carries its own Step-by-Step Pseudocode, placed directly inside that step: the slice's causal path from trigger to observable result, broken into numbered stages, where each stage says *why* it works and shows the pseudocode that makes it happen. The pseudocode for each function stays at ONE level of abstraction from its first line to its last. The reader should be able to read one step in isolation and understand exactly what code path it adds, which seams it crosses, and what it reuses. Each step focuses on the *delta* it introduces, with earlier steps' work collapsed to a one-line reference. If a step's Step-by-Step Pseudocode gets too big to take in at a glance, that is a signal the slice is too fat — split it.**
+**🪜 KEY PRINCIPLE — EXPLAIN EACH SLICE WHERE IT LIVES: Every step carries its own Step-by-Step Pseudocode, placed directly inside that step: the slice's causal path from trigger to observable result, broken into numbered stages, with the pseudocode that makes each stage happen. Directly after the pseudocode comes a Why This Slice Works section that takes the same numbered stages in order and says *why* each one works. The pseudocode for each function stays at ONE level of abstraction from its first line to its last. The reader should be able to read one step in isolation and understand exactly what code path it adds, which seams it crosses, and what it reuses. Each step focuses on the *delta* it introduces, with earlier steps' work collapsed to a one-line reference. If a step's Step-by-Step Pseudocode gets too big to take in at a glance, that is a signal the slice is too fat — split it.**
 
 **🔬 KEY PRINCIPLE — ⚠️  CRITICAL: DECOMPOSE THE PROBLEM BY CALLING THE RESEARCH TOOL. Do not work out how to implement a slice from your own assumptions. Break every slice into concrete implementation questions and call the research tool on each one — the research tool's answers are how the problem gets decomposed and how the pseudocode gets written. Skipping the research tool, or answering an implementation question from memory instead of calling it, is a process failure.**
 
@@ -2899,7 +2899,7 @@ You are a senior software engineer tasked with analyzing, planning, and implemen
 
 **This process has THREE distinct stages with MANDATORY stops:**
 - **PHASE 0:** Context Gathering + Architecture Map + Clarifying Questions about desired behavior (STOP - await answers)
-- **PHASE 1:** Pre-Plan Research (research tool per implementation question) → Analysis and Implementation Planning with Architecture Fit + per-step Step-by-Step Pseudocode & Questions (STOP - await approval)
+- **PHASE 1:** Pre-Plan Research (research tool per implementation question) → Analysis and Implementation Planning with Architecture Fit + per-step Step-by-Step Pseudocode, Why This Slice Works & Questions (STOP - await approval)
 - **PHASE 2:** Implementation (only after explicit approval of the plan)
 
 **Process Flow:**
@@ -2909,7 +2909,8 @@ PHASE 0: Context Gathering + Architecture Map → Clarifying Questions on desire
 PHASE 1: 🔬 Pre-Plan Research (slices → implementation questions → research tool per question)
                   → Architecture Fit Assessment → Slice Map (one line per step)
                   → Implementation Plan (each step = 1 vertical slice w/ observable behavior + placement
-                                         + 🪜 step-by-step pseudocode + ❓ questions & assumptions)
+                                         + 🪜 step-by-step pseudocode + 🧭 why this slice works
+                                         + ❓ questions & assumptions)
                   → 🛑 STOP (await approval)
                                                                                 ↓
 PHASE 2: Implementation → Code per Step → Verify observable behavior + placement
@@ -2953,7 +2954,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 
 3. **🔬 Pre-Plan Research (⚠️  CRITICAL — REQUIRED BEFORE WRITING THE PLAN)**
 
-   **Why this exists:** Pseudocode that is wrong — invented helper names, wrong signatures, wrong call order, guessed line ranges, or a causal story that doesn't actually hold — is **worse than no pseudocode at all**, because the user reviews and approves it and Phase 2 then follows a bad spec. So each slice's Step-by-Step Pseudocode must be built from research answers, not from guesses.
+   **Why this exists:** Pseudocode that is wrong — invented helper names, wrong signatures, wrong call order, guessed line ranges, or a causal story that doesn't actually hold — is **worse than no pseudocode at all**, because the user reviews and approves it and Phase 2 then follows a bad spec. So each slice's Step-by-Step Pseudocode and Why This Slice Works must be built from research answers, not from guesses.
 
    **Use the research tool to decompose every slice. Do this for each slice, in order, with no steps skipped:**
    1. **Determine the slices.** After the Phase 0 answers are in, decide the vertical slices (these become the Slice Map).
@@ -2981,9 +2982,9 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
       Stop expanding a mechanism once its relevant preconditions, transitions, completion evidence, and implications for this slice are established; avoid exploring unrelated branches solely for completeness.
 
    3. **Call the research tool on EVERY question** (e.g. your research/Explore subagent or equivalent) — one call per question, in parallel where questions are independent. Do not write a slice's Step-by-Step Pseudocode until its questions have been answered by the tool. Never answer an implementation question yourself from memory or assumption instead of calling the tool — even when you think you already know the answer.
-   4. **Write the slice's Step-by-Step Pseudocode only from the tool's answers.** Use the names, signatures, call order, causal mechanisms, and `# file:start-end` ranges the research returned. If an answer raises a new question, research that too before writing.
+   4. **Write the slice's Step-by-Step Pseudocode and Why This Slice Works only from the tool's answers.** Use the names, signatures, call order, causal mechanisms, and `# file:start-end` ranges the research returned. If an answer raises a new question, research that too before writing.
 
-   **Grounding rule for the Step-by-Step Pseudocode (applies to every step):**
+   **Grounding rule for the Step-by-Step Pseudocode and Why This Slice Works (applies to every step):**
    - Every existing function, variable, or type named in the pseudocode — and every existing component whose behavior a stage relies on — must come from a research answer, with its real `# file:start-end`.
    - Anything not yet existing is marked `# 🆕` — never present an invented name as if it already exists.
    - **Named steps** (`# ≈ step`, see the pseudocode rules) are allowed to use names that won't exist in the diff, but the real lines each one stands for must still be grounded: existing lines come from a research answer, new lines are what the diff will add.
@@ -2992,7 +2993,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 4. **Create a DETAILED IMPLEMENTATION PLAN**
    - Before writing any code, and only after the Pre-Plan Research has returned, provide a comprehensive plan, informed by the answers gathered in Phase 0 and the research tool's answers. This plan should include:
      - **Problem Overview:** Briefly restate the problem or goal based on the user's request, the gathered context, and the answers from Phase 0.
-     - **Proposed Solution Outline:** Describe the overall technical approach you will take to address the problem, in a short paragraph — the detail belongs in each step's Step-by-Step Pseudocode, not here.
+     - **Proposed Solution Outline:** Describe the overall technical approach you will take to address the problem, in a short paragraph — the detail belongs in each step's Step-by-Step Pseudocode and Why This Slice Works, not here.
        - **If there is a change to an existing function, check that its callers expect this behavior and list these callers out for the user to confirm**
        - **If there are multiple implementation options or approaches, present them for the user to decide.** Where options diverge only in specific steps, show the alternative Step-by-Step Pseudocode inside those steps (Option A / Option B) rather than repeating the whole plan for each option.
 
@@ -3019,7 +3020,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 
      - **🍰 SLICE THE PLAN VERTICALLY:** Briefly explain how you have decomposed the work into vertical slices. Each step must move a thin path of functionality end-to-end so that a new observable behavior emerges. State explicitly: "Each step below adds one observable behavior." If you find yourself naming a step after a layer ("build the data layer", "add all the API routes", "wire up the UI"), STOP and re-slice it into behavior-driven steps. Remember the **thin ≠ dirty** rule: narrow each slice by the *data* it handles, never by skipping the *path* through the real seams.
 
-     - **⚠️  CRITICAL — 🪜 STEP-BY-STEP PSEUDOCODE (REQUIRED FOR EVERY STEP, INCLUDING STEP 1):** One section per step that walks the slice's causal path from its trigger to its observable result, explaining *why* each stage works and showing the pseudocode that makes it happen, side by side. **A step without its Step-by-Step Pseudocode is incomplete — do not present the plan until every step has one.**
+     - **⚠️  CRITICAL — 🪜 STEP-BY-STEP PSEUDOCODE + 🧭 WHY THIS SLICE WORKS (REQUIRED FOR EVERY STEP, INCLUDING STEP 1):** Two consecutive sections per step. First, the **Step-by-Step Pseudocode** walks the slice's causal path from its trigger to its observable result as numbered stages, showing the pseudocode that makes each stage happen. Then, directly after it, **Why This Slice Works** takes the same numbered stages in order and explains *why* each one works. **A step missing either section is incomplete — do not present the plan until every step has both.**
 
        **Structure** (stage explanations are plain Markdown; every pseudocode block is a fenced code block tagged with the codebase's language — `typescript` shown here):
 
@@ -3039,31 +3040,26 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
        }
        ```
 
-       **① [Stage name]** — [what happens · who does it · what condition allows it · what result enables the next stage]
+       **① [Stage name]**
        ```typescript
        [drill-down block for this stage's new/changed function(s), if any]
        ```
 
-       **② [Stage carried out by existing code]** — ♻️ existing: [Component] (`file:start-end`) — [the behavior and
-       condition this slice relies on]. No new code.
+       **② [Stage carried out by existing code]** — ♻️ existing: [Component] (`file:start-end`). No new code.
 
        **③ …**
+
+       🧭 Why This Slice Works
+
+       **①** [what happens · who does it · what condition allows it · what result enables the next stage]
+
+       **②** [the behavior and condition this slice relies on from the existing component]
+
+       **③** …
        *Proves:* [what this wait/assertion establishes] · *Does NOT prove:* [nearby property it doesn't establish]
 
        [Optional] **Why the ordering matters:** [only when ordering, batching, or concurrency affects the outcome]
        ````
-
-       **Rules for the stages (the "why"):**
-       - **Start with the summary.** State plainly what the slice's operations accomplish before any stage.
-       - **Follow the causal path, usually 3–5 stages.** Each stage says what happens, which component performs it, which condition or selection rule allows it, and what result makes the next stage possible.
-       - **Apply it to this slice's actual inputs and configuration.** Explain why the intended outcome follows *in this case*, not every possible mode of the subsystem.
-       - **Distinguish eligibility, scheduling, processing, and persisted completion** when those differ.
-       - **For important waits or assertions, say what they prove and what nearby property they do NOT prove.**
-       - **Cite the existing implementation or reference test** that establishes any non-obvious behavior. If a reference uses similar APIs but doesn't prove the same outcome, say so.
-       - **Stages performed by existing components** get a cited one-line description of the relevant behavior and no pseudocode — reused internals are never expanded in code.
-       - **Stages explain the slice; they are not extra implementation steps or commits.** A descriptive stage name is not a proposed new helper.
-       - **Flag unresolved causal links at the stage where they arise** with `❓ SN-Qx`, pointing to this step's Questions & Assumptions block. Do not hide an unverified mechanism behind a descriptive helper name.
-       - **Keep it proportional.** A simple synchronous change may need only the summary, the Overview, and one or two short stages.
 
        **Rules for the pseudocode (the "how"):**
 
@@ -3118,7 +3114,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
        - **The Overview is the top level.** It shows the slice's entry function (or the top-level sequence of a test) at one level of abstraction, with each line tagged by the stage (`# ①`, `# ②`, …) that explains it. Each function block appears in exactly one place: the Overview, or the stage that drills into it.
        - **Test each line against its neighbors.** Ask: "Is this line saying *what* happens at the same level as the lines around it, or is it describing *how* one of them works?" If it's describing how, it's a lower level — move it out.
        - **Wrap lower-level lines in a named step.** Replace the detail with one call whose name says what it does (`ensure_email_available(form.email)` instead of the DB query and raise). Use the real function name if one exists or will exist; otherwise use a `≈ step` named step.
-       - **Drill down inside the stage, as a separate block, never inline.** If a new or changed function's internals are worth reviewing, give that function its own block under the stage that explains it — and that block must also be at one level of abstraction throughout. Only drill into new or changed functions; reused helpers are never expanded.
+       - **Drill down inside the stage, as a separate block, never inline.** If a new or changed function's internals are worth reviewing, give that function its own block under the stage that drills into it — and that block must also be at one level of abstraction throughout. Only drill into new or changed functions; reused helpers are never expanded.
        - **Same rule for error/edge paths and control flow.** A guard or branch belongs in the block only if it passes the line test (`if not order: raise_not_found(id)` next to `order = orderRepo.findOne(id)` is fine; a multi-line retry loop is not — name it `fetch_with_retry(...)`).
        - **Header line = function + location:** the function's opening line in the real language, with its location as a trailing comment (e.g. `def function_name(args):  # path/to/file:start-end` or `function functionName(args) {  // path/to/file:start-end`). Use the real line range for existing code, `# path/to/file (new)` for new functions, and `# path/to/file:14-23 ✏️ ` for existing functions being changed.
        - **Use real names for `♻️ reuse` and `🆕` lines**, so they map onto the eventual diff; `≈ step` lines map onto the diff through their `→` comment instead. **Every existing name and line range must come from a research tool answer** (see the grounding rule in section 3) — unverified lines are tagged `# ❓ unverified`. Leave out types, imports, logging, and boilerplate.
@@ -3127,6 +3123,18 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
        - Mark lines with short trailing comments: `# 🆕` new, `# ♻️  reuse`, `# ≈ step → file:start-end`, `# ✏️ ` changed (add `was: ...` when a line is replaced), `# ✏️  extend (+param x)`.
        - Include the **error/edge paths** this slice handles (at the same level as their neighbors, per the rule above), and add a `# deferred to Step N: ...` line for any that are left for later.
        - Mark any approved boundary break at the exact line: `# ⚠ ABSTRACTION BREAK (see Boundary Check #N)`.
+
+       **Rules for Why This Slice Works (the "why"):**
+       - **It comes directly after the pseudocode and uses the same stage numbers** (`①`, `②`, …), in the same order, so each explanation maps onto the pseudocode stage above it.
+       - **Follow the causal path, usually 3–5 stages.** Each stage says what happens, which component performs it, which condition or selection rule allows it, and what result makes the next stage possible.
+       - **Apply it to this slice's actual inputs and configuration.** Explain why the intended outcome follows *in this case*, not every possible mode of the subsystem.
+       - **Distinguish eligibility, scheduling, processing, and persisted completion** when those differ.
+       - **For important waits or assertions, say what they prove and what nearby property they do NOT prove.**
+       - **Cite the existing implementation or reference test** that establishes any non-obvious behavior. If a reference uses similar APIs but doesn't prove the same outcome, say so.
+       - **Stages performed by existing components** get a cited one-line description of the relevant behavior and no pseudocode — reused internals are never expanded in code.
+       - **Stages explain the slice; they are not extra implementation steps or commits.** A descriptive stage name is not a proposed new helper.
+       - **Flag unresolved causal links at the stage where they arise** with `❓ SN-Qx`, pointing to this step's Questions & Assumptions block. Do not hide an unverified mechanism behind a descriptive helper name.
+       - **Keep it proportional.** A simple synchronous change may need only the Summary, the Overview, and one or two short stage explanations.
 
        **⚠️  CRITICAL — INDEPENDENT ABSTRACTION REVIEW (after drafting, before presenting).** Don't rely on rereading your own pseudocode. For each step, call the research tool (or a fresh subagent) with **only** that step's pseudocode blocks and the line test above, and ask it to list every line that fails the test or reads at a different level than its neighbors, with the reason. Fix each flagged line with a named step or named function, then re-run the review on any block you changed. Present the plan only when the review comes back clean.
 
@@ -3147,7 +3155,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
        }
        ```
 
-       **① Load the order through the service seam** — the handler never touches the repository directly.
+       **① Load the order through the service seam**
        ```typescript
        async getById(id) {                                    // services/orderService.ts (new) 🆕
          assertValidId(id);                                   // ♻️ reuse
@@ -3158,8 +3166,15 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
        }
        ```
 
-       **② Map and respond** — ♻️ existing: `toOrderDto` (`dto/mappers.ts:12-30`) shapes `{ id, status, total }`;
-       the `NotFoundError` from ① becomes a 404 via the Step 1 error middleware. No new code beyond the Overview lines.
+       **② Map and respond** — ♻️ existing: `toOrderDto` (`dto/mappers.ts:12-30`). No new code beyond the Overview lines.
+
+       🧭 Why This Slice Works
+
+       **①** The handler never touches the repository directly; `getById` goes through the service seam, and a
+       missing row becomes a `NotFoundError`.
+
+       **②** `toOrderDto` shapes `{ id, status, total }`; the `NotFoundError` from ① becomes a 404 via the Step 1
+       error middleware.
        ````
 
        **Illustrative example — causal / background slice, Python test: preparing data for background dedup:**
@@ -3181,26 +3196,36 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
        ```
        *(Stage ② has no Overview line: it happens in the background between ① and ③.)*
 
-       **① Make file1 eligible** — flushing turns file1's writes into cblocks; closing their source segments
-       satisfies the worker's closed-segment eligibility condition (`file:start-end`).
+       **① Make file1 eligible**
        ```python
        def make_eligible_for_dedup(file):                     # ≈ step — these two lines stay inline in the test
            flush_to_cblocks(file)                             # ♻️ reuse
            close_source_segments(file)                        # ♻️ reuse
        ```
 
-       **② Background worker processes file1** — ♻️ existing: medium worker (`file:start-end`). Eligible extents
-       that remain non-delta can become indexed base candidates. No new code.
+       **② Background worker processes file1** — ♻️ existing: medium worker (`file:start-end`). No new code.
 
-       **③ Confirm file1 is in the index before writing file2.**
+       **③ Confirm file1 is in the index before writing file2**
        ```python
        def wait_until_indexed(extent):                        # tests/helpers.py (new) 🆕
            poll_until(index_contains, extent)                 # ♻️ reuse   ❓ S3-Q1
        ```
-       *Proves:* file1's captured extent is an indexed base candidate. *Does NOT prove:* anything about file2.
-       Scrub progress alone does not establish index membership.
 
-       **④ Write and process file2, then require a positive dedup_ref** for the intended base data.
+       **④ Write and process file2, then require a positive dedup_ref**
+
+       🧭 Why This Slice Works
+
+       **①** Flushing turns file1's writes into cblocks; closing their source segments satisfies the worker's
+       closed-segment eligibility condition (`file:start-end`).
+
+       **②** The medium worker picks up eligible extents; those that remain non-delta can become indexed base
+       candidates.
+
+       **③** *Proves:* file1's captured extent is an indexed base candidate. *Does NOT prove:* anything about
+       file2. Scrub progress alone does not establish index membership.
+
+       **④** With file1 already indexed, processing file2 can find it as a base; a positive dedup_ref confirms
+       it matched the intended base data.
 
        **Why the ordering matters:** candidate lookup precedes index insertion within a batch, so processing
        both previously unindexed files together can miss the intended match.
@@ -3222,6 +3247,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
        - **👁️  OBSERVABLE BEHAVIOR AFTER THIS STEP (REQUIRED):** State exactly what the user can now run and what they will see. For the plumbing step, this is precisely the BASE CASE SIGNAL above — describe it concretely (what command/action to take, and the exact output/result to expect).
        - **🏛️  PLACEMENT (REQUIRED):** State which layer/module and file paths own the plumbing, which seam(s) it establishes, and which existing helpers/utilities/types it reuses or extends (cited). Explain why any net-new code is needed. Confirm the skeleton routes through the intended seams rather than pre-baking a shortcut.
        - **🪜 Step-by-Step Pseudocode (REQUIRED):** The causal path from entry point to base-case signal — registration/entry point, the empty seams it opens, the error-handling framework, and the line that emits the base case signal — following the structure and rules above.
+       - **🧭 Why This Slice Works (REQUIRED):** Directly after the pseudocode, explain why each stage works, following the structure and rules above.
        - **❓ Questions & Assumptions (REQUIRED):** This step's own block, per section 5 below.
        - **This step should result in a compilable, runnable foundation where the base case signal confirms connectivity — even if no real features are implemented yet**
        - **Commit message**: `"NEED_REVIEW: Add core plumbing for [feature/goal]"`
@@ -3238,7 +3264,11 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
                                     code blocks in the codebase's language — ```typescript, ```python, …, never ```text)
        Summary: [...]
        Overview: [entry function, lines tagged ①②③]
-       ① [why this stage works] + [drill-down pseudocode, if new/changed code]
+       ① [stage name] + [drill-down pseudocode, if new/changed code]
+       ② ...
+
+       🧭 Why This Slice Works   (required; same stage numbers, same order)
+       ① [why this stage works]
        ② ...
        [Proves / Does NOT prove for key waits or assertions; optional "Why the ordering matters"]
 
@@ -3251,7 +3281,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 
        - For each subsequent step:
          - Describe the specific task to be performed.
-         - Explain the specific code changes and logic — **through the Step-by-Step Pseudocode**, not separate prose — and **how they contribute to the overall goal**
+         - Explain the specific code changes and logic — **through the Step-by-Step Pseudocode and Why This Slice Works**, not separate prose — and **how they contribute to the overall goal**
          - **👁️  Observable behavior after this step (REQUIRED):** State the NEW observable behavior the user will be able to run/see/test once this step is complete — the concrete signal that this vertical slice works. Be specific about the trigger and the expected result (e.g., "calling `GET /users/:id` now returns the user's name from the DB", "typing in the search box now filters the visible list", "running `npm test -- auth` now passes the login round-trip test"). The Step-by-Step Pseudocode's last stage should arrive at this behavior. **If you cannot name an observable behavior for a step, that step is a horizontal layer: re-slice it so the behavior is observable, or fold it into the slice that consumes it.**
          - **🏛️  Placement (REQUIRED):** State which layer/module and file paths own the code added or changed in this step and which seam it routes through. Include the existing helpers/utilities/types this step reuses or extends (cited), matching the `# ♻️  reuse` / `# ✏️  extend` annotations in the pseudocode; for net-new code, give a one-line reason nothing existing fit. Confirm the step introduces **no new boundary violation** — or, if it deliberately does, reference the approved item from the Abstraction Boundary Check. *A step that produces observable behavior by skipping a seam is not an acceptable slice; re-slice it.*
          - **❓ Questions & Assumptions (REQUIRED):** End the step with its own block, per section 5 below — only about this slice, each item tied to a stage or pseudocode line.
@@ -3293,16 +3323,16 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
    - **🟢 HIGH**: Minor uncertainty about this plan component only. Low risk but clarification would still help.
 
 **🛑 STOP HERE - PHASE 1 CHECKPOINT**
-- **⚠️  CRITICAL SELF-CHECK before presenting:** confirm each slice was decomposed into implementation questions, the research tool was called on each, and every existing name, component, and `# file:start-end` in the Step-by-Step Pseudocode came from those answers (anything else is `# 🆕` or `❓ unverified`). Then go through every step, Step 1 included, and confirm it contains a 🪜 Step-by-Step Pseudocode with a Summary, an Overview, and numbered stages that each explain why they work, with file locations and reuse details consolidated under 🏛️  Placement. If any step is missing it, add it before you present the plan. Also confirm every step ends with its own ❓ Questions & Assumptions block (or `❓ None — [why]`), and that nothing is collected into a combined list at the end. Confirm every pseudocode block is written in the codebase's language and fenced with that language's tag (not ` ```text `). Then confirm the independent abstraction review was run on every step's pseudocode and came back clean — every line passes the line test.
+- **⚠️  CRITICAL SELF-CHECK before presenting:** confirm each slice was decomposed into implementation questions, the research tool was called on each, and every existing name, component, and `# file:start-end` in the Step-by-Step Pseudocode came from those answers (anything else is `# 🆕` or `❓ unverified`). Then go through every step, Step 1 included, and confirm it contains a 🪜 Step-by-Step Pseudocode with a Summary, an Overview, and numbered stages, followed directly by a 🧭 Why This Slice Works that explains each of those stages in the same order, with file locations and reuse details consolidated under 🏛️  Placement. If any step is missing either section, add it before you present the plan. Also confirm every step ends with its own ❓ Questions & Assumptions block (or `❓ None — [why]`), and that nothing is collected into a combined list at the end. Confirm every pseudocode block is written in the codebase's language and fenced with that language's tag (not ` ```text `). Then confirm the independent abstraction review was run on every step's pseudocode and came back clean — every line passes the line test.
 - You have now presented:
   1. **The Architecture Fit Assessment, including the Abstraction Boundary Check**
   2. **The Slice Map (one line per step)**
-  3. **The complete implementation plan, where EVERY step has: a confidence level, an observable behavior, 🏛️  Placement including file locations and reuse, a 🪜 Step-by-Step Pseudocode, and its own ❓ Questions & Assumptions block — with seams and causal links explained in the stages, and reused/extended helpers and any abstraction breaks marked in the pseudocode**
+  3. **The complete implementation plan, where EVERY step has: a confidence level, an observable behavior, 🏛️  Placement including file locations and reuse, a 🪜 Step-by-Step Pseudocode followed by 🧭 Why This Slice Works, and its own ❓ Questions & Assumptions block — with seams and causal links explained in Why This Slice Works, and reused/extended helpers and any abstraction breaks marked in the pseudocode**
 - DO NOT PROCEED to implementation without explicit approval
 - The user may want to:
   - **Answer each step's questions by ID (e.g. "S2-Q1: yes, include soft-deleted rows"), starting with 🔴 CRITICAL and 🟠 LOW items**
   - **Correct assumptions listed in a specific step**
-  - **Correct a step's Step-by-Step Pseudocode** — wrong function, wrong seam, wrong causal link, missing edge case, a helper you should have reused
+  - **Correct a step's Step-by-Step Pseudocode or Why This Slice Works** — wrong function, wrong seam, wrong causal link, missing edge case, a helper you should have reused
   - **Decide, per boundary in tension, whether to respect / extend / break it before implementation begins**
   - **Confirm that each step's observable behavior represents a real vertical slice (not a hidden layer) routed through real seams**
   - Choose between implementation options
@@ -3331,12 +3361,12 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
      Present to the user:
      - What was implemented (step description)
      - **👁️  For EVERY step: Instruct the user to verify the observable behavior for this step** — tell them exactly what to run and what they should see (e.g., "Please run X and confirm you see Y"). For Step 1 this observable behavior is the base case signal (e.g., "Please run the extension and confirm you see ✅ [ExtensionName] loaded successfully in the console."). The step is not "done" until the user can confirm the observable behavior.
-     - **🪜 As-built vs. planned:** Re-show this step's Step-by-Step Pseudocode with the actual names from the code, update any stage whose mechanism changed, and list every place the implementation diverged from the approved plan (renamed function, extra branch, different helper, moved file, different causal path) with the reason. Update each `≈ step` comment to the real lines it became. If nothing diverged, say "Implemented as planned." Update each pseudocode block's `# file:start-end` header to the real line range so the user can jump from plan to code.
+     - **🪜 As-built vs. planned:** Re-show this step's Step-by-Step Pseudocode with the actual names from the code, followed by its Why This Slice Works with any stage whose mechanism changed updated, and list every place the implementation diverged from the approved plan (renamed function, extra branch, different helper, moved file, different causal path) with the reason. Update each `≈ step` comment to the real lines it became. If nothing diverged, say "Implemented as planned." Update each pseudocode block's `# file:start-end` header to the real line range so the user can jump from plan to code.
      - **🏛️  Confirm the placement held:** state which layer/module and file paths the code landed in, which seam it routes through, and which existing helpers/utilities/types it reused or extended; confirm no unapproved boundary was crossed. If a break was necessary and approved, point to the isolated/marked spot so the user can review it.
      - Any issues encountered and resolutions
      - New questions or assumptions discovered (if any) — added to the ❓ block of the step they affect (this step or an upcoming one), not to a separate list
      - **Slice Map status:** the one-line-per-step Slice Map with `✅` done and `⏳` pending
-     - **What comes next:** the next step's Step-by-Step Pseudocode, updated if this step's as-built changes affect it
+     - **What comes next:** the next step's Step-by-Step Pseudocode and Why This Slice Works, updated if this step's as-built changes affect them
 
      **WAIT for explicit user signal** (e.g., "continue", "next", "proceed")
 
@@ -3356,7 +3386,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 **This is a THREE-STAGE process with mandatory stops:**
 
 1. **Phase 0**: Gather context + **build the Architecture Map** → **Ask clarifying questions about desired behavior (including architectural conflicts and uncertain reuse candidates)** → **🛑 STOP** (await answers)
-2. **Phase 1**: **🔬 Pre-Plan Research (decompose each slice into implementation questions → research tool per question)** → Analyze → **Architecture Fit Assessment (with Boundary Check)** → **Slice Map** → Implementation Plan with **🪜 Step-by-Step Pseudocode + ❓ questions & assumptions inside every step** → **🛑 STOP** (await approval)
+2. **Phase 1**: **🔬 Pre-Plan Research (decompose each slice into implementation questions → research tool per question)** → Analyze → **Architecture Fit Assessment (with Boundary Check)** → **Slice Map** → Implementation Plan with **🪜 Step-by-Step Pseudocode, then 🧭 Why This Slice Works, then ❓ questions & assumptions inside every step** → **🛑 STOP** (await approval)
 3. **Phase 2**: Implement → Code per Step → **As-built vs. planned Step-by-Step Pseudocode** → **🛑 STOP after EACH commit** (await "continue")
 
 **You MUST:**
@@ -3365,7 +3395,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 - Create the implementation plan only after Phase 0 questions are answered (or the user explicitly says to proceed with your best judgment) and the Pre-Plan Research has returned, with each step's questions and assumptions written inside that step
 - **Write the pseudocode in the codebase's programming language, in code blocks tagged with that language (` ```typescript `, ` ```python `, …) so it gets syntax highlighting — never ` ```text `.**
 - **⚠️  CRITICAL: Keep every pseudocode function at ONE level of abstraction throughout. Every line must pass the line test; replace failing lines with named steps (`≈ step`, names that won't exist in the diff) or named functions, and run the independent abstraction review before presenting.**
-- **Put a 🪜 Step-by-Step Pseudocode INSIDE EVERY STEP (including Step 1): a Summary, an Overview, and numbered stages that each explain why they work and show the pseudocode that makes them happen. Focus on that slice's delta and collapse earlier steps to one-line references. Explain component handoffs, async ordering, completion points, and shared writers in the stages where relevant; mark reused/extended helpers and any abstraction breaks in the pseudocode. Consolidate file locations and reuse details under Placement.**
+- **Put a 🪜 Step-by-Step Pseudocode INSIDE EVERY STEP (including Step 1): a Summary, an Overview, and numbered stages showing the pseudocode that makes them happen — followed directly by a 🧭 Why This Slice Works that explains each stage in the same order. Focus on that slice's delta and collapse earlier steps to one-line references. Explain component handoffs, async ordering, completion points, and shared writers in Why This Slice Works where relevant; mark reused/extended helpers and any abstraction breaks in the pseudocode. Consolidate file locations and reuse details under Placement.**
 - **If a step's Step-by-Step Pseudocode is too big to take in at a glance, split the step**
 - **Define an OBSERVABLE BEHAVIOR for EVERY step — each step is a vertical slice that makes the system do something new, not a horizontal layer — and make its Step-by-Step Pseudocode arrive at that behavior**
 - **Re-slice any step that has no observable behavior; layered, behavior-less steps are not acceptable**
@@ -3379,7 +3409,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 - Never skip checkpoints or assume approval
 - **Put questions and assumptions inside the step they belong to, tied to a specific stage or pseudocode line — never compile them into one list at the end**
 
-**Remember**: Identifying what you don't understand about your specific implementation plan is just as valuable as planning what you do understand. The user EXPECTS and VALUES uncertainty identification based on the concrete plan you've created. **Equally, every step should leave the system in a runnable state with a new, verifiable behavior — thin vertical slices beat broad horizontal layers, and thin must never mean dirty: each slice travels through the codebase's real seams, in the right layer, in the existing dependency direction, and reuses existing helpers rather than reinventing them. When the clean path is genuinely blocked, name the boundary and let the user choose to respect, extend, or break it — never work around it silently. And each step's Step-by-Step Pseudocode is the map for that step — small enough to read in full, specific enough to review against the diff, and kept accurate through Phase 2.**
+**Remember**: Identifying what you don't understand about your specific implementation plan is just as valuable as planning what you do understand. The user EXPECTS and VALUES uncertainty identification based on the concrete plan you've created. **Equally, every step should leave the system in a runnable state with a new, verifiable behavior — thin vertical slices beat broad horizontal layers, and thin must never mean dirty: each slice travels through the codebase's real seams, in the right layer, in the existing dependency direction, and reuses existing helpers rather than reinventing them. When the clean path is genuinely blocked, name the boundary and let the user choose to respect, extend, or break it — never work around it silently. And each step's Step-by-Step Pseudocode, with its Why This Slice Works, is the map for that step — small enough to read in full, specific enough to review against the diff, and kept accurate through Phase 2.**
 
 ### **User's Goal:**
 <Users_Goal>
