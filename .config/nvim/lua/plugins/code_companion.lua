@@ -1042,28 +1042,6 @@ In your analysis, do the following:
         - Have complex logic or unexpected behavior
         - Appear to be workarounds or have TODO/FIXME comments
      4. Trace entry points and callers into its area, and calls out to other areas, so the main agent can build the stepdown order for the pseudocode in 3a.
-     5. Return results in the schema below — **verbatim code only, no paraphrase**.
-   - **Required return schema:**
-```
-AREA: <assigned area>
-MOST APPLICABLE FILES (ranked):
-  1. <file path> — <one line: why it matters to the question>
-CRITICAL CODE SEGMENTS:
-  - [file:line-line] <function/class name>
-    Category: CENTRAL | CONFUSING | COMPLEX/UNEXPECTED | WORKAROUND/TODO/FIXME
-    Relevance: <one line>
-    Code: <verbatim snippet>
-KEY DATA STRUCTURES:
-  - [file:line] <type name> — relevant fields only, verbatim
-ENTRY POINTS & CALLPATH:
-  - Triggered by: [file:line] <test or upstream caller>
-  - Calls into other areas: [file:line] <function> → <target area>
-DISREGARDED SOURCES:
-  - <file> — <why not relevant>
-OPEN QUESTIONS:
-  - [?] <anything unresolved, missing definitions, or assumed>
-```
-
    **2c. Merge and Verify:**
    - Combine the subagents' results into one ranked list of the files most applicable to the User's Question, and one consolidated list of Critical Code Segments.
    - Stitch each area's entry points and outgoing calls into a single end-to-end callpath. This becomes the stepdown order for the pseudocode in 3a.
