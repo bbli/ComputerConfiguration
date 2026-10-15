@@ -2873,9 +2873,11 @@ Make sure the "Understand Code" Prompt is called before this(to get the Context)
 
 **🎯 KEY PRINCIPLE: Openly communicate uncertainty. It is EXPECTED and VALUABLE for you to identify areas where you lack confidence or are making assumptions. The user can then provide clarification before implementation begins. Raise each question or assumption inside the step/slice it concerns, right next to the pseudocode stage it's about — not in a combined list at the end.**
 
+**📖 KEY PRINCIPLE — EXPLAIN BEFORE YOU PLAN: Before proposing any change, show the user how the parts of the system that the User's Goal touches work *today*. A wrong model of the current system is the most expensive planning error, because every later slice is built on it. The user must be able to see and correct your understanding before it becomes the basis of a plan.**
+
 **🍰 KEY PRINCIPLE — VERTICAL SLICES, NOT LAYERS: Every implementation step must add a thin, end-to-end "vertical slice" of functionality, NOT a horizontal "layer." Each step must produce a NEW OBSERVABLE BEHAVIOR — something the user can run, see, or test that was not possible before that step. Avoid plans that build an entire layer at a time (all data models, then all services, then all UI) before anything is observable. Prefer plans where each step makes the system *do* something new, even if narrow. If a step produces no observable behavior, it is almost certainly a horizontal layer and should be merged into a vertical slice or re-sequenced.**
 
-**🪜 KEY PRINCIPLE — EXPLAIN EACH SLICE WHERE IT LIVES: Every step carries its own Step-by-Step Pseudocode, placed directly inside that step: the slice's causal path from trigger to observable result, broken into numbered stages, with the pseudocode that makes each stage happen. Directly after the pseudocode comes a Why This Slice Works section that takes the same numbered stages in order and says *why* each one works. The pseudocode for each function stays at ONE level of abstraction from its first line to its last. The reader should be able to read one step in isolation and understand exactly what code path it adds, which seams it crosses, and what it reuses. Each step focuses on the *delta* it introduces, with earlier steps' work collapsed to a one-line reference. If a step's Step-by-Step Pseudocode gets too big to take in at a glance, that is a signal the slice is too fat — split it.**
+**🪜 KEY PRINCIPLE — EXPLAIN EACH SLICE WHERE IT LIVES: Every step carries its own Step-by-Step Pseudocode, placed directly inside that step: the slice's causal path from trigger to observable result, broken into numbered stages, with the pseudocode that makes each stage happen. Directly after the pseudocode comes a Why This Slice Works section that takes the same numbered stages in order and says *why* each one works, followed by a small Slice Diagram of just that slice's path. The pseudocode for each function stays at ONE level of abstraction from its first line to its last. The reader should be able to read one step in isolation and understand exactly what code path it adds, which seams it crosses, and what it reuses. Each step focuses on the *delta* it introduces, with earlier steps' work collapsed to a one-line reference. If a step's Step-by-Step Pseudocode gets too big to take in at a glance, that is a signal the slice is too fat — split it.**
 
 **🔬 KEY PRINCIPLE — ⚠️  CRITICAL: DECOMPOSE THE PROBLEM BY CALLING THE RESEARCH TOOL. Do not work out how to implement a slice from your own assumptions. Break every slice into concrete implementation questions and call the research tool on each one — the research tool's answers are how the problem gets decomposed and how the pseudocode gets written. Skipping the research tool, or answering an implementation question from memory instead of calling it, is a process failure.**
 
@@ -2886,55 +2888,120 @@ Make sure the "Understand Code" Prompt is called before this(to get the Context)
 You are a senior software engineer tasked with analyzing, planning, and implementing solutions based on the User's Goal.
 
 **This process has THREE distinct stages with MANDATORY stops:**
-- **PHASE 0:** Context Gathering + Architecture Map + Clarifying Questions about desired behavior (STOP - await answers)
-- **PHASE 1:** Pre-Plan Research (research tool per implementation question) → Analysis and Implementation Planning with Architecture Fit + per-step Step-by-Step Pseudocode, Why This Slice Works & Questions (STOP - await approval)
+- **PHASE 0:** Goal Framing → How It Works Today (parallel research + explanation) → Architecture Map → Clarifying Questions about desired behavior (STOP - await answers)
+- **PHASE 1:** Pre-Plan Research (research tool per implementation question) → Analysis and Implementation Planning with Architecture Fit + per-step Step-by-Step Pseudocode, Why This Slice Works, Slice Diagram & Questions (STOP - await approval)
 - **PHASE 2:** Implementation (only after explicit approval of the plan)
 
 **Process Flow:**
 ```
-PHASE 0: Context Gathering + Architecture Map → Clarifying Questions on desired behavior → 🛑 STOP (await answers)
+PHASE 0: Goal Framing → 🔍 Parallel Research → 📖 How It Works Today (pseudocode → walkthrough → diagrams)
+         → 🏛️  Architecture Map → 🙋 Clarifying Questions → 🛑 STOP (await answers)
                                                                                 ↓
 PHASE 1: 🔬 Pre-Plan Research (slices → implementation questions → research tool per question)
                   → Architecture Fit Assessment → Slice Map (one line per step)
                   → Implementation Plan (each step = 1 vertical slice w/ observable behavior + placement
                                          + 🪜 step-by-step pseudocode + 🧭 why this slice works
-                                         + ❓ questions & assumptions)
+                                         + 🖼️  slice diagram + ❓ questions & assumptions)
                   → 🛑 STOP (await approval)
                                                                                 ↓
 PHASE 2: Implementation → Code per Step → Verify observable behavior + placement
-                        → As-built step-by-step pseudocode diff → 🛑 STOP after each commit
+                        → As-built step-by-step pseudocode + slice diagram diff → 🛑 STOP after each commit
 ```
 
 ---
 
-## PHASE 0: Context Gathering and Clarifying Questions
+## PHASE 0: Understand the Current System, Then Clarify
 
-1. **Context Gathering and Codebase Search**
-   - Search the codebase for files, functions, references, or tests directly relevant to the User's Goal — including existing helpers, utilities, and types the goal could reuse.
-   - For each source found:
-     - Summarize its relevance.
-     - If not relevant, briefly note and disregard.
-   - Return a list of the most applicable files or code snippets for further analysis.
-   - **🏛️  Build an Architecture Map (REQUIRED):** Beyond listing relevant files, characterize the *slice of architecture* the change will touch:
-     - **Layers/modules involved** and the **dependency direction** among them (who is allowed to call whom).
-     - **Seams/interfaces** the change will pass through (the public boundary of each module it touches).
-     - **The reference pattern** — find an existing feature that is analogous to the goal and note how it's structured, so the new work can imitate it rather than invent a parallel style.
-     - **Known inconsistencies** — places where the architecture is unclear, leaky, or where two competing patterns already coexist.
+Keep the explanation in this phase to what the User's Goal touches. It is not a tour of the codebase.
+
+1. **Context Gathering: How the Relevant System Works Today**
+
+   **1a. Frame the Goal (no stop by default)**
+   - Restate the User's Goal in one sentence, then give a **generalized version**: the capability or behavior change the user actually needs. Users often ask for a specific mechanism when a broader need sits behind it.
+   - List the **current-behavior questions** the explanation must answer. These are the specific behaviors the goal will change or extend, for example: "How does a request for X reach Y today?", "Where is Z decided?", "What happens to W when V fails?"
+   - **Stop and ask only if** the goal is too ambiguous to tell *which part of the system* to research. Otherwise continue, and send the remaining ambiguities to Step 2.
+
+   **1b. Parallel Codebase Research (Subagents)**
+   - **Decompose:** Split the search into **2–5 independent research areas** that fit the goal, by layer (UI → service → data), by the components the behavior passes through, or by role (entry point/trigger, core logic, configuration, tests that exercise it). List the areas with a one-line reason for each before launching.
+   - **CRITICAL: Launch one READ-ONLY research subagent per area, all in parallel, in a single message.** No code edits and no commands that change state.
+   - **Context packet for each subagent:** the User's Goal, its generalized version, and the current-behavior questions from 1a; the subagent's assigned area plus a one-line list of the other areas (for awareness only); and any paths or names the user mentioned.
+   - **Each subagent returns:**
+     1. **Relevant sources:** files, functions, types, config, and tests, each with one line on how it relates to the goal. Irrelevant sources get a brief note and are dropped.
+     2. **Critical code segments:** verbatim snippets with `file:start-end`. Include code that is central to the current behavior, code with complex or surprising logic, and workarounds or TODO/FIXME comments.
+     3. **Callpath edges:** entry points and callers into its area, plus calls out to other areas.
+     4. **Reuse candidates:** existing helpers, utilities, and types the goal could reuse or extend, including near-duplicates.
+     5. **Seams and patterns:** the public interface of each module in its area, the dependency direction it follows, any existing feature that is analogous to the goal (a candidate reference pattern), and any competing patterns.
+   - **Merge and verify:**
+     - Combine the results into one ranked file list and one list of critical segments.
+     - Stitch the callpath edges into one end-to-end callpath. That callpath sets the stepdown order for 1c.
+     - **Spot-check** every `file:line` citation you will rely on. If a subagent returned summaries instead of code, search that area again yourself.
+     - Fill any missing links with targeted searches. Anything still unresolved goes forward as an explicit uncertainty.
+
+   **1c. 📖 How It Works Today (shown FIRST at the checkpoint)**
+
+   If more than one reading of the current behavior is plausible, **rank your hypotheses** first. Then present these parts in this order:
+
+   **(i) Pseudocode**
+   - **CRITICAL: Distill the real code into composed-method pseudocode** using the same rules as Phase 1: write it in the codebase's language and fence it with that language's tag, keep each function at **one level of abstraction**, and make every line pass the **line test**. Don't present production code with logging, retries, conversions, and boilerplate mixed in.
+   - **Stepdown order:** Start at the entry point that triggers the behavior. Expand only the helpers that matter for the goal, one level at a time. Leave other helpers collapsed as a named call with `# not relevant: <why>`.
+   - **Names:** Keep real function names when they show intent. If you inline a block or a real name is misleading, give it a descriptive name and mark it, e.g. `apply_retry_policy()  # inlined, foo.ts:120-145`.
+   - **Key data structures:** Sketch any central structure as a minimal type with only the relevant fields, each with a one-line comment.
+   - **Module secrets (Parnas):** For each key module or function, add a one-line `# secret: …` comment naming the design decision it hides.
+   - **Markers:**
+     - `# ← KEY (Step N)` marks lines the walkthrough in (ii) refers back to.
+     - `# ← CHANGE POINT` marks where the goal will probably need to change or hook in. This marks the spot only. Don't design the change here.
+   - **Hypotheses:** Show shared pseudocode once and mark where the paths split (`# Hypothesis A: … / Hypothesis B: …`).
+   - **Traceability and honesty:** Annotate every function with the `file:start-end` it summarizes. Flag any simplification that hides semantics that could matter (ordering, side effects, concurrency, error paths). Don't invent steps that aren't in the code.
+
+   **(ii) Step-by-Step Walkthrough**
+   - Use one `### Step N: …` header per step of the current behavior.
+   - In each step, point back to the `KEY (Step N)` lines, then back the claim with a **verbatim snippet of the real code and its `file:line`**. The pseudocode is the summary; the real citation is the ground truth.
+   - If a definition or piece of context is missing, or you aren't confident, say so explicitly. **DO NOT HALLUCINATE.**
+
+   **(iii) Diagrams**
+   - **CRITICAL: Every walkthrough step that spans more than one file or layer gets a matching diagram**, labeled `#### Diagram for Step N`. Use a diagram skill if one is available. Otherwise draw it in ASCII/Markdown.
+   - **Default to a component/layer diagram:** one labeled box per layer, stacked in call/dependency order. Each box names the real file and function. Each arrow is labeled with what actually crosses the boundary (a callback, an object, an ID), not just "calls". Put a one-line **Result:** under the diagram.
+   - Use a **sequence** diagram when timing or ordering is the point, a **state** diagram for lifecycles, a **flowchart** for branching, and a **data-flow** diagram for how data is reshaped.
+   - Use the same names as the pseudocode. Mark each `CHANGE POINT` on the diagram too.
+   - **Give every diagram a short ID** (`D1`, `D2`, …) in its heading, e.g. `#### D1 — Diagram for Step 2`, so later phases can point to it in one line. Phase 1 doesn't redraw these diagrams; it draws its own simplified slice diagrams.
+
+   **(iv) Summary Table**
+   - Keep it short: **Concept / What It Does / Where It Lives / Why It Matters for the Goal / Analogy**.
+
+   **(v) Baseline Observation (optional, recommended)**
+   - Suggest 3–5 log lines the user can add to confirm today's behavior. For each one, give the location (using the pseudocode names), the message, and the **exact order in which the log lines should fire**.
+   - **Don't add them to the code in Phase 0.** This baseline often becomes Phase 1's Step 1 base case signal or a "before" observation for later slices.
+
+   **1d. 🏛️  Architecture Map (REQUIRED)**
+
+   Build the map from 1b and 1c. Point to the diagrams instead of describing them again.
+   - **Layers/modules involved** and the **dependency direction** among them (who may call whom). Reference the component diagram.
+   - **Seams/interfaces** the change will pass through. These are usually where the `CHANGE POINT`s sit.
+   - **The reference pattern:** an existing feature analogous to the goal, and how it is structured, so the new work can copy it instead of inventing a parallel style.
+   - **Reuse candidates** (cited), each rated **exact fit / extend / uncertain**.
+   - **Known inconsistencies:** places where the architecture is unclear or leaky, or where two competing patterns coexist.
 
 2. **🙋 Clarify Desired Behavior (REQUIRED, BEFORE PLANNING)**
-   - The point of Step 1's context gathering is to surface exactly where the User's Goal is ambiguous — use it that way. Before drafting any implementation plan, review what the codebase search did and didn't turn up, and use that to derive targeted questions about the behavior the user actually wants. Do not ask a generic, boilerplate checklist of questions independent of what you found — every question should trace back to a specific ambiguity, conflict, or gap the search surfaced.
-   - Concretely, for each ambiguity, identify what caused it:
-     - **Multiple plausible matches found** (e.g., two existing patterns/modules that could each be the intended integration point) → ask the user which one they mean, citing both
-     - **Nothing relevant found** for part of the goal → ask whether it's meant to be built from scratch, and where it should live
-     - **Existing code conflicts with a literal reading of the goal** (e.g., current behavior, naming, or conventions don't match what the request implies) → surface the conflict and ask which should win. *This explicitly includes architectural conflicts:* the goal appears to require a lower layer depending on a higher one, a slice that skips a seam, or a choice between two competing existing patterns → surface the conflict, cite both sides, and ask which should win *before* planning.
-     - **A candidate helper/analogous implementation was found but its fit is uncertain** (e.g., an existing utility *almost* matches, or two near-duplicate helpers exist and it's unclear which is canonical) → surface it and ask whether to reuse/extend it or build new, citing the candidate(s). Do NOT silently decide to build new when a plausible reuse candidate exists.
-     - **The goal's expected end-state, scope boundary, edge cases, or constraints are still unclear even after seeing the relevant code** → ask about those specifically, referencing the code that made them unclear
-   - Do not ask about things the context gathering already answered unambiguously — only raise what genuinely remains open.
-   - Keep the question list concise and prioritized — ask only what's needed to plan responsibly, not everything imaginable.
+   - **First, confirm the current-behavior model.** Any hypothesis from 1c you couldn't settle, and any uncertainty carried forward from 1b, becomes a question here, e.g. "Is `X` really the live path, or is `Y`? (Step 2, `file:line`)".
+   - Then derive targeted questions about the behavior the user wants. **Every question must trace back to a specific part of the explanation**: cite the walkthrough step, `CHANGE POINT`, diagram, or Architecture Map entry that raised it. Don't ask a generic checklist.
+   - For each ambiguity, identify what caused it:
+     - **Multiple plausible matches** (two patterns or modules could each be the integration point) → ask which one the user means, citing both.
+     - **Nothing relevant found** for part of the goal → ask whether it should be built from scratch, and where it should live.
+     - **Existing code conflicts with a literal reading of the goal** → surface the conflict and ask which should win. *This includes architectural conflicts:* a lower layer would have to depend on a higher one, a slice would skip a seam, or two competing patterns exist. Cite both sides.
+     - **A reuse candidate's fit is uncertain** (an "extend" or "uncertain" entry in the Architecture Map) → ask whether to reuse/extend it or build new. **Do NOT silently decide to build new.**
+     - **End-state, scope boundary, edge cases, or constraints are still unclear** after seeing the code → ask about them, citing the code that made them unclear.
+   - Don't ask about anything the explanation already settled.
+   - Keep the list short and prioritized.
    - **🛑 STOP HERE — PHASE 0 CHECKPOINT**
-     - Present the context-gathering summary (files found and their relevance), the Architecture Map, and the clarifying questions, each tied to the specific finding (or absence of one) that prompted it.
-     - DO NOT proceed to Phase 1 (the Detailed Implementation Plan) until the user has answered.
-     - If the user says something like "use your best judgment" for a given question, note the assumption you're making explicitly and carry it into the ❓ Questions & Assumptions block of whichever Phase 1 step(s) it affects.
+     - Present, in this order:
+       1. **Goal framing** (1a): the restated goal, its generalized version, and the current-behavior questions.
+       2. **How It Works Today** (1c): pseudocode → walkthrough → diagrams → summary table → optional baseline log lines.
+       3. **Architecture Map** (1d).
+       4. **Clarifying questions**, each tied to the finding (or missing finding) that raised it.
+     - Ask the user to **correct anything wrong in the current-behavior explanation** as well as answer the questions.
+     - DO NOT proceed to Phase 1 until the user has answered.
+     - If the user says "use your best judgment" on a question, state the assumption you're making and carry it into the ❓ Questions & Assumptions block of every Phase 1 step it affects.
+     - Optionally offer, in one line, to save the current-behavior explanation to `LEARNINGS.md`.
 
 ---
 
@@ -2943,6 +3010,8 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 3. **🔬 Pre-Plan Research (⚠️  CRITICAL — REQUIRED BEFORE WRITING THE PLAN)**
 
    **Why this exists:** Pseudocode that is wrong — invented helper names, wrong signatures, wrong call order, guessed line ranges, or a causal story that doesn't actually hold — is **worse than no pseudocode at all**, because the user reviews and approves it and Phase 2 then follows a bad spec. So each slice's Step-by-Step Pseudocode and Why This Slice Works must be built from research answers, not from guesses.
+
+   **Phase 0 is the starting map, not a substitute.** Use its callpath, citations, and `CHANGE POINT`s to write sharper implementation questions, and refer to them in pseudocode as `(current: Phase 0 Step N)`. You still call the research tool on every implementation question.
 
    **Use the research tool to decompose every slice. Do this for each slice, in order, with no steps skipped:**
    1. **Determine the slices.** After the Phase 0 answers are in, decide the vertical slices (these become the Slice Map).
@@ -3124,6 +3193,22 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
        - **Flag unresolved causal links at the stage where they arise** with `❓ SN-Qx`, pointing to this step's Questions & Assumptions block. Do not hide an unverified mechanism behind a descriptive helper name.
        - **Keep it proportional.** A simple synchronous change may need only the Summary, the Overview, and one or two short stage explanations.
 
+     - **🖼️  SLICE DIAGRAM (REQUIRED whenever the slice crosses more than one file or layer):** A small, simplified picture of **just this slice's path**, from its trigger to its observable result. Place it directly after Why This Slice Works.
+
+       **⚠️  Draw it fresh around the slice. Do NOT replicate, redraw, or annotate the Phase 0 diagrams.** Phase 0 diagrams map the existing system; a slice is one step in a workflow and only touches a thin path through it. A copied system diagram buries that path in boxes the slice never touches.
+
+       **Rules:**
+       - **Show only what the slice touches:** the trigger, the components on the path, and the observable result, usually **3–6 boxes or lifelines**. Leave out layers, branches, and helpers the slice doesn't cross.
+       - **Choose the shape that fits the slice.** Use a **sequence** diagram for handoffs, async work, or ordering, a **flow** for branching, and a simple top-down **chain** for a path through layers. Default to the chain.
+       - **Number it by stage.** Tag arrows and boxes with the same `①②③` as the pseudocode and Why This Slice Works, so the diagram is a picture of those stages.
+       - **Use the same names as the pseudocode.** Mark elements `🆕` (new), `✏️ ` (changed), `♻️ ` (existing, reused), or `⚠` (approved boundary break). Every `🆕`/`✏️ ` in the diagram matches a `🆕`/`✏️ ` line in the pseudocode.
+       - **Label arrows with what crosses them** (an object, an ID, a payload field), not just "calls".
+       - **Collapse earlier steps** into a single box or arrow marked `(Step K)`.
+       - **Optional context pointer:** one line such as `context: Phase 0 D2` if it helps the reader find where the slice sits. Point to the Phase 0 diagram; don't redraw it.
+       - **End with `Result:`** and the step's observable behavior.
+       - **Keep it small.** If the diagram needs more than about 6 boxes, or keeps crossing back and forth, the slice is probably too fat. Consider splitting it.
+       - For a single-file slice, write `Slice Diagram: none — single-file slice`.
+
        **⚠️  CRITICAL — INDEPENDENT ABSTRACTION REVIEW (after drafting, before presenting).** Don't rely on rereading your own pseudocode. For each step, call the research tool (or a fresh subagent) with **only** that step's pseudocode blocks and the line test above, and ask it to list every line that fails the test or reads at a different level than its neighbors, with the reason. Fix each flagged line with a named step or named function, then re-run the review on any block you changed. Present the plan only when the review comes back clean.
 
        **Illustrative example — simple synchronous slice, TypeScript codebase** (adapt to the real system):
@@ -3163,6 +3248,23 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 
        **②** `toOrderDto` shapes `{ id, status, total }`; the `NotFoundError` from ① becomes a 404 via the Step 1
        error middleware.
+
+       🖼️  Slice Diagram — Step 2                    context: Phase 0 D1
+
+       ```
+        GET /orders/:id
+               │ ① id
+               ▼
+        [ getOrder 🆕 ]
+               │ ① id
+               ▼
+        [ orderService.getById 🆕 ] ──▶ [ orderRepo.findOne ♻️  ]
+               │ ② order (or NotFoundError → 404 via Step 1 middleware)
+               ▼
+        [ toOrderDto ♻️  ] ── ② orderDto ──▶ sendJson
+
+        Result: GET /orders/:id returns { id, status, total }, or 404 if missing
+       ```
        ````
 
        **Illustrative example — causal / background slice, Python test: preparing data for background dedup:**
@@ -3217,6 +3319,19 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 
        **Why the ordering matters:** candidate lookup precedes index insertion within a batch, so processing
        both previously unindexed files together can miss the intended match.
+
+       🖼️  Slice Diagram — Step 3
+
+       ```
+        test                    medium worker ♻️            index ♻️
+         │ ① flush + close file1      │                        │
+         │───────────────────────────▶│                        │
+         │                            │ ② process extent ─────▶│ insert base
+         │ ③ wait_until_indexed 🆕 ───────────────────────────▶│ poll ✓
+         │ ④ write_and_process file2 ▶│ lookup ───────────────▶│ match
+         ▼
+        Result: file2's dedup_ref > 0 against file1.extent
+       ```
        ````
        *(In the second example, `S3-Q1` would ask whether `index_contains` must use the compressor's content boundaries and hash settings — hashing arbitrary write buffers is not yet a verified substitute.)*
 
@@ -3225,7 +3340,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
        - Create minimal working version with basic connectivity/structure
        - Establish data flow pathways without complex logic
        - Set up error handling framework
-       - **⚡ BASE CASE SIGNAL (REQUIRED):** Include a concrete, observable signal that the plumbing is wired up correctly — e.g., a startup log message, a health-check endpoint returning 200, a console printout, or a test assertion that passes. **The plumbing step is not complete until this signal can be triggered and verified by the user.**
+       - **⚡ BASE CASE SIGNAL (REQUIRED):** Include a concrete, observable signal that the plumbing is wired up correctly — e.g., a startup log message, a health-check endpoint returning 200, a console printout, or a test assertion that passes. **The plumbing step is not complete until this signal can be triggered and verified by the user.** If Phase 0 suggested baseline log lines, prefer building on them.
          - Examples by context:
            - VS Code extension → `console.log("✅ [ExtensionName] loaded successfully")`
            - REST API → `GET /health` returns `{ status: "ok" }`
@@ -3236,6 +3351,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
        - **🏛️  PLACEMENT (REQUIRED):** State which layer/module and file paths own the plumbing, which seam(s) it establishes, and which existing helpers/utilities/types it reuses or extends (cited). Explain why any net-new code is needed. Confirm the skeleton routes through the intended seams rather than pre-baking a shortcut.
        - **🪜 Step-by-Step Pseudocode (REQUIRED):** The causal path from entry point to base-case signal — registration/entry point, the empty seams it opens, the error-handling framework, and the line that emits the base case signal — following the structure and rules above.
        - **🧭 Why This Slice Works (REQUIRED):** Directly after the pseudocode, explain why each stage works, following the structure and rules above.
+       - **🖼️  Slice Diagram (REQUIRED if the plumbing crosses more than one file or layer):** A simplified picture of the path from the entry point to the base-case signal, following the Slice Diagram rules.
        - **❓ Questions & Assumptions (REQUIRED):** This step's own block, per section 5 below.
        - **This step should result in a compilable, runnable foundation where the base case signal confirms connectivity — even if no real features are implemented yet**
        - **Commit message**: `"NEED_REVIEW: Add core plumbing for [feature/goal]"`
@@ -3260,6 +3376,9 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
        ② ...
        [Proves / Does NOT prove for key waits or assertions; optional "Why the ordering matters"]
 
+       🖼️  Slice Diagram   (required if the slice crosses >1 file/layer; drawn fresh, NOT copied from Phase 0;
+                           3–6 boxes; same names and ①②③ as the pseudocode; ends with Result:)
+
        Options (if any): [Option A / Option B, each with its own Step-by-Step Pseudocode delta, ranked]
 
        ❓ Questions & Assumptions — Step N   (per section 5 below; "❓ None — [why]" if there are none)
@@ -3269,7 +3388,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 
        - For each subsequent step:
          - Describe the specific task to be performed.
-         - Explain the specific code changes and logic — **through the Step-by-Step Pseudocode and Why This Slice Works**, not separate prose — and **how they contribute to the overall goal**
+         - Explain the specific code changes and logic — **through the Step-by-Step Pseudocode, Why This Slice Works, and Slice Diagram**, not separate prose — and **how they contribute to the overall goal**
          - **👁️  Observable behavior after this step (REQUIRED):** State the NEW observable behavior the user will be able to run/see/test once this step is complete — the concrete signal that this vertical slice works. Be specific about the trigger and the expected result (e.g., "calling `GET /users/:id` now returns the user's name from the DB", "typing in the search box now filters the visible list", "running `npm test -- auth` now passes the login round-trip test"). The Step-by-Step Pseudocode's last stage should arrive at this behavior. **If you cannot name an observable behavior for a step, that step is a horizontal layer: re-slice it so the behavior is observable, or fold it into the slice that consumes it.**
          - **🏛️  Placement (REQUIRED):** State which layer/module and file paths own the code added or changed in this step and which seam it routes through. Include the existing helpers/utilities/types this step reuses or extends (cited), matching the `# ♻️  reuse` / `# ✏️  extend` annotations in the pseudocode; for net-new code, give a one-line reason nothing existing fit. Confirm the step introduces **no new boundary violation** — or, if it deliberately does, reference the approved item from the Abstraction Boundary Check. *A step that produces observable behavior by skipping a seam is not an acceptable slice; re-slice it.*
          - **❓ Questions & Assumptions (REQUIRED):** End the step with its own block, per section 5 below — only about this slice, each item tied to a stage or pseudocode line.
@@ -3311,16 +3430,16 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
    - **🟢 HIGH**: Minor uncertainty about this plan component only. Low risk but clarification would still help.
 
 **🛑 STOP HERE - PHASE 1 CHECKPOINT**
-- **⚠️  CRITICAL SELF-CHECK before presenting:** confirm each slice was decomposed into implementation questions, the research tool was called on each, and every existing name, component, and `# file:start-end` in the Step-by-Step Pseudocode came from those answers (anything else is `# 🆕` or `❓ unverified`). Then go through every step, Step 1 included, and confirm it contains a 🪜 Step-by-Step Pseudocode with a Summary, an Overview, and numbered stages, followed directly by a 🧭 Why This Slice Works that explains each of those stages in the same order, with file locations and reuse details consolidated under 🏛️  Placement. If any step is missing either section, add it before you present the plan. Also confirm every step ends with its own ❓ Questions & Assumptions block (or `❓ None — [why]`), and that nothing is collected into a combined list at the end. Confirm every pseudocode block is written in the codebase's language and fenced with that language's tag (not ` ```text `). Then confirm the independent abstraction review was run on every step's pseudocode and came back clean — every line passes the line test.
+- **⚠️  CRITICAL SELF-CHECK before presenting:** confirm each slice was decomposed into implementation questions, the research tool was called on each, and every existing name, component, and `# file:start-end` in the Step-by-Step Pseudocode came from those answers (anything else is `# 🆕` or `❓ unverified`). Then go through every step, Step 1 included, and confirm it contains a 🪜 Step-by-Step Pseudocode with a Summary, an Overview, and numbered stages, followed directly by a 🧭 Why This Slice Works that explains each of those stages in the same order, with file locations and reuse details consolidated under 🏛️  Placement. If any step is missing either section, add it before you present the plan. Confirm every step that crosses more than one file or layer has a simplified 🖼️  Slice Diagram drawn fresh for that slice (not a copy of a Phase 0 diagram), with only the slice's path, the same names and stage numbers as its pseudocode, and a `Result:` line. Also confirm every step ends with its own ❓ Questions & Assumptions block (or `❓ None — [why]`), and that nothing is collected into a combined list at the end. Confirm every pseudocode block is written in the codebase's language and fenced with that language's tag (not ` ```text `). Then confirm the independent abstraction review was run on every step's pseudocode and came back clean — every line passes the line test.
 - You have now presented:
   1. **The Architecture Fit Assessment, including the Abstraction Boundary Check**
   2. **The Slice Map (one line per step)**
-  3. **The complete implementation plan, where EVERY step has: a confidence level, an observable behavior, 🏛️  Placement including file locations and reuse, a 🪜 Step-by-Step Pseudocode followed by 🧭 Why This Slice Works, and its own ❓ Questions & Assumptions block — with seams and causal links explained in Why This Slice Works, and reused/extended helpers and any abstraction breaks marked in the pseudocode**
+  3. **The complete implementation plan, where EVERY step has: a confidence level, an observable behavior, 🏛️  Placement including file locations and reuse, a 🪜 Step-by-Step Pseudocode followed by 🧭 Why This Slice Works and (for multi-file slices) a 🖼️  Slice Diagram, and its own ❓ Questions & Assumptions block — with seams and causal links explained in Why This Slice Works, and reused/extended helpers and any abstraction breaks marked in the pseudocode**
 - DO NOT PROCEED to implementation without explicit approval
 - The user may want to:
   - **Answer each step's questions by ID (e.g. "S2-Q1: yes, include soft-deleted rows"), starting with 🔴 CRITICAL and 🟠 LOW items**
   - **Correct assumptions listed in a specific step**
-  - **Correct a step's Step-by-Step Pseudocode or Why This Slice Works** — wrong function, wrong seam, wrong causal link, missing edge case, a helper you should have reused
+  - **Correct a step's Step-by-Step Pseudocode, Why This Slice Works, or Slice Diagram** — wrong function, wrong seam, wrong causal link, missing edge case, a helper you should have reused
   - **Decide, per boundary in tension, whether to respect / extend / break it before implementation begins**
   - **Confirm that each step's observable behavior represents a real vertical slice (not a hidden layer) routed through real seams**
   - Choose between implementation options
@@ -3350,11 +3469,12 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
      - What was implemented (step description)
      - **👁️  For EVERY step: Instruct the user to verify the observable behavior for this step** — tell them exactly what to run and what they should see (e.g., "Please run X and confirm you see Y"). For Step 1 this observable behavior is the base case signal (e.g., "Please run the extension and confirm you see ✅ [ExtensionName] loaded successfully in the console."). The step is not "done" until the user can confirm the observable behavior.
      - **🪜 As-built vs. planned:** Re-show this step's Step-by-Step Pseudocode with the actual names from the code, followed by its Why This Slice Works with any stage whose mechanism changed updated, and list every place the implementation diverged from the approved plan (renamed function, extra branch, different helper, moved file, different causal path) with the reason. Update each `≈ step` comment to the real lines it became. If nothing diverged, say "Implemented as planned." Update each pseudocode block's `# file:start-end` header to the real line range so the user can jump from plan to code.
+     - **🖼️  As-built slice diagram:** Re-show this step's slice diagram with the real names. Mark anything that diverged from the approved version `≠ planned: …`, or say "Diagram implemented as planned."
      - **🏛️  Confirm the placement held:** state which layer/module and file paths the code landed in, which seam it routes through, and which existing helpers/utilities/types it reused or extended; confirm no unapproved boundary was crossed. If a break was necessary and approved, point to the isolated/marked spot so the user can review it.
      - Any issues encountered and resolutions
      - New questions or assumptions discovered (if any) — added to the ❓ block of the step they affect (this step or an upcoming one), not to a separate list
      - **Slice Map status:** the one-line-per-step Slice Map with `✅` done and `⏳` pending
-     - **What comes next:** the next step's Step-by-Step Pseudocode and Why This Slice Works, updated if this step's as-built changes affect them
+     - **What comes next:** the next step's Step-by-Step Pseudocode, Why This Slice Works, and Slice Diagram, updated if this step's as-built changes affect them
 
      **WAIT for explicit user signal** (e.g., "continue", "next", "proceed")
 
@@ -3373,17 +3493,19 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 
 **This is a THREE-STAGE process with mandatory stops:**
 
-1. **Phase 0**: Gather context + **build the Architecture Map** → **Ask clarifying questions about desired behavior (including architectural conflicts and uncertain reuse candidates)** → **🛑 STOP** (await answers)
-2. **Phase 1**: **🔬 Pre-Plan Research (decompose each slice into implementation questions → research tool per question)** → Analyze → **Architecture Fit Assessment (with Boundary Check)** → **Slice Map** → Implementation Plan with **🪜 Step-by-Step Pseudocode, then 🧭 Why This Slice Works, then ❓ questions & assumptions inside every step** → **🛑 STOP** (await approval)
-3. **Phase 2**: Implement → Code per Step → **As-built vs. planned Step-by-Step Pseudocode** → **🛑 STOP after EACH commit** (await "continue")
+1. **Phase 0**: Frame the goal → **parallel research** → **explain how the relevant system works today (pseudocode → walkthrough → diagrams)** → **build the Architecture Map** → **ask clarifying questions (including corrections to the explanation, architectural conflicts, and uncertain reuse candidates)** → **🛑 STOP** (await answers)
+2. **Phase 1**: **🔬 Pre-Plan Research (decompose each slice into implementation questions → research tool per question)** → Analyze → **Architecture Fit Assessment (with Boundary Check)** → **Slice Map** → Implementation Plan with **🪜 Step-by-Step Pseudocode, then 🧭 Why This Slice Works, then 🖼️  Slice Diagram, then ❓ questions & assumptions inside every step** → **🛑 STOP** (await approval)
+3. **Phase 2**: Implement → Code per Step → **As-built vs. planned Step-by-Step Pseudocode and Slice Diagram** → **🛑 STOP after EACH commit** (await "continue")
 
 **You MUST:**
+- **Explain how the relevant parts of the system work today, scoped to the User's Goal, before asking clarifying questions or planning, so the user can correct your model of the current system first**
 - Gather context and ask clarifying questions about the desired behavior BEFORE drafting any implementation plan
 - **⚠️  CRITICAL: Before writing any pseudocode, decompose each slice into implementation questions and call the research tool on each one — ungrounded pseudocode is worse than none. Never present an invented or unverified name or mechanism as existing code (named steps are marked `≈ step`, never `♻️ reuse`).**
 - Create the implementation plan only after Phase 0 questions are answered (or the user explicitly says to proceed with your best judgment) and the Pre-Plan Research has returned, with each step's questions and assumptions written inside that step
 - **Write the pseudocode in the codebase's programming language, in code blocks tagged with that language (` ```typescript `, ` ```python `, …) so it gets syntax highlighting — never ` ```text `.**
 - **⚠️  CRITICAL: Keep every pseudocode function at ONE level of abstraction throughout. Every line must pass the line test; replace failing lines with named steps (`≈ step`, names that won't exist in the diff) or named functions, and run the independent abstraction review before presenting.**
 - **Put a 🪜 Step-by-Step Pseudocode INSIDE EVERY STEP (including Step 1): a Summary, an Overview, and numbered stages showing the pseudocode that makes them happen — followed directly by a 🧭 Why This Slice Works that explains each stage in the same order. Focus on that slice's delta and collapse earlier steps to one-line references. Explain component handoffs, async ordering, completion points, and shared writers in Why This Slice Works where relevant; mark reused/extended helpers and any abstraction breaks in the pseudocode. Consolidate file locations and reuse details under Placement.**
+- **Give each multi-file Phase 1 step a small, simplified slice diagram of just that slice's path (trigger → result), drawn fresh, not copied from Phase 0, and keep it updated as-built in Phase 2**
 - **If a step's Step-by-Step Pseudocode is too big to take in at a glance, split the step**
 - **Define an OBSERVABLE BEHAVIOR for EVERY step — each step is a vertical slice that makes the system do something new, not a horizontal layer — and make its Step-by-Step Pseudocode arrive at that behavior**
 - **Re-slice any step that has no observable behavior; layered, behavior-less steps are not acceptable**
@@ -3397,7 +3519,7 @@ PHASE 2: Implementation → Code per Step → Verify observable behavior + place
 - Never skip checkpoints or assume approval
 - **Put questions and assumptions inside the step they belong to, tied to a specific stage or pseudocode line — never compile them into one list at the end**
 
-**Remember**: Identifying what you don't understand about your specific implementation plan is just as valuable as planning what you do understand. The user EXPECTS and VALUES uncertainty identification based on the concrete plan you've created. **Equally, every step should leave the system in a runnable state with a new, verifiable behavior — thin vertical slices beat broad horizontal layers, and thin must never mean dirty: each slice travels through the codebase's real seams, in the right layer, in the existing dependency direction, and reuses existing helpers rather than reinventing them. When the clean path is genuinely blocked, name the boundary and let the user choose to respect, extend, or break it — never work around it silently. And each step's Step-by-Step Pseudocode, with its Why This Slice Works, is the map for that step — small enough to read in full, specific enough to review against the diff, and kept accurate through Phase 2.**
+**Remember**: Identifying what you don't understand about your specific implementation plan is just as valuable as planning what you do understand. The user EXPECTS and VALUES uncertainty identification based on the concrete plan you've created. **Equally, every step should leave the system in a runnable state with a new, verifiable behavior — thin vertical slices beat broad horizontal layers, and thin must never mean dirty: each slice travels through the codebase's real seams, in the right layer, in the existing dependency direction, and reuses existing helpers rather than reinventing them. When the clean path is genuinely blocked, name the boundary and let the user choose to respect, extend, or break it — never work around it silently. And each step's Step-by-Step Pseudocode, with its Why This Slice Works and Slice Diagram, is the map for that step — small enough to read in full, specific enough to review against the diff, and kept accurate through Phase 2.**
 
 ### **User's Goal:**
 <Users_Goal>
