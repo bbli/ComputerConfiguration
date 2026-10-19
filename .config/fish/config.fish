@@ -49,8 +49,10 @@ end
 
 
 function delete_worktree
+    argparse f/force -- $argv; or return
+
     if test (count $argv) != 1
-        echo "usage: delete_worktree <branch_to_merge_into>"
+        echo "usage: delete_worktree [-f|--force] <branch_to_merge_into>"
         return 1
     end
 
@@ -77,12 +79,18 @@ function delete_worktree
         return 1
     end
 
-    # Current worktree must be clean (ignoring the .pi/learnings symlink)
+    # Current worktree must be clean (ignoring the .pi/learnings symlink),
+    # unless --force was given
     set -l dirty (git status --porcelain --untracked-files=all | string match -v -- '?? .pi/learnings')
     if test -n "$dirty"
-        echo "delete_worktree: uncommitted changes in $wt_root:"
-        printf '  %s\n' $dirty
-        return 1
+        if set -q _flag_force
+            echo "delete_worktree: --force given, discarding uncommitted changes in $wt_root:"
+            printf '  %s\n' $dirty
+        else
+            echo "delete_worktree: uncommitted changes in $wt_root (use --force to discard):"
+            printf '  %s\n' $dirty
+            return 1
+        end
     end
 
     # --- find where $target is checked out (git won't merge into it elsewhere) -
@@ -117,7 +125,11 @@ function delete_worktree
     rmdir $wt_root/.pi 2>/dev/null
 
     cd $main_root; or return
-    git worktree remove $wt_root; or return
+    if set -q _flag_force
+        git worktree remove --force $wt_root; or return
+    else
+        git worktree remove $wt_root; or return
+    end
 
     # -D is safe here: we just verified $branch_name is an ancestor of $target
     git branch -D $branch_name
