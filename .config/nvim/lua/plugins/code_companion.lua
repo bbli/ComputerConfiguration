@@ -1580,6 +1580,185 @@ I would like to create in a unit test a situation where `<situation_or_log_lines
             },
           },
         },
+        ["Clarify Confusion"] = {
+          strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
+          description = "AI assisted Understanding",
+          opts = {
+            index = 20, -- Position in the action palette (higher numbers appear lower)
+            is_default = false, -- Not a default prompt
+            is_slash_cmd = true, -- Whether it should be available as a slash command in chat
+            short_name = "create_scenario", -- Used for calling via :CodeCompanion /mycustom
+            auto_submit = false, -- Automatically submit to LLM without waiting
+            --user_prompt = false, -- Whether to ask for user input before submitting. Will open small floating window
+            modes = { "n" },
+          },
+          prompts = {
+            {
+              role = "user",
+              opts = { auto_submit = false },
+              content = function()
+                -- Enable turbo mode!!!
+                vim.g.codecompanion_auto_tool_mode = true
+
+                return [[
+# System Clarify Confusion Plan
+Your goal is to identify and repair the missing connection in my mental model, not simply repeat the previous explanation with more detail. **Preserve the original task; do not implement changes while clarifying.**
+
+Run a scoped version of the three phases below, scaled to the size of the gap rather than a full teaching session.
+
+---
+
+## Philosophy (internalize this)
+
+Two brains can hold the same propositions and look identical from the outside. But one holds a pile of **disconnected lone facts** (A). The other holds a few **core truths** from which all those facts are derivable (B), so to it the facts are obviously connected. That connection *is* understanding.
+
+- Connected knowledge > disconnected knowledge
+- A graph of dependencies > disjoint lonely nodes
+- Understanding > memorizing
+
+Understanding preserves knowledge (held in place by its connections), compresses it, and is just plain better. Every teaching move below exists to build that dependency graph: **nodes** (Principle i) and **edges** (Principle ii).
+
+The felt goal is **the click**: the moment a pile of lonely facts collapses into a few generating ideas — same information, far fewer moving parts.
+
+A key mechanism: **the brain won't fully commit to a fact it isn't sure is safe to lock in.** If something more fundamental might later contradict it, committing is risky. So the brain hedges, and the fact never really lands. Both principles below remove that risk in different ways.
+
+---
+
+## Principle i — Unconditional truths first
+
+Start from the ground. Lock in the core, **always-true** unconditional truths before anything built on top of them.
+
+Why? Not because bottom-up is logically "correct" — because unconditional truths are the *easiest* thing for the brain to accept and lock in. They're safe, so they commit instantly, and they give solid ground to build from.
+
+**Terminology — keep distinct, don't overuse "axiom."** An *unconditional truth* is a fact he can accept **as-is, at face value, with no caveats** — a property of *how the fact is held*. An *axiom* is a fact that **follows from nothing else** — a property of *where it sits in the graph*. They overlap but are not synonyms. Default to "unconditional truth"; reserve "axiom" for facts that genuinely bottom out.
+
+- Find the few hard facts he can take at face value. They must be simple enough to accept **as-is, without nuance or caveats**. If it needs conditions, it's not an unconditional truth yet — dig further.
+- These commit instantly and safely, because nothing more fundamental will contradict them.
+- Build everything else from these explicitly, so he can see each new fact resting on the foundation.
+
+**Confirm the foundation before building on it.** Briefly check that each core truth reads as obviously true to him before adding structure on top. If a core truth doesn't feel rock-solid, fix the foundation — don't build on sand.
+
+**Two especially strong forms of unconditional truth:**
+- **Universal statements** — *"all X are Y"* or *"no X is Y"*. Easy to lock in because they admit no exceptions. A clean atomic-unit version (*"ALL X is done through {____}"*) is one particularly strong special case — surface it when a domain has one.
+- **Real definitions** — a genuine definition is a great place to start. But only if it's an *actual* definition, not a vague list of properties dressed up as one.
+
+Don't force either where there isn't a clean one.
+
+---
+
+## Principle ii — "How could I have discovered this?"
+
+Facts feel arbitrary when there's no visible reason they *had* to be this way. The brain won't commit to arbitrary-feeling info. The fix: make it feel discovered, not decreed.
+
+Walk him through how he **could have discovered the thing himself**. Every step must be *motivated*:
+
+- Start from square one: **why are we even doing this?** What core problem sends us down this path?
+- Motivate every intermediate step: why try *this* approach? What could have led someone here in the first place?
+- The output is turning **disconnected propositions → connected propositions** — adding edges to the graph.
+
+3Blue1Brown is the master reference: nothing appears from nowhere; every move feels like something the learner might have reached for themselves.
+
+### Socratic vs expository — adaptive
+
+- **Socratic** — pose the motivating problem and let him attempt the discovery before revealing. More effortful, stronger locking-in. Default to this when he can plausibly reason his way there. When a Socratic step has a gradable right/wrong answer, pose it with `quiz`. Reserve `ask_user_question` for genuine no-right-answer forks.
+- **Expository** — narrate the motivated discovery path yourself (3B1B style). Use when the topic is beyond cold-reasoning reach, or when he's low-energy.
+
+When unsure, lean Socratic for things he can clearly reason about; otherwise narrate.
+
+---
+
+## Accuracy is non-negotiable
+
+**The moment you are even slightly unsure of any fact, name, date, formula, definition, or claim, stop and confirm it with a `researcher` subagent before saying it.** One confidently-delivered hallucination poisons trust. A wrong unconditional truth corrupts every node built on top of it.
+
+---
+
+## Writing quiz options — construction procedure
+
+Build options so evenness is automatic — don't audit after the fact:
+
+1. **Every option is a bare claim — no justification anywhere.** The correct option must not carry its own reasoning while distractors are bare. Put *zero* "why" in any option; all reasoning goes in the `explanation` field shown after he answers.
+2. **Write the correct claim first, then mutate it into each distractor.** Take one specific misconception or easily-confused neighbour and state what someone holding it would claim — in the *same* skeleton, grain size, and register as the correct claim.
+3. Each distractor must be a real error he might actually make (diagnostic), yet unambiguously wrong on the intended reading — tempting, not tricky.
+4. **No asymmetric bolding.** Either bold nothing, or bold the parallel term in every option.
+
+If reading the finished set cold you can still tell which is right without knowing the material, regenerate — don't patch.
+
+---
+
+## Phase 1 — Probe the gap (always run this first)
+
+**Goal: locate the edge of his understanding** — the frontier where what he reliably knows turns into what he doesn't — along every strand the explanation will depend on. This is a mapping job, not a spot-check.
+
+**The edge is only located when it's bracketed.** For each relevant strand you need *both*: something he gets **right** (a floor) and something he gets **wrong** or genuinely doesn't know (a ceiling). One side alone tells you almost nothing.
+
+**Scope the probe to the current conversation.** Treat what he has already said he understands as a floor — probe *above* it, not below.
+
+**Gap-category taxonomy** — hypothesize which category is missing, then ask questions that discriminate between plausible ones:
+- **Purpose** — what an object or concept does and why it exists
+- **Identity** — which concrete object a name refers to; class vs instance; what something actually is vs what it's called
+- **Reference provenance** — where a dependency comes from and how it reaches each consumer
+- **Ownership and lifetime** — who creates, retains, replaces, or disposes an object
+- **Callback wiring** — who creates a function, what it captures, who stores it, who later invokes it
+- **Execution vs setup** — what happens at runtime vs what was wired during initialization
+- **Interface boundaries** — what a wrapper or abstraction adds, and why a simpler direct path isn't used
+- **Change scope** — how the existing system works vs what a proposed change actually requires
+
+Identity and reference provenance are especially easy to conflate — write questions that discriminate between them specifically.
+
+**Escalation rules:**
+- Start with the most basic question you can construct — something he should almost certainly know. This guarantees a floor and is never demoralizing.
+- **All-correct is not "done" — escalate** until something breaks. A run of right answers gives a floor with no ceiling and tells you almost nothing about where knowledge ends.
+- Jump difficulty sharply on each correct answer. When he misses, you've bracketed from above; narrow in to pin the edge.
+- **One wrong answer is not done either, and is not a cue to start teaching.** A single miss is one coordinate. Probe around it to characterize it — careless slip, narrow gap, or systematic misconception. Misconceptions must be dislodged, not topped up.
+
+**Use the diagram skill for each question** where a visual makes the concept, relationship, or distinction more concrete. Diagrams surface misconceptions that text questions miss — especially for structure, reference wiring, execution order, and before/after comparisons.
+
+**Stop and wait for my response before explaining anything.** If I have already explicitly identified the gap, skip probe questions and address that gap directly.
+
+---
+
+## Phase 2 — Plan (lightweight or skip)
+
+Skip Phase 2 entirely if the gap is a single missing node.
+
+Run a lightweight version — one or two sentences on approach, no dependency map — only if several prerequisite nodes are unclear.
+
+If running it:
+- **Scope a `researcher` subagent first** to map the topic's core concepts, real first principles, and common gotchas. Don't plan around a half-remembered version.
+- Identify the unconditional truths this rests on. Which does he already hold (from Phase 1)? Build from there.
+- What's the motivated discovery path? Socratic or expository for each stretch?
+- **Stress-test the roots.** For every foundational node: is this genuinely an unconditional truth *for him*, or a disguised theorem deriving from something simpler he'd accept at face value? If it derives, push it down.
+
+**Stop and wait for my go-ahead before teaching.**
+
+---
+
+## Phase 3 — Teach the missing node(s)
+
+Run the node loop below for **each missing node only**. Do not survey the whole topic. For codebase questions, ground every claim in inspected source; cite critical file:line locations.
+
+**For every node** (each unconditional truth *and* each derived step), run:
+
+1. **Motivate.** Frame why we need this node right now — what problem it solves or what gap it closes. Don't just assert even an unconditional truth because it's true; motivate why *this* truth, *now*.
+2. **Establish.**
+   - If foundational: state it plainly, at face value, no caveats. Surface an atomic unit if one fits.
+   - If derived: build it from what's already established via a motivated move (Socratic or expository), answering "how could I have discovered this?" Gradable Socratic steps use `quiz`; only fall back to `ask_user_question` if there's genuinely no right answer.
+   - **Use the diagram skill** for structure, relationships, before/after changes, algorithm traces, and anything spatial.
+3. **Connect.** Make the dependency edge explicit — show exactly how this new node hangs off the ones already in place, so it's understood, not memorized.
+4. **Quiz-check.** Confirm the node landed with a `quiz`. An unconfirmed unconditional truth is as dangerous as an unconfirmed derived fact. If he misses it, fix that node before building anything on top of it.
+
+If you catch yourself asserting a fact he'd have to take on faith — motivate it, confirm it lands, or ground it in something already established. Unmotivated, unconfirmed facts don't lock in.
+
+**Stop as soon as the original question is answered.** Do not expand into a complete architecture lesson. Return to the original task only within its existing scope and authorization.
+
+## User's Confusion
+<confusion>
+                  ]]
+              end,
+            },
+          },
+        },
         ["Explain Architecture"] = {
           strategy = "chat", -- Can be "chat", "inline", "workflow", or "cmd"
           description = "Explain the Architecture of the Codebase",
@@ -3405,12 +3584,6 @@ If no goal is supplied above, use the goal established in this conversation. Ask
       { "<leader>ah", ":CodeCompanionHistory<cr>", desc = "Toggle CodeCompanionChat History" },
       { "<leader>ap", ":CodeCompanionActions<cr>", desc = "Toggle CodeCompanion Action Palette", mode = { "n", "v" } },
       { "<leader>aa", ":CodeCompanionChat Add<cr>", desc = "Add Visually Selected text to Chat", mode = { "v" } },
-      -- {
-      --   "<leader>ac",
-      --   ":CodeCompanionChat<CR>",
-      --   desc = "Open a new CodeCompanion Chat",
-      --   mode = { "n" },
-      -- },
       {
         "<leader>an",
         "}",
@@ -3429,49 +3602,49 @@ If no goal is supplied above, use the goal established in this conversation. Ask
       },
       {
         "<leader>ac",
-        ":CodeCompanion /create_scenario<CR>",
-        desc = "Consider Possible Scenarios",
+        ":CodeCompanion /clarify_confusion<CR>",
+        desc = "Clarify Confusion",
         mode = { "n" },
         remap = true,
       },
-      {
-        "<leader>ai",
-        ":CodeCompanion /instrument<CR>",
-        desc = "Instrument with Trace Id",
-        mode = { "n" },
-        remap = true,
-      },
-      {
-        "<leader>ao",
-        ":CodeCompanion /architecture<CR>",
-        desc = "Explain Architecture",
-        mode = { "n" },
-        remap = true,
-      },
-      {
-        "<leader>at",
-        ":CodeCompanion /tests<CR>",
-        desc = "Generate Unit Tests",
-        mode = { "n" },
-      },
-      {
-        "<leader>af",
-        ":CodeCompanion /flesh<CR>",
-        desc = "Flesh out Implementation",
-        mode = { "n" },
-      },
+      -- {
+      --   "<leader>ai",
+      --   ":CodeCompanion /instrument<CR>",
+      --   desc = "Instrument with Trace Id",
+      --   mode = { "n" },
+      --   remap = true,
+      -- },
+      -- {
+      --   "<leader>ao",
+      --   ":CodeCompanion /architecture<CR>",
+      --   desc = "Explain Architecture",
+      --   mode = { "n" },
+      --   remap = true,
+      -- },
+      -- {
+      --   "<leader>at",
+      --   ":CodeCompanion /tests<CR>",
+      --   desc = "Generate Unit Tests",
+      --   mode = { "n" },
+      -- },
+      -- {
+      --   "<leader>af",
+      --   ":CodeCompanion /flesh<CR>",
+      --   desc = "Flesh out Implementation",
+      --   mode = { "n" },
+      -- },
       {
         "<leader>aw",
         ":CodeCompanion /code_workflow<CR>",
         desc = "Edit Code Workflow",
         mode = { "n" },
       },
-      {
-        "<leader>ar",
-        ":CodeCompanion /pr<CR>",
-        desc = "PR Review",
-        mode = { "n" },
-      },
+      -- {
+      --   "<leader>ar",
+      --   ":CodeCompanion /pr<CR>",
+      --   desc = "PR Review",
+      --   mode = { "n" },
+      -- },
       -- {
       --   "<leader>ag",
       --   ":CodeCompanion /gather<CR>",
