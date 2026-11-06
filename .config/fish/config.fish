@@ -14,7 +14,7 @@ function explain
     gh copilot explain $argv[1]
 end
 
-function tr
+function triage
     triage build $argv[1] artifacts --fetch
 end
 
@@ -357,6 +357,98 @@ end
 fish_add_path /home/bensonli/.opencode/bin
 
 function mp --description "local pi for development"
-    set -lx PI_CODING_AGENT_DIR /home/ir/Documents/pi/.pi
-    command /home/ir/Documents/pi/pi-test.sh -e "$HOME/.config/everpure-foundry/foundry-provider" --provider anthropic --model claude-sonnet-4-6 $argv
+    lite pi $argv
 end
+set -gx LITELLM_PROXY_URL https://gpulab.purestorage.com
+set -gx CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY 1
+set -gx PI_CODING_AGENT_DIR /home/ir/Software/pi/.pi
+
+# ************** PI WORKSPACE ************** %%%1
+function hp -d "Spawn pi in a new Herdr tab via hc, attach inside the current terminal"
+    if test "$HERDR_ENV" != 1
+        echo "pi_workspace: not inside Herdr (HERDR_ENV != 1)" >&2
+        return 1
+    end
+
+    # Resolve target directory from cwd
+    set target_dir (realpath -- $PWD)
+
+    if not test -d "$target_dir"
+        echo "pi_workspace: not a directory: $target_dir" >&2
+        return 1
+    end
+
+    # Derive a sanitised agent name: pi-<dirname>[-<label>], max 32 chars, [a-z0-9_-]
+    set ws_label (basename "$target_dir")
+    set _name_input "pi-$ws_label"
+    if set -q argv[1]
+        set _name_input "$_name_input-$argv[1]"
+    end
+    set agent_name (echo "$_name_input" \
+        | tr '[:upper:]' '[:lower:]' \
+        | tr -cs 'a-z0-9_-' '-' \
+        | string trim --chars='-' \
+        | string sub --length 32)
+
+    # ── Idempotency ──────────────────────────────────────────────────────────
+    # If a live hc terminal with this name already exists, just reattach.
+    set _existing (hc ls --json | python3 -c "
+import sys, json
+name = '$agent_name'
+for t in json.load(sys.stdin)['terminals']:
+    if t.get('name') == name and t['state'] == 'live':
+        print('found')
+        break
+" 2>/dev/null)
+
+    if test "$_existing" = found
+        echo "pi_workspace: reattaching to existing session '$agent_name'…"
+        hc attach "$agent_name"
+        return
+    end
+
+    # ── Create ───────────────────────────────────────────────────────────────
+    # Snapshot all pane IDs before so we can spot the new one after.
+    set _before (herdr api snapshot 2>/dev/null | python3 -c "
+import sys, json
+panes = json.load(sys.stdin)['result']['snapshot'].get('panes', [])
+print(' '.join(p['pane_id'] for p in panes))" 2>/dev/null)
+
+    echo "pi_workspace: starting '$agent_name' in $target_dir…"
+
+    # Start pi as an independent, named hc terminal (no-parent keeps it alive
+    # if neovim or this shell exits).
+    hc run --bg --name "$agent_name" --cwd "$target_dir" --no-parent pi
+    if test $status -ne 0
+        echo "pi_workspace: hc run failed" >&2
+        return 1
+    end
+
+    # ── Organise into a Herdr tab ─────────────────────────────────────────────
+    # Give Herdr a moment to pick up the new hc terminal as a pane.
+    sleep 1
+
+    set _after (herdr api snapshot 2>/dev/null | python3 -c "
+import sys, json
+panes = json.load(sys.stdin)['result']['snapshot'].get('panes', [])
+print(' '.join(p['pane_id'] for p in panes))" 2>/dev/null)
+
+    set _new_pane (python3 -c "
+before = set('$_before'.split())
+after  = set('$_after'.split())
+new = after - before
+print(next(iter(new), ''))" 2>/dev/null)
+
+    if test -n "$_new_pane"
+        herdr pane move "$_new_pane" --new-tab --label "$ws_label" --no-focus 2>/dev/null
+        and echo "pi_workspace: moved pane $_new_pane into new tab '$ws_label'"
+        or echo "pi_workspace: note: pane move failed — session is still accessible via hc"
+    else
+        echo "pi_workspace: note: no new Herdr pane detected — session is still accessible via hc"
+    end
+
+    # ── Attach ───────────────────────────────────────────────────────────────
+    echo "pi_workspace: attaching (ctrl+\\ to detach)…"
+    hc attach "$agent_name"
+end
+>>>>>>> Stashed changes
