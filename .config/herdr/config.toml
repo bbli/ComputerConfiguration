@@ -1,0 +1,22 @@
+onboarding = false
+
+[keys]
+rename_tab = "prefix+,"
+prefix = "ctrl+q"
+toggle_sidebar = "prefix+b"
+close_tab = "prefix+f"
+next_workspace = "prefix+n"
+previous_workspace = "prefix+p"
+next_tab = "prefix+right"
+previous_tab = "prefix+left"
+new_workspace = "prefix+c"
+new_tab = "prefix+shift+c"
+switch_tab = "prefix+shift+1..9"
+switch_workspace = "prefix+1..9"
+
+[ui.toast]
+delivery = "herdr"
+
+[theme]
+name = "dracula"
+auto_switch = false
