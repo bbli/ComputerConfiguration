@@ -110,6 +110,16 @@ function delete_worktree
     end
 
     # --- merge -----------------------------------------------------------------
+    set -l ai_reviewed
+    if not read -l -P "Have you used AI to review the code? (y/n): " ai_reviewed
+        echo "delete_worktree: AI review not confirmed, stopping"
+        return 1
+    end
+    if test "$ai_reviewed" != y
+        echo "delete_worktree: AI review not confirmed, stopping"
+        return 1
+    end
+
     if not git -C $target_wt merge --no-edit $branch_name
         echo "delete_worktree: merge failed, aborting merge in $target_wt"
         git -C $target_wt merge --abort 2>/dev/null
@@ -357,7 +367,7 @@ end
 fish_add_path /home/bensonli/.opencode/bin
 
 function mp --description "local pi for development"
-    lite pi $argv
+    lite pi --provider litellm --model "litellm/gpt-6.1-sol-claude-compatible[1m]" $argv
 end
 set -gx LITELLM_PROXY_URL https://gpulab.purestorage.com
 set -gx CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY 1
